@@ -1,6 +1,6 @@
 name = "GasDispersion"
 uuid = "ac6af613-5479-4178-853e-9d66de417193"
-authors = ["selenized <allanf@protonmail.com> and contributors"]
+authors = ["Allan Farrell <allanf@protonmail.com> and contributors"]
 version = "0.1.0"
 
 [compat]
