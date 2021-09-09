@@ -1,0 +1,27 @@
+λ_params = Dict(
+    "A" => (a=-11.4, b=0.10),
+    "B" => (a=-26.0, b=0.17),
+    "C" => (a=-123.0, b=0.30),
+    #"D" => Monin-Obhukov length is infinite
+    "E" => (a=123.0, b=0.30),
+    "F" => (a=26.0, b=0.17)
+)
+
+"""
+    monin_obukhov(stability::String, roughness::Number)
+returns the Monin-Obukhov length for a given Pasquill-Gifford stability class
+and surface roughness (in meters)
+"""
+function monin_obhukov(stability::String, roughness::Number)
+    if stability_class ∈ Set(["A","B","C","E","F"])
+        a, b = λ_params[stability]
+        λ = a*roughness^b
+    elseif stability == "D"
+        λ = ∞
+    else
+        err = string(stability, " is not a valid Pasquill-Gifford stability class")
+        error(err)
+    end
+
+    return λ
+end
