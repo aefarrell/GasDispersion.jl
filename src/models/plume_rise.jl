@@ -1,7 +1,7 @@
 """
     plume_rise(scenario::Scenario, plumerise)
 Implements the Briggs plume rise equations for buoyancy and momentum driven
-plume rise as described in the ISC3 Users guide EPA-454/B-95-003b
+plume rise as described in the ISC3 model guide EPA-454/B-95-003b
 """
 function plume_rise(scenario, plumerise)
 
@@ -58,7 +58,7 @@ function plume_rise(scenario, plumerise)
             final_rise = min(stable_momentum_rise, unstable_momentum_rise)
             xf = (π/2)*(u/√(s))
             β = (1/3) + (u/uⱼ)
-            return x -> if (x < xf) min((3Fm*sin(x*√(s))/(β^2*u*√(s)))^(1/3), final_rise) else final_rise end
+            return x -> if (x < xf) min((3Fm*sin(x*√(s)/u)/(β^2*u*√(s)))^(1/3), final_rise) else final_rise end
         end
     else
         if Fb < 55

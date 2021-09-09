@@ -17,16 +17,10 @@ function gaussian_plume_factory(scenario; downwash=false, plumerise=false)
     Q = scenario.mass_emission_rate
     Dⱼ = scenario.jet_diameter
     uⱼ = scenario.jet_velocity
-    ρⱼ = scenario.jet_density
-    pᵣ = scenario.release_pressure
-    Tᵣ = scenario.release_temperature
     hᵣ = scenario.release_height
 
     # parameters of the environment
     u = scenario.windspeed
-    ρₐ = scenario.ambient_density
-    pₐ = scenario.ambient_pressure
-    Tₐ = scenario.ambient_temperature
     stability = scenario.pasquill_gifford
 
     # stack-tip downwash check

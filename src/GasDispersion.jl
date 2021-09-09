@@ -1,6 +1,6 @@
 module GasDispersion
 
-export Scenario, plume
+export Scenario, plume, puff
 
 # helpful utilities
 include("utils/scenario_builder.jl")
@@ -10,6 +10,7 @@ include("utils/utils.jl")
 include("models/gaussian_plume.jl")
 
 # puff models
+include("models/gaussian_puff.jl")
 
 
 struct Scenario
@@ -40,13 +41,31 @@ distances in m, velocities in m/s, mass in kg, etc.)
 """
 function plume(scenario::Scenario; model::String="gaussian", kwargs...)
     if model=="gaussian"
-        conc_fun= gaussian_plume_factory(scenario; kwargs...)
+        return gaussian_plume_factory(scenario; kwargs...)
     else
         error_string = string("plume dispersion model ''",model,"'' is not currently implemented")
         error(error_string)
     end
+end
 
-    return conc_fun
+"""
+    puff(scenario::Scenario; model="gaussian", kwargs...)
+
+Runs the plume dispersion model on the given scenario and returns a function
+giving the concentration of the form
+    c(x, y, z, t)
+
+If `model` is unspecified, defaults to gaussian, `kwargs` are passed to the
+plume model. All model parameters are assumed to be in SI base units (i.e.
+distances in m, velocities in m/s, mass in kg, etc.)
+"""
+function puff(scenario::Scenario; model::String="gaussian", kwargs...)
+    if model=="gaussian"
+        return gaussian_puff_factory(scenario; kwargs...)
+    else
+        error_string = string("puff dispersion model ''",model,"'' is not currently implemented")
+        error(error_string)
+    end
 end
 
 end

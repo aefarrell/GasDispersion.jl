@@ -11,6 +11,8 @@
     monin_obukhov(stability::String, roughness::Number)
 returns the Monin-Obukhov length for a given Pasquill-Gifford stability class
 and surface roughness (in meters)
+Curve fit from
+    Pasquill, F., *Atmospheric Diffusion, 2nd Ed.*, Halstead Press, New York, 1974.
 """
 function monin_obhukov(stability::String, roughness::Number)
     if stability_class ∈ Set(["A","B","C","E","F"])
