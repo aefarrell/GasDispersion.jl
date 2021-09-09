@@ -1,6 +1,19 @@
 using GasDispersion
 using Test
 
-@testset "GasDispersion.jl" begin
-    # Write your tests here.
+include("test_scenarios.jl")
+
+@testset "GasDispersion.jl tests" begin
+    @test_throws MethodError Scenario()
+
+    @test_throws MethodError plume()
+    @test_throws ErrorException plume(test_scenario, model="error")
+    @test_throws ErrorException plume(bad_class)
+
+    @test_throws MethodError puff()
+    @test_throws ErrorException puff(test_scenario, model="error")
+    @test_throws ErrorException puff(bad_class)
+
 end
+
+include("gaussian_tests.jl")

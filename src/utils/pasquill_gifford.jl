@@ -35,19 +35,24 @@ puff_y_params = Dict(
 )
 
 """
-    crosswind_dispersion(stability_class::String, plume=true)
+    crosswind_dispersion(stability_class::String; <keyword arguments>)
 returns the crosswind dispersion function σy(x) for a given Pasquill-Gifford
-stability class
-`x` is assumed to be in meters and `σy` is in meters
+stability class, `x` is assumed to be in meters and `σy` is in meters
+
+# Arguments
 `plume` determines if the dispersion is for a plume or instantaneous release
 (puff), by default a plume is assumed.
+`avg_time` the averaging time in seconds, falls back to an "instantaneous"
+averaging time
+
+# References
 plume dispersion correlations are from
-    Spicer, T.O., and J.A. Havens, "Development of Vapor Dispersion Models for
-    Nonneutrally Buoyant Gas Mixtures--Analysis of TFI/NH3 Test Data", USAF
-    Engineering and Services Laboratory, Final Report, October 1988
+Spicer, T.O., and J.A. Havens, *User's Guide for the DEGADIS 2.1 Dense Gas
+Dispersion Model*, EPA-450/4-89-019, November 1989, pp 45-46
+
 puff dispersion correlations are from:
-    Slade, D.H., Diffusion from Instantaneous Sources. *Meteorology and
-    Atomic Energy*, TID-24190, USAEC, 1968, pp163-175
+Slade, D.H., Diffusion from Instantaneous Sources. *Meteorology and Atomic
+Energy*, TID-24190, USAEC, 1968, pp 163-175
 """
 function crosswind_dispersion(stability_class::String; plume=true, avg_time=0.0)
     if stability_class ∈ Set(["A","B","C","D","E","F"])
@@ -58,7 +63,7 @@ function crosswind_dispersion(stability_class::String; plume=true, avg_time=0.0)
             δ, β = puff_y_params[stability_class]
         end
     else
-        err = string(stability, " is not a valid Pasquill-Gifford stability class")
+        err = string(stability_class, " is not a valid Pasquill-Gifford stability class")
         error(err)
     end
 
@@ -72,12 +77,15 @@ stability class
 `x` is assumed to be in meters and `σz` is in meters
 `plume` determines if the dispersion is for a plume or instantaneous release
 (puff), by default a plume is assumed.
+
+# References
 plume dispersion correlations are from
-    Seinfeld, J.H., *Atmospheric Chemistry and Physics of Air Pollution*, John
-    Wiley and Sons, New York, 1986
+Seinfeld, J.H., *Atmospheric Chemistry and Physics of Air Pollution*, John
+Wiley and Sons, New York, 1986
+
 puff dispersion correlations are from:
-    Slade, D.H., Diffusion from Instantaneous Sources. *Meteorology and
-    Atomic Energy*, TID-24190, USAEC, 1968, pp163-175
+Slade, D.H., Diffusion from Instantaneous Sources. *Meteorology and
+Atomic Energy*, TID-24190, USAEC, 1968, pp163-175
 """
 function vertical_dispersion(stability_class::String; plume=true)
     if stability_class ∈ Set(["A","B","C","D","E","F"])
@@ -89,7 +97,7 @@ function vertical_dispersion(stability_class::String; plume=true)
             return x -> δ*x^β
         end
     else
-        err = string(stability, " is not a valid Pasquill-Gifford stability class")
+        err = string(stability_class, " is not a valid Pasquill-Gifford stability class")
         error(err)
     end
 end
