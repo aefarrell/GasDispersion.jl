@@ -9,7 +9,7 @@ c(x, y, z, t)
 
 function gaussian_puff_factory(scenario)
     # parameters of the jet
-    m = scenario.mass_emission_rate
+    m = scenario.mass_emission_rate*scenario.release_duration
     Dⱼ = scenario.jet_diameter
     uⱼ = scenario.jet_velocity
     h = scenario.release_height

@@ -6,7 +6,7 @@
 GasDispersion.jl aims to bring together several models for dispersion modeling
 of chemical releases with a consistent interface.
 
-# Example usage
+## Example usage
 
 Suppose a chemical release of some substance with a release rate of 1kg/s, at a
 height of 1m. Using some standard engineering estimates we might end up with a
@@ -15,6 +15,7 @@ release scenario with the following parameters:
 ```julia
 scenario = Scenario(
     1.0,   # mass emission rate, kg/s
+    10.0,  # release duration, s
     0.25,  # jet diameter, m
     15.67, # jet velocity, m/s
     1.3,   # jet density, kg/m^3
@@ -46,10 +47,10 @@ released during 1 second, using a "puff" model
 # returns a function
 puff_conc = puff(scenario, model="gaussian")
 
-puff_conc(x,y,z) # gives the concentration in kg/m^3 at the point x, y, z
+puff_conc(x,y,z,t) # gives the concentration in kg/m^3 at the point x, y, z and time t
 ```
 
-# Future
+## Future
 
 Currently the only models implemented are simple gaussian plumes and puffs, in
 the future I would like to implement some dense gas models as well.

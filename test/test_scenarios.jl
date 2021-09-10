@@ -1,5 +1,6 @@
 test_scenario = Scenario(
     1.0,   # mass emission rate, kg/s
+    10.0,  # release duration, s
     0.25,  # jet diameter, m
     15.67, # jet velocity, m/s
     1.3,   # jet density, kg/m^3
@@ -15,6 +16,7 @@ test_scenario = Scenario(
 
 bad_class = Scenario(
     test_scenario.mass_emission_rate,
+    test_scenario.release_duration,
     test_scenario.jet_diameter,
     test_scenario.jet_velocity,
     test_scenario.jet_density,

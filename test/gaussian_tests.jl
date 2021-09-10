@@ -1,6 +1,7 @@
 @testset "Gaussian plume tests for class $class" for class in ["A", "B", "C", "D", "E", "F"]
     s1 = Scenario(
         test_scenario.mass_emission_rate,
+        test_scenario.release_duration,
         test_scenario.jet_diameter,
         test_scenario.jet_velocity,
         test_scenario.jet_density,
@@ -16,6 +17,7 @@
 
     s2 = Scenario(
         test_scenario.mass_emission_rate,
+        test_scenario.release_duration,
         test_scenario.jet_diameter,
         test_scenario.jet_velocity,
         test_scenario.jet_density,
