@@ -20,7 +20,7 @@ function gaussian_puff_factory(scenario)
 
     # Pasquill-Gifford dispersion
     σx = crosswind_dispersion(stability; plume=false)
-    σy = crosswind_dispersion(stability; plume=false)
+    σy = σx
     σz = vertical_dispersion(stability; plume=false)
 
     function gaussian_puff(x,y,z,t)

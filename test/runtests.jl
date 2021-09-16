@@ -16,6 +16,9 @@ include("test_scenarios.jl")
 
 end
 
-include("gaussian_tests.jl")
+# testing utilities
+include("util_tests.jl")
 
+# testing specific models
+include("gaussian_tests.jl")
 include("britter_tests.jl")

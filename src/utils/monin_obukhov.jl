@@ -14,12 +14,12 @@ and surface roughness (in meters)
 Curve fit from
     Pasquill, F., *Atmospheric Diffusion, 2nd Ed.*, Halstead Press, New York, 1974.
 """
-function monin_obhukov(stability::String, roughness::Number)
-    if stability_class ∈ Set(["A","B","C","E","F"])
+function monin_obukhov(stability::String, roughness::Number)
+    if stability ∈ Set(["A","B","C","E","F"])
         a, b = λ_params[stability]
         λ = a*roughness^b
     elseif stability == "D"
-        λ = ∞
+        λ = Inf
     else
         err = string(stability, " is not a valid Pasquill-Gifford stability class")
         error(err)
