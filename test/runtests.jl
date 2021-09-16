@@ -17,3 +17,5 @@ include("test_scenarios.jl")
 end
 
 include("gaussian_tests.jl")
+
+include("britter_tests.jl")

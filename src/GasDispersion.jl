@@ -2,6 +2,8 @@ module GasDispersion
 
 export Scenario, plume, puff
 
+using Interpolations
+
 # helpful utilities
 include("utils/scenario_builder.jl")
 include("utils/utils.jl")
@@ -67,8 +69,8 @@ distances in m, velocities in m/s, mass in kg, etc.)
 function puff(scenario::Scenario; model::String="gaussian", kwargs...)
     if model=="gaussian"
         return gaussian_puff_factory(scenario; kwargs...)
-    elseif model=="britter-mcquaid"
-        return britter_plume_factory(scenario; kwargs...)
+    # elseif model=="britter-mcquaid"
+    #     return britter_plume_factory(scenario; kwargs...)
     else
         error_string = string("puff dispersion model ''",model,"'' is not currently implemented")
         error(error_string)
