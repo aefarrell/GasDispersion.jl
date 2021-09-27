@@ -22,6 +22,10 @@ function plume_rise(scenario, plumerise)
     Tₐ = scenario.ambient_temperature
     stability = scenario.pasquill_gifford
 
+    if any(ismissing, [Dⱼ, uⱼ, Tᵣ, u, Tₐ, stability])
+        error("Scenario is incomplete")
+    end
+
     # buoyancy flux
     Fb = g * uⱼ * Dⱼ^2 * (Tᵣ - Tₐ) / (4Tᵣ)
 

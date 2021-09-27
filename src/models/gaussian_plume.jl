@@ -23,6 +23,10 @@ function gaussian_plume_factory(scenario; downwash=false, plumerise=false)
     u = scenario.windspeed
     stability = scenario.pasquill_gifford
 
+    if any(ismissing, [Q, Dⱼ, uⱼ, hᵣ, u, stability])
+        error("Scenario is incomplete")
+    end
+
     # stack-tip downwash check
     if (downwash==true) && (uⱼ < 1.5*u)
         Δh_dw = 2*Dⱼ*( (uⱼ/u) - 1.5 )

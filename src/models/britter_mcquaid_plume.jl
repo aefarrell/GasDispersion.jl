@@ -35,6 +35,10 @@ function britter_plume_factory(scenario)
     Tₐ = scenario.ambient_temperature
     class = scenario.pasquill_gifford
 
+    if any(ismissing, [Q, h, ρⱼ, Tᵣ, u, ρₐ, Tₐ, class])
+        error("Scenario is incomplete")
+    end
+
     # Setting up the Britter-McQuaid curves
     britter_interps = [ ]
     concs = sort(collect(keys(Britter_McQuaid_correlations)), rev=true)
