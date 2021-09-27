@@ -1,10 +1,11 @@
 module GasDispersion
 
-export Scenario, plume, puff
+export Scenario, plume, puff, scenario_builder
 
 using Interpolations
 
 # helpful utilities
+include("utils/scenario.jl")
 include("utils/scenario_builder.jl")
 include("utils/utils.jl")
 
@@ -15,23 +16,6 @@ include("models/britter_mcquaid_plume.jl")
 # puff models
 include("models/gaussian_puff.jl")
 include("models/britter_mcquaid_puff.jl")
-
-
-struct Scenario
-    mass_emission_rate::Number
-    release_duration::Number
-    jet_diameter::Number
-    jet_velocity::Number
-    jet_density::Number
-    release_pressure::Number
-    release_temperature::Number
-    release_height::Number
-    windspeed::Number
-    ambient_density::Number
-    ambient_pressure::Number
-    ambient_temperature::Number
-    pasquill_gifford::String
-end
 
 """
     plume(scenario::Scenario; model="gaussian", kwargs...)

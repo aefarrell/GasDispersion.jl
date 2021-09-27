@@ -18,6 +18,10 @@ function gaussian_puff_factory(scenario)
     u = scenario.windspeed
     stability = scenario.pasquill_gifford
 
+    if any(ismissing, [m, Dⱼ, uⱼ, h, u, stability])
+        error("Scenario is incomplete")
+    end
+
     # Pasquill-Gifford dispersion
     σx = crosswind_dispersion(stability; plume=false)
     σy = σx
