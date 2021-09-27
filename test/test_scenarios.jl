@@ -46,7 +46,9 @@ bad_class = Scenario(
     "error",
 )
 
-
+# I have shamelessly stolen this from the tests for show
+replstr(x, kv::Pair...) = sprint((io,x) -> show(IOContext(io, :limit => true, :displaysize => (24, 80), kv...), MIME("text/plain"), x), x)
+test_scenario_str = "Release scenario:\n    mass_emission_rate: 1.0 kg/s \n    release_duration: 10.0 s \n    jet_diameter: 0.25 m \n    jet_velocity: 15.67 m/s \n    jet_density: 1.3 kg/m^3 \n    release_pressure: 101325.0 Pa \n    release_temperature: 450 K \n    release_height: 1.0 m \n    windspeed: 1.5 m/s \n    ambient_density: 1.225 kg/m^3 \n    ambient_pressure: 101325.0 Pa \n    ambient_temperature: 298.15 K \n    pasquill_gifford: F  \n    "
 
 @testset "Scenario constructor tests" begin
     d = Dict{Symbol,Union{Missing, Number, String}}([
@@ -61,6 +63,8 @@ bad_class = Scenario(
 
     @test Scenario(test_scenario) == test_scenario
     @test Scenario(test_scenario; pasquill_gifford="error") == bad_class
+
+    @test replstr(test_scenario) == test_scenario_str
 
 end
 
@@ -81,12 +85,36 @@ end
         :pasquill_gifford => "F"
     ])
 
+    # using default ambient properties
     @test Scenario(jet) == scenario_builder(jet[:release_pressure], jet[:release_temperature];
                            model="jet", phase="liquid",
                            stability=jet[:pasquill_gifford], windspeed=jet[:windspeed],
                            liquid_density=jet[:jet_density], hole_diameter=jet[:jet_diameter],
                            discharge_coeff=0.63)
 
+   # getting ambient properties from an existing scenario
+   @test Scenario(jet) == scenario_builder(jet[:release_pressure], jet[:release_temperature], jet;
+                          model="jet", phase="liquid",
+                          stability=jet[:pasquill_gifford], windspeed=jet[:windspeed],
+                          liquid_density=jet[:jet_density], hole_diameter=jet[:jet_diameter],
+                          discharge_coeff=0.63)
+
+    # missing windspeed, using default
+    s = scenario_builder(jet[:release_pressure], jet[:release_temperature];
+                           model="jet", phase="liquid",
+                           stability=jet[:pasquill_gifford], #windspeed=missing,
+                           liquid_density=jet[:jet_density], hole_diameter=jet[:jet_diameter],
+                           discharge_coeff=0.63)
+    @test s.windspeed == 3.0
+
+    # missing model params, throw error
+    @test_throws ErrorException scenario_builder(jet[:release_pressure], jet[:release_temperature];
+                           model="jet", phase="liquid",
+                           stability=jet[:pasquill_gifford], windspeed=missing,
+                           liquid_density=jet[:jet_density], #hole_diameter=jet[:jet_diameter],
+                           discharge_coeff=0.63)
+
+    # missing model, throw error
     @test_throws ErrorException scenario_builder(jet[:release_pressure], jet[:release_temperature];
                            model="something else", phase="liquid",
                            stability=jet[:pasquill_gifford], windspeed=jet[:windspeed])

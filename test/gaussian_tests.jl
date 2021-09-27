@@ -2,38 +2,20 @@
 
     @test_throws ErrorException plume(ambient, model="gaussian")
 
-    @testset "Gaussian plume tests for class $class" for class in ["A", "B", "C", "D", "E", "F"]
-        s1 = Scenario(
-            test_scenario.mass_emission_rate,
-            test_scenario.release_duration,
-            test_scenario.jet_diameter,
-            test_scenario.jet_velocity,
-            test_scenario.jet_density,
-            test_scenario.release_pressure,
-            test_scenario.release_temperature,
-            test_scenario.release_height,
-            test_scenario.windspeed,
-            test_scenario.ambient_density,
-            test_scenario.ambient_pressure,
-            test_scenario.ambient_temperature,
-            class,   # pasquill stability class
-        )
+    # mising params for plume rise
+    s = Scenario(test_scenario; release_temperature=missing)
+    @test_throws ErrorException plume(s, model="gaussian", plumerise=true)
 
-        s2 = Scenario(
-            test_scenario.mass_emission_rate,
-            test_scenario.release_duration,
-            test_scenario.jet_diameter,
-            test_scenario.jet_velocity,
-            test_scenario.jet_density,
-            test_scenario.release_pressure,
-            test_scenario.ambient_temperature, # release at ambient temperature
-            test_scenario.release_height,
-            test_scenario.windspeed,
-            test_scenario.ambient_density,
-            test_scenario.ambient_pressure,
-            test_scenario.ambient_temperature,
-            class,   # pasquill stability class
-        )
+    s = Scenario(test_scenario; windspeed=3.5, jet_velocity=1.5)
+    no_downwash = plume(s, model="gaussian")
+    downwash = plume(s, model="gaussian", downwash=true)
+    @test no_downwash(10, 0, 1) > downwash(10,0,1)
+
+    @testset "Gaussian plume tests for class $class" for class in ["A", "B", "C", "D", "E", "F"]
+        s1 = Scenario( test_scenario; pasquill_gifford=class )
+
+        s2 = Scenario( test_scenario; release_temperature=s1.ambient_temperature,
+                                      pasquill_gifford=class )
         h = s1.release_height
 
         no_plume_rise_1 = plume(s1, model="gaussian")
@@ -54,21 +36,7 @@ end
     @test_throws ErrorException puff(ambient, model="gaussian")
 
     @testset "Gaussian puff tests for class $class" for class in ["A", "B", "C", "D", "E", "F"]
-        s = Scenario(
-            test_scenario.mass_emission_rate,
-            test_scenario.release_duration,
-            test_scenario.jet_diameter,
-            test_scenario.jet_velocity,
-            test_scenario.jet_density,
-            test_scenario.release_pressure,
-            test_scenario.release_temperature,
-            test_scenario.release_height,
-            test_scenario.windspeed,
-            test_scenario.ambient_density,
-            test_scenario.ambient_pressure,
-            test_scenario.ambient_temperature,
-            class,   # pasquill stability class
-        )
+        s = Scenario( test_scenario; pasquill_gifford=class )
 
         h = s.release_height
         u = s.windspeed
