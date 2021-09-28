@@ -54,7 +54,7 @@ puff dispersion correlations are from:
 Slade, D.H., Diffusion from Instantaneous Sources. *Meteorology and Atomic
 Energy*, TID-24190, USAEC, 1968, pp 163-175
 """
-function crosswind_dispersion(stability_class::String; plume=true, avg_time=0.0)
+function crosswind_dispersion(stability_class::String; plume=true, avg_time=600)
     if stability_class ∈ Set(["A","B","C","D","E","F"])
         if plume
             δ, β, tₐ = plume_y_params[stability_class]

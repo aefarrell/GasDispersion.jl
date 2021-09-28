@@ -46,7 +46,7 @@ bad_class = Scenario(
     "error",
 )
 
-# I have shamelessly stolen this from the tests for show
+# I have shamelessly stolen this from the tests for show()
 replstr(x, kv::Pair...) = sprint((io,x) -> show(IOContext(io, :limit => true, :displaysize => (24, 80), kv...), MIME("text/plain"), x), x)
 test_scenario_str = "Release scenario:\n    mass_emission_rate: 1.0 kg/s \n    release_duration: 10.0 s \n    jet_diameter: 0.25 m \n    jet_velocity: 15.67 m/s \n    jet_density: 1.3 kg/m^3 \n    release_pressure: 101325.0 Pa \n    release_temperature: 450 K \n    release_height: 1.0 m \n    windspeed: 1.5 m/s \n    ambient_density: 1.225 kg/m^3 \n    ambient_pressure: 101325.0 Pa \n    ambient_temperature: 298.15 K \n    pasquill_gifford: F  \n    "
 
@@ -69,7 +69,8 @@ test_scenario_str = "Release scenario:\n    mass_emission_rate: 1.0 kg/s \n    r
 end
 
 @testset "Scenario Builder tests" begin
-
+    # Liquid jet example, *Guidelines for Consequence Analysis of Chemical
+    # Releases* CCPS, 1999, pg 40
     jet = Dict([
         :mass_emission_rate => 0.21691154763598,
         :jet_diameter => 0.01,

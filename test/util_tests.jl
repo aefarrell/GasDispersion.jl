@@ -11,7 +11,7 @@ end
 @testset "Pasquill-Gifford dispersion tests" begin
     σy_plume = crosswind_dispersion("A")
     σy_puff = crosswind_dispersion("A"; plume=false)
-    @test σy_plume(1.2) ≈ 0.423*((18.4/600)^0.2)*(1.2^0.9)
+    @test σy_plume(1.2) ≈ 0.423*((600/600)^0.2)*(1.2^0.9)
     @test σy_puff(1.2) ≈ 0.18*(1.2^0.92)
     @test_throws ErrorException crosswind_dispersion("Q")
 
