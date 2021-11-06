@@ -7,11 +7,11 @@ include("test_scenarios.jl")
     @test_throws MethodError Scenario()
 
     @test_throws MethodError plume()
-    @test_throws ErrorException plume(test_scenario, model="error")
+    @test_throws ErrorException plume(test_scenario, model=:error)
     @test_throws ErrorException plume(bad_class)
 
     @test_throws MethodError puff()
-    @test_throws ErrorException puff(test_scenario, model="error")
+    @test_throws ErrorException puff(test_scenario, model=:error)
     @test_throws ErrorException puff(bad_class)
 
 end

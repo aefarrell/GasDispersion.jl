@@ -44,7 +44,7 @@ function plume_rise(scenario, plumerise)
         Γ = 0.035    # default lapse rate K/m
         s = (g/Tₐ)*Γ # stability
     else
-        err = string(stability_class, " is not a valid stability class")
+        err = string(stability, " is not a valid stability class")
         error(err)
     end
 

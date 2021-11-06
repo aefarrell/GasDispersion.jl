@@ -18,14 +18,14 @@
     x₂, c₂ = 367.0, 0.0872919843565787
 
     # missing model parameters
-    @test_throws ErrorException plume(ambient, model="britter-mcquaid")
+    @test_throws ErrorException plume(ambient, model=:brittermcquaid)
 
     @testset "Britter-McQuaid plume tests for class $class" for class in ["A", "B", "C", "D", "E", "F"]
         # because the windspeed is at 10m, the class should not impact the
         # calculations but this is a check that getting the corresponding
         # correlation doesn't throw any errors or do anything deeply strange
         s = Scenario( ex; pasquill_gifford=class )
-        britter_mcquaid = plume(s, model="britter-mcquaid")
+        britter_mcquaid = plume(s, model=:brittermcquaid)
         @test britter_mcquaid(x₁,0,0) ≈ c₁
         @test britter_mcquaid(x₂,0,0) ≈ c₂
 

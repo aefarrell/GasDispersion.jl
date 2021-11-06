@@ -18,7 +18,7 @@ include("models/gaussian_puff.jl")
 include("models/britter_mcquaid_puff.jl")
 
 """
-    plume(scenario::Scenario; model="gaussian", kwargs...)
+    plume(scenario::Scenario; model=:gaussian, kwargs...)
 
 Runs the plume dispersion model on the given scenario and returns a function
 giving the concentration of the form
@@ -28,10 +28,10 @@ If `model` is unspecified, defaults to gaussian, `kwargs` are passed to the
 plume model. All model parameters are assumed to be in SI base units (i.e.
 distances in m, velocities in m/s, mass in kg, etc.)
 """
-function plume(scenario::Scenario; model::String="gaussian", kwargs...)
-    if model=="gaussian"
+function plume(scenario::Scenario; model=:gaussian, kwargs...)
+    if model==:gaussian
         return gaussian_plume_factory(scenario; kwargs...)
-    elseif model=="britter-mcquaid"
+    elseif model==:brittermcquaid
         return britter_plume_factory(scenario; kwargs...)
     else
         error_string = string("plume dispersion model ''",model,"'' is not currently implemented")
@@ -40,7 +40,7 @@ function plume(scenario::Scenario; model::String="gaussian", kwargs...)
 end
 
 """
-    puff(scenario::Scenario; model="gaussian", kwargs...)
+    puff(scenario::Scenario; model=:gaussian, kwargs...)
 
 Runs the puff dispersion model on the given scenario and returns a function
 giving the concentration of the form
@@ -50,8 +50,8 @@ If `model` is unspecified, defaults to gaussian, `kwargs` are passed to the
 puff model. All model parameters are assumed to be in SI base units (i.e.
 distances in m, velocities in m/s, mass in kg, etc.)
 """
-function puff(scenario::Scenario; model::String="gaussian", kwargs...)
-    if model=="gaussian"
+function puff(scenario::Scenario; model=:gaussian, kwargs...)
+    if model==:gaussian
         return gaussian_puff_factory(scenario; kwargs...)
     # elseif model=="britter-mcquaid"
     #     return britter_plume_factory(scenario; kwargs...)
