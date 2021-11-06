@@ -75,7 +75,7 @@ function scenario_builder(P::Number, T::Number, conditions::AbstractDict=ambient
 end
 
 function scenario_builder(P::Number, T::Number, conditions::Scenario; stability::String, windspeed::Union{Missing,Number}=missing,
-                          model::String=:jet, phase::String=:liquid, kwargs...)
+                          model=:jet, phase=:liquid, kwargs...)
 
     d = Dict([ key => getproperty(conditions, key) for key in fieldnames(Scenario)])
     return scenario_builder(P, T; stability=stability, conditions=d, windspeed=windspeed,
