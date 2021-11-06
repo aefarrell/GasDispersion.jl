@@ -88,14 +88,14 @@ end
 
     # using default ambient properties
     @test Scenario(jet) == scenario_builder(jet[:release_pressure], jet[:release_temperature];
-                           model="jet", phase="liquid",
+                           model=:jet, phase=:liquid,
                            stability=jet[:pasquill_gifford], windspeed=jet[:windspeed],
                            liquid_density=jet[:jet_density], hole_diameter=jet[:jet_diameter],
                            discharge_coeff=0.63)
 
    # getting ambient properties from a dict
    @test Scenario(jet) == scenario_builder(jet[:release_pressure], jet[:release_temperature], jet;
-                          model="jet", phase="liquid",
+                          model=:jet, phase=:liquid,
                           stability=jet[:pasquill_gifford], windspeed=jet[:windspeed],
                           liquid_density=jet[:jet_density], hole_diameter=jet[:jet_diameter],
                           discharge_coeff=0.63)
@@ -103,14 +103,14 @@ end
     # getting ambient properties from an existing scenario
     js = Scenario(jet)
     @test Scenario(jet) == scenario_builder(jet[:release_pressure], jet[:release_temperature], js;
-                         model="jet", phase="liquid",
+                         model=:jet, phase=:liquid,
                          stability=jet[:pasquill_gifford], windspeed=jet[:windspeed],
                          liquid_density=jet[:jet_density], hole_diameter=jet[:jet_diameter],
                          discharge_coeff=0.63)
 
     # missing windspeed, using default
     s = scenario_builder(jet[:release_pressure], jet[:release_temperature];
-                           model="jet", phase="liquid",
+                           model=:jet, phase=:liquid,
                            stability=jet[:pasquill_gifford], #windspeed=missing,
                            liquid_density=jet[:jet_density], hole_diameter=jet[:jet_diameter],
                            discharge_coeff=0.63)
@@ -118,14 +118,14 @@ end
 
     # missing model params, throw error
     @test_throws ErrorException scenario_builder(jet[:release_pressure], jet[:release_temperature];
-                           model="jet", phase="liquid",
+                           model=:jet, phase=:liquid,
                            stability=jet[:pasquill_gifford], windspeed=missing,
                            liquid_density=jet[:jet_density], #hole_diameter=jet[:jet_diameter],
                            discharge_coeff=0.63)
 
     # missing model, throw error
     @test_throws ErrorException scenario_builder(jet[:release_pressure], jet[:release_temperature];
-                           model="something else", phase="liquid",
+                           model=:somethingelse, phase=:liquid,
                            stability=jet[:pasquill_gifford], windspeed=jet[:windspeed])
 
 end

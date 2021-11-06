@@ -26,14 +26,14 @@ conditions.
 - P::Number, the release pressure in Pa
 - T::Number, the release temperature in K
 - conditions::Scenario=ambient, a scenario or dictionary with the ambient conditions
-- model="jet", the model, defaults to a jet
-- phase="liquid", the phase of the release, defaults to liquid
+- model=:jet, the model, defaults to a jet
+- phase=:liquid, the phase of the release, defaults to liquid
 - stability::String, the Pasquill atmospheric stability
 - windspeed::Number, the windspeed, defaults to a look-up table for stability
 - kwargs... each model requires additional keyword arguments
 """
 function scenario_builder(P::Number, T::Number, conditions::AbstractDict=ambient; stability::String, windspeed::Union{Missing,Number}=missing,
-                          model::String="jet", phase::String="liquid", kwargs...)
+                          model=:jet, phase=:liquid, kwargs...)
 
     d = Dict{Symbol, Any}([ key => get(Missing, conditions, key) for key in fieldnames(Scenario)])
 
@@ -44,7 +44,7 @@ function scenario_builder(P::Number, T::Number, conditions::AbstractDict=ambient
     d[:windspeed] = windspeed
     d[:pasquill_gifford] = stability
 
-    if model == "jet" && phase == "liquid"
+    if model == :jet && phase == :liquid
         required_params = [:liquid_density, :hole_diameter]
         if all(key -> key ∈ keys(kwargs), required_params)
             ρⱼ = kwargs[:liquid_density]
@@ -75,7 +75,7 @@ function scenario_builder(P::Number, T::Number, conditions::AbstractDict=ambient
 end
 
 function scenario_builder(P::Number, T::Number, conditions::Scenario; stability::String, windspeed::Union{Missing,Number}=missing,
-                          model::String="jet", phase::String="liquid", kwargs...)
+                          model::String=:jet, phase::String=:liquid, kwargs...)
 
     d = Dict([ key => getproperty(conditions, key) for key in fieldnames(Scenario)])
     return scenario_builder(P, T; stability=stability, conditions=d, windspeed=windspeed,

@@ -10,17 +10,17 @@ c(x, y, z, t)
 function gaussian_puff_factory(scenario)
     # parameters of the jet
     m = scenario.mass_emission_rate*scenario.release_duration
-    Dⱼ = scenario.jet_diameter
-    uⱼ = scenario.jet_velocity
     h = scenario.release_height
 
     # parameters of the environment
     u = scenario.windspeed
     stability = scenario.pasquill_gifford
 
-    if any(ismissing, [m, Dⱼ, uⱼ, h, u, stability])
+    if any(ismissing, [m, h, u, stability])
         error("Scenario is incomplete")
     end
+
+
 
     # Pasquill-Gifford dispersion
     σx = crosswind_dispersion(stability; plume=false)
