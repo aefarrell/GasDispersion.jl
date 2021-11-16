@@ -6,6 +6,17 @@
 GasDispersion.jl aims to bring together several models for dispersion modeling
 of chemical releases with a consistent interface.
 
+## Installation
+
+GasDispersion.jl can be installed using Julia's built-in package manager. In a
+Julia session, enter the package manager mode by hitting `]`, then run the
+command
+
+```julia
+pkg> add https://github.com/aefarrell/GasDispersion.jl
+```
+
+
 ## Example usage
 
 Suppose a chemical release of some substance with a release rate of 1kg/s, at a
