@@ -18,7 +18,7 @@
     x₂, c₂ = 367.0, 0.0872919843565787
 
     # missing model parameters
-    @test_throws ErrorException plume(ambient, model=:brittermcquaid)
+    @test_throws MissingException plume(ambient, model=:brittermcquaid)
 
     @testset "Britter-McQuaid plume tests for class $class" for class in ["A", "B", "C", "D", "E", "F"]
         # because the windspeed is at 10m, the class should not impact the

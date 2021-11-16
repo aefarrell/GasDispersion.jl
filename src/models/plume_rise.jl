@@ -12,18 +12,25 @@ function plume_rise(scenario, plumerise)
     # physics parameters
     g = 9.80616 #m/s^2
 
-    # parameters of the jet
-    Dⱼ = scenario.jet_diameter
-    uⱼ = scenario.jet_velocity
-    Tᵣ = scenario.release_temperature
+    required_params = [:jet_diameter, :jet_velocity, :release_temperature,
+                       :windspeed, :ambient_temperature, :pasquill_gifford]
+    if all(key -> !(ismissing(getproperty(scenario,key))), required_params)
 
-    # parameters of the environment
-    u = scenario.windspeed
-    Tₐ = scenario.ambient_temperature
-    stability = scenario.pasquill_gifford
+        # parameters of the jet
+        Dⱼ = scenario.jet_diameter
+        uⱼ = scenario.jet_velocity
+        Tᵣ = scenario.release_temperature
 
-    if any(ismissing, [Dⱼ, uⱼ, Tᵣ, u, Tₐ, stability])
-        error("Scenario is incomplete")
+        # parameters of the environment
+        u = scenario.windspeed
+        Tₐ = scenario.ambient_temperature
+        stability = scenario.pasquill_gifford
+
+    else
+        missing_params = [ String(i) for i in filter(key -> ismissing(getproperty(scenario,key)), required_params)]
+        error_string = "These parameters cannot be missing: " * join(missing_params, ", ")
+        e = MissingException(error_string)
+        throw(e)
     end
 
     # buoyancy flux
@@ -44,7 +51,7 @@ function plume_rise(scenario, plumerise)
         Γ = 0.035    # default lapse rate K/m
         s = (g/Tₐ)*Γ # stability
     else
-        err = string(stability, " is not a valid stability class")
+        err = "$stability is not a valid stability class"
         error(err)
     end
 

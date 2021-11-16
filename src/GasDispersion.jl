@@ -34,7 +34,7 @@ function plume(scenario::Scenario; model=:gaussian, kwargs...)
     elseif model==:brittermcquaid
         return britter_plume_factory(scenario; kwargs...)
     else
-        error_string = string("plume dispersion model ''",model,"'' is not currently implemented")
+        error_string = "plume dispersion model $model is not currently implemented"
         error(error_string)
     end
 end
@@ -56,7 +56,7 @@ function puff(scenario::Scenario; model=:gaussian, kwargs...)
     # elseif model=="britter-mcquaid"
     #     return britter_plume_factory(scenario; kwargs...)
     else
-        error_string = string("puff dispersion model ''",model,"'' is not currently implemented")
+        error_string = "puff dispersion model $model is not currently implemented"
         error(error_string)
     end
 end

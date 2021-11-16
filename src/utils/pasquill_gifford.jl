@@ -63,7 +63,7 @@ function crosswind_dispersion(stability_class::String; plume=true, avg_time=600)
             δ, β = puff_y_params[stability_class]
         end
     else
-        err = string(stability_class, " is not a valid Pasquill-Gifford stability class")
+        err = "$stability_class is not a valid Pasquill-Gifford stability class"
         error(err)
     end
 
@@ -97,7 +97,7 @@ function vertical_dispersion(stability_class::String; plume=true)
             return x -> δ*x^β
         end
     else
-        err = string(stability_class, " is not a valid Pasquill-Gifford stability class")
+        err = "$stability_class is not a valid Pasquill-Gifford stability class"
         error(err)
     end
 end

@@ -8,19 +8,25 @@ c(x, y, z, t)
 """
 
 function gaussian_puff_factory(scenario)
-    # parameters of the jet
-    m = scenario.mass_emission_rate*scenario.release_duration
-    h = scenario.release_height
 
-    # parameters of the environment
-    u = scenario.windspeed
-    stability = scenario.pasquill_gifford
+    required_params = [:mass_emission_rate, :release_duration, :release_height,
+                       :windspeed, :pasquill_gifford]
+    if all(key -> !(ismissing(getproperty(scenario,key))), required_params)
 
-    if any(ismissing, [m, h, u, stability])
-        error("Scenario is incomplete")
+        # parameters of the jet
+        m = scenario.mass_emission_rate*scenario.release_duration
+        h = scenario.release_height
+
+        # parameters of the environment
+        u = scenario.windspeed
+        stability = scenario.pasquill_gifford
+
+    else
+        missing_params = [ String(i) for i in filter(key -> ismissing(getproperty(scenario,key)), required_params)]
+        error_string = "These parameters cannot be missing: " * join(missing_params, ", ")
+        e = MissingException(error_string)
+        throw(e)
     end
-
-
 
     # Pasquill-Gifford dispersion
     σx = crosswind_dispersion(stability; plume=false)

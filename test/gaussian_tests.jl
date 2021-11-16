@@ -16,11 +16,11 @@ include("../src/models/plume_rise.jl")
     x₁ = 500.0
 
     # missing model params
-    @test_throws ErrorException plume(ambient, model=:gaussian)
+    @test_throws MissingException plume(ambient, model=:gaussian)
 
     # missing params exclusively for plume rise
     s = Scenario(ex; release_temperature=missing)
-    @test_throws ErrorException plume(s, model=:gaussian, plumerise=true)
+    @test_throws MissingException plume(s, model=:gaussian, plumerise=true)
 
     # invalid stability class for plume rise
     s = Scenario(ex; release_temperature=325, ambient_temperature=298,
@@ -118,7 +118,7 @@ end
     t₁ = x₁/u
 
     # missing model params
-    @test_throws ErrorException puff(ambient, model=:gaussian)
+    @test_throws MissingException puff(ambient, model=:gaussian)
 
     @testset "Gaussian puff tests for class $class" for class in ["A", "B", "C", "D", "E", "F"]
         s = Scenario( ex; pasquill_gifford=class )

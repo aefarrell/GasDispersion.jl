@@ -13,18 +13,24 @@ is not
 is no plume rise
 """
 function gaussian_plume_factory(scenario; downwash=false, plumerise=false)
-    # parameters of the jet
-    Q = scenario.mass_emission_rate
-    Dⱼ = scenario.jet_diameter
-    uⱼ = scenario.jet_velocity
-    hᵣ = scenario.release_height
 
-    # parameters of the environment
-    u = scenario.windspeed
-    stability = scenario.pasquill_gifford
+    required_params = [:mass_emission_rate, :jet_diameter, :jet_velocity,
+                       :release_height, :windspeed, :pasquill_gifford]
+    if all(key -> !(ismissing(getproperty(scenario,key))), required_params)
+        # parameters of the jet
+        Q = scenario.mass_emission_rate
+        Dⱼ = scenario.jet_diameter
+        uⱼ = scenario.jet_velocity
+        hᵣ = scenario.release_height
 
-    if any(ismissing, [Q, Dⱼ, uⱼ, hᵣ, u, stability])
-        error("Scenario is incomplete")
+        # parameters of the environment
+        u = scenario.windspeed
+        stability = scenario.pasquill_gifford
+    else
+        missing_params = [ String(i) for i in filter(key -> ismissing(getproperty(scenario,key)), required_params)]
+        error_string = "These parameters cannot be missing: " * join(missing_params, ", ")
+        e = MissingException(error_string)
+        throw(e)
     end
 
     # stack-tip downwash check

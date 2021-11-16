@@ -21,7 +21,7 @@ function monin_obukhov(stability::String, roughness::Number)
     elseif stability == "D"
         λ = Inf
     else
-        err = string(stability, " is not a valid Pasquill-Gifford stability class")
+        err = "$stability is not a valid Pasquill-Gifford stability class"
         error(err)
     end
 

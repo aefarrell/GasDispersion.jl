@@ -25,18 +25,25 @@ other coordinates are ignored.
 
 """
 function britter_plume_factory(scenario)
-    Q = scenario.mass_emission_rate
-    h = scenario.release_height
-    ρⱼ = scenario.jet_density
-    Tᵣ = scenario.release_temperature
 
-    u = scenario.windspeed
-    ρₐ = scenario.ambient_density
-    Tₐ = scenario.ambient_temperature
-    class = scenario.pasquill_gifford
+    required_params = [:mass_emission_rate, :release_height, :jet_density,
+                       :release_temperature, :windspeed, :ambient_density,
+                       :ambient_temperature, :pasquill_gifford]
+    if all(key -> !(ismissing(getproperty(scenario,key))), required_params)
+        Q = scenario.mass_emission_rate
+        h = scenario.release_height
+        ρⱼ = scenario.jet_density
+        Tᵣ = scenario.release_temperature
 
-    if any(ismissing, [Q, h, ρⱼ, Tᵣ, u, ρₐ, Tₐ, class])
-        error("Scenario is incomplete")
+        u = scenario.windspeed
+        ρₐ = scenario.ambient_density
+        Tₐ = scenario.ambient_temperature
+        class = scenario.pasquill_gifford
+    else
+        missing_params = [ String(i) for i in filter(key -> ismissing(getproperty(scenario,key)), required_params)]
+        error_string = "These parameters cannot be missing: " * join(missing_params, ", ")
+        e = MissingException(error_string)
+        throw(e)
     end
 
     # Setting up the Britter-McQuaid curves

@@ -24,7 +24,7 @@ function windspeed(u0::Number, z0::Number, stability_class::String)
     if stability_class ∈ Set(["A","B","C","D","E","F"])
         α, = power_law_params[stability_class]
     else
-        err = string(stability_class, " is not a valid Pasquill-Gifford stability class")
+        err = "$stability_class is not a valid Pasquill-Gifford stability class"
         error(err)
     end
 
@@ -58,7 +58,7 @@ function windspeed(u::Number, zR::Number, λ::Number, stability_class::String; k
     elseif stability_class ∈ Set(["E", "F"])
         return z -> (u/k)*(log((z+zR)/zR) - 4.7*(z/λ))
     else
-        err = string(stability_class, " is not a valid Pasquill-Gifford stability class")
+        err = "$stability_class is not a valid Pasquill-Gifford stability class"
         error(err)
     end
 end
