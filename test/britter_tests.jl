@@ -31,3 +31,19 @@
 
     end
 end
+
+@testset "Britter-McQuaid puff tests" begin
+    ex = Scenario( Dict([
+    :mass_emission_rate => (0.23*425.6),
+    :release_height => 10.0,
+    :jet_density => 1.76,
+    :release_temperature => (273.15-162),
+    :windspeed => 10.9,
+    :ambient_density => 1.224,
+    :ambient_temperature => 298,
+    :pasquill_gifford => "F"
+    ]))
+
+    @test_throws ErrorException puff(ex, model=:brittermcquaid)
+
+end

@@ -1,7 +1,3 @@
-struct PlumeRise
-
-end
-
 """
     plume_rise(scenario::Scenario, plumerise)
 Implements the Briggs plume rise equations for buoyancy and momentum driven

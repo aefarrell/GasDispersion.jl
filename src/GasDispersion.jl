@@ -2,7 +2,7 @@ module GasDispersion
 
 export Scenario, Plume, Puff, plume, puff, scenario_builder
 
-using Interpolations
+using Interpolations: Extrapolation, Line, LinearInterpolation
 
 # helpful utilities
 include("utils/scenario.jl")
@@ -20,7 +20,7 @@ include("models/britter_mcquaid_puff.jl")
 """
     plume(scenario::Scenario; model=:gaussian, kwargs...)
 
-Runs the plume dispersion model on the given scenario and returns a function
+Runs the plume dispersion model on the given scenario and returns a callable
 giving the concentration of the form
     c(x, y, z[, t])
 
@@ -42,7 +42,7 @@ end
 """
     puff(scenario::Scenario; model=:gaussian, kwargs...)
 
-Runs the puff dispersion model on the given scenario and returns a function
+Runs the puff dispersion model on the given scenario and returns a callable
 giving the concentration of the form
     c(x, y, z, t)
 
@@ -53,8 +53,8 @@ distances in m, velocities in m/s, mass in kg, etc.)
 function puff(scenario::Scenario; model=:gaussian, kwargs...)
     if model==:gaussian
         return gaussian_puff_factory(scenario; kwargs...)
-    # elseif model=="britter-mcquaid"
-    #     return britter_plume_factory(scenario; kwargs...)
+    elseif model==:brittermcquaid
+         return britter_puff_factory(scenario; kwargs...)
     else
         error_string = "puff dispersion model $model is not currently implemented"
         error(error_string)

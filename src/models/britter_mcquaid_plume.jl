@@ -13,11 +13,19 @@ Britter_McQuaid_correlations = Dict(
                βs=[1.92, 1.92, 2.06, 2.06, 1.4]),
 )
 
+struct BritterPlume
+    scenario::Scenario
+    model::Symbol
+    temperature_correction::Number
+    critical_distance::Number
+    interpolation::Extrapolation
+end
+
 """
     britter_plume_factory(scenario)
 
 Generates a Britter-McQuaid dispersion model on the given scenario and returns a
-function giving the centerline concentration of the form
+callable struct giving the centerline concentration of the form
 c(x, [y, z, t])
 
 Currently only implements the max concentration at a downwind distance x, the
@@ -69,6 +77,9 @@ function britter_plume_factory(scenario)
     Vr = Q/ρⱼ # volumetric release rate
     D = √(Vr/u₁₀)
 
+    # temperature correction
+    T′ = Tₐ/Tᵣ
+
     # correlation parameter
     α = 0.2*log10( gₒ^2 * Vr * u₁₀^-5 )
 
@@ -83,22 +94,30 @@ function britter_plume_factory(scenario)
     concs = [ 306*30^-2 / (1+ 306*30^-2); concs ]
 
     # linear interpolation, extrapolates past the end with a straight line
-    it_new = LinearInterpolation(βs, concs, extrapolation_bc=Line())
+    interpolation = LinearInterpolation(βs, concs, extrapolation_bc=Line())
 
-    function britter_plume(x, y=0, z=0)
-        T′ = Tₐ/Tᵣ
-        x′ = x/D
-        if x′ < 30
-            # use short distance correlation
-            c′ = x′ > 0 ? 306*x′^-2 / (1+ 306*x′^-2) : 1.0
-        else
-            # use linear interpolation
-            β = log10(x′)
-            c′ = it_new(β)
-        end
-        c = ( ρⱼ*c′*T′) / (1 - c′ + c′*T′)
-        return c
+    return BritterPlume(
+        scenario, #scenario::Scenario
+        :brittermcquaid, #model::Symbol
+        T′,    #temperature_correction::Number
+        D,     #D::Number
+        interpolation #interpolation::Extrapolation
+    )
+end
+
+function (b::BritterPlume)(x, y=0, z=0)
+    ρⱼ = b.scenario.jet_density
+    T′ = b.temperature_correction
+    D  = b.critical_distance
+    x′ = x/D
+    if x′ < 30
+        # use short distance correlation
+        c′ = x′ > 0 ? 306*x′^-2 / (1+ 306*x′^-2) : 1.0
+    else
+        # use linear interpolation
+        β = log10(x′)
+        c′ = b.interpolation(β)
     end
-
-    return britter_plume
+    c = ( ρⱼ*c′*T′) / (1 - c′ + c′*T′)
+    return c
 end

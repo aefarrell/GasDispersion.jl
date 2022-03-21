@@ -130,11 +130,13 @@ end
 
 
 function(d::Dispersion)(x)
-    if d.equation == :eqn1
+    eqn = d.equation
+    if eqn == :eqn1
         return d.δ*x^d.β
-    elseif d.equation == :eqn2
+    elseif eqn == :eqn2
         return d.δ*(x^d.β)*exp(d.γ*log(x)^2)
     else
-        return 0
+        err = "$eqn is not a valid equation set"
+        error(err)
     end
 end

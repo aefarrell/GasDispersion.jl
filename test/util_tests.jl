@@ -20,6 +20,10 @@ end
     @test σz_plume(1.2) ≈ 107.7*(1.2^-1.7172)*exp(0.2770*log(1.2)^2)
     @test σz_puff(1.2) ≈ 0.60*(1.2^0.75)
     @test_throws ErrorException vertical_dispersion("Q")
+
+    d = Dispersion(:crosswind, :not_a_real_equation, 1, 2, 3)
+    @test_throws ErrorException d(0.1)
+
 end
 
 @testset "Windspeed by powerlaw" begin

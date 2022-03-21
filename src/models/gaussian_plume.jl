@@ -13,7 +13,7 @@ end
     gaussian_plume_factory(scenario; downwash=false, plumerise=false)
 
 Generates a gaussian dispersion model on the given scenario and returns a
-function giving the concentration of the form
+callable struct giving the concentration of the form
 c(x, y, z[, t])
 
 `downwash` controls whether or not stack-downwash is included, by default it
@@ -80,8 +80,10 @@ function (g::GaussianPlume)(x, y, z, t=0)
     σyₑ = √( (Δh/3.5)^2 + σy^2 )
     σzₑ = √( (Δh/3.5)^2 + σz^2 )
 
-    gaussian_plume = ( Q/(2*π*u*σyₑ*σzₑ)
-                     * exp(-0.5*(y/σyₑ)^2)
-                     *( exp(-0.5*((z-hₑ)/σzₑ)^2) + exp(-0.5*((z+hₑ)/σzₑ)^2) ))
+    c = ( Q/(2*π*u*σyₑ*σzₑ)
+        * exp(-0.5*(y/σyₑ)^2)
+        * ( exp(-0.5*((z-hₑ)/σzₑ)^2) + exp(-0.5*((z+hₑ)/σzₑ)^2) ) )
+
+    return c
 
 end
