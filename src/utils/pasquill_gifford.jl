@@ -1,3 +1,11 @@
+struct Dispersion
+    direction::Symbol
+    equation::Symbol
+    δ::Number
+    β::Number
+    γ::Number
+end
+
 plume_z_params = Dict(
     "A" => (δ=107.7, β=-1.7172, γ=0.2770),
     "B" => (δ=0.1355, β=0.8752, γ=0.0136),
@@ -67,12 +75,18 @@ function crosswind_dispersion(stability_class::String; plume=true, avg_time=600)
         error(err)
     end
 
-    return x -> δ*x^β
+    return Dispersion(
+        :crosswind, #direction::Symbol
+        :eqn1,      #equation::Symbol
+        δ,
+        β,
+        0.0
+    )
 end
 
 """
 vertical_dispersion(stability_class::String, plume=true)
-returns the crosswind dispersion function σz(x) for a given Pasquill-Gifford
+returns the vertical dispersion function σz(x) for a given Pasquill-Gifford
 stability class
 `x` is assumed to be in meters and `σz` is in meters
 `plume` determines if the dispersion is for a plume or instantaneous release
@@ -91,13 +105,36 @@ function vertical_dispersion(stability_class::String; plume=true)
     if stability_class ∈ Set(["A","B","C","D","E","F"])
         if plume
             δ, β, γ = plume_z_params[stability_class]
-            return x -> δ*(x^β)*exp(γ*log(x)^2)
+            return Dispersion(
+                :vertical, #direction::Symbol
+                :eqn2,      #equation::Symbol
+                δ,
+                β,
+                γ
+            )
         else
             δ, β = puff_z_params[stability_class]
-            return x -> δ*x^β
+            return Dispersion(
+                :vertical, #direction::Symbol
+                :eqn1,      #equation::Symbol
+                δ,
+                β,
+                0.0
+            )
         end
     else
         err = "$stability_class is not a valid Pasquill-Gifford stability class"
         error(err)
+    end
+end
+
+
+function(d::Dispersion)(x)
+    if d.equation == :eqn1
+        return d.δ*x^d.β
+    elseif d.equation == :eqn2
+        return d.δ*(x^d.β)*exp(d.γ*log(x)^2)
+    else
+        return 0
     end
 end

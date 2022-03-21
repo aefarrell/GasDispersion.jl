@@ -1,5 +1,14 @@
 include("plume_rise.jl")
 
+struct GaussianPlume
+    scenario::Scenario
+    model::Symbol
+    effective_stack_height::Number
+    plume_rise::Function
+    crosswind_dispersion::Dispersion
+    vertical_dispersion::Dispersion
+end
+
 """
     gaussian_plume_factory(scenario; downwash=false, plumerise=false)
 
@@ -12,7 +21,7 @@ is not
 `plumerise` controls whether or not plume height is adjusted, by default there
 is no plume rise
 """
-function gaussian_plume_factory(scenario; downwash=false, plumerise=false)
+function gaussian_plume_factory(scenario::Scenario; downwash=false, plumerise=false)
 
     required_params = [:mass_emission_rate, :jet_diameter, :jet_velocity,
                        :release_height, :windspeed, :pasquill_gifford]
@@ -49,18 +58,30 @@ function gaussian_plume_factory(scenario; downwash=false, plumerise=false)
     σy = crosswind_dispersion(stability)
     σz = vertical_dispersion(stability)
 
+    return GaussianPlume(
+    scenario, #scenario::Scenario
+    :gaussian, #model::Symbol
+    hᵣ, #effective_stack_height::Number
+    Δh, #plume_rise::Function
+    σy, #crosswind_dispersion::Function
+    σz #vertical_dispersion::Function
+    )
 
-    function gaussian_plume(x, y, z, t=0)
-        hₑ  = hᵣ + Δh(x)
-        σyₑ = √( (Δh(x)/3.5)^2 + σy(x)^2 )
-        σzₑ = √( (Δh(x)/3.5)^2 + σz(x)^2 )
+end
 
-        gaussian_plume = ( Q/(2*π*u*σyₑ*σzₑ)
-                         * exp(-0.5*(y/σyₑ)^2)
-                         *( exp(-0.5*((z-hₑ)/σzₑ)^2) + exp(-0.5*((z+hₑ)/σzₑ)^2) ))
+function (g::GaussianPlume)(x, y, z, t=0)
+    Q = g.scenario.mass_emission_rate
+    u = g.scenario.windspeed
+    hᵣ = g.effective_stack_height
+    Δh = g.plume_rise(x)
+    σy = g.crosswind_dispersion(x)
+    σz = g.vertical_dispersion(x)
+    hₑ  = hᵣ + Δh
+    σyₑ = √( (Δh/3.5)^2 + σy^2 )
+    σzₑ = √( (Δh/3.5)^2 + σz^2 )
 
-    end
-
-    return gaussian_plume
+    gaussian_plume = ( Q/(2*π*u*σyₑ*σzₑ)
+                     * exp(-0.5*(y/σyₑ)^2)
+                     *( exp(-0.5*((z-hₑ)/σzₑ)^2) + exp(-0.5*((z+hₑ)/σzₑ)^2) ))
 
 end

@@ -1,9 +1,13 @@
+struct PlumeRise
+
+end
+
 """
     plume_rise(scenario::Scenario, plumerise)
 Implements the Briggs plume rise equations for buoyancy and momentum driven
 plume rise as described in the ISC3 model guide EPA-454/B-95-003b
 """
-function plume_rise(scenario, plumerise)
+function plume_rise(scenario::Scenario, plumerise)
 
     if plumerise==false
         return x->zero(x)

@@ -1,6 +1,6 @@
 module GasDispersion
 
-export Scenario, plume, puff, scenario_builder
+export Scenario, Plume, Puff, plume, puff, scenario_builder
 
 using Interpolations
 
