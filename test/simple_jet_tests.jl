@@ -22,4 +22,8 @@
     j1 = plume(ex, model=:simplejet, release_angle=0.0, k₁=a, k₂=b)
     @test j1(x,y,z) ≈ c
 
+    # check for zero concentration behind the jet
+    j1 = plume(ex, model=:simplejet, release_angle=0.0, k₁=a, k₂=b)
+    @test j1(-x,y,z) ≈ 0.0
+
 end
