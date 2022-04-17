@@ -10,6 +10,7 @@ include("utils/scenario_builder.jl")
 include("utils/utils.jl")
 
 # plume models
+include("models/simple_jet.jl")
 include("models/gaussian_plume.jl")
 include("models/britter_mcquaid_plume.jl")
 
@@ -31,6 +32,8 @@ distances in m, velocities in m/s, mass in kg, etc.)
 function plume(scenario::Scenario; model=:gaussian, kwargs...)
     if model==:gaussian
         return gaussian_plume_factory(scenario; kwargs...)
+    elseif model==:simplejet
+        return simple_jet_factory(scenario; kwargs...)
     elseif model==:brittermcquaid
         return britter_plume_factory(scenario; kwargs...)
     else

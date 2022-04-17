@@ -21,4 +21,5 @@ include("util_tests.jl")
 
 # testing specific models
 include("gaussian_tests.jl")
+include("simple_jet_tests.jl")
 include("britter_tests.jl")
