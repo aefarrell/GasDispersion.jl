@@ -15,6 +15,9 @@
     x, y, z =  a, √(a^2*ξ²), 1.0
     c = (2/π)*(1+exp(-25/9))
 
+    # test type inheritance
+    @test isa(plume(ex, model=:simplejet), PlumeModel)
+
     # missing model params
     @test_throws MissingException plume(ambient, model=:simplejet)
 

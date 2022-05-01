@@ -1,6 +1,6 @@
 include("plume_rise.jl")
 
-struct GaussianPlume
+struct GaussianPlume <: PlumeModel
     scenario::Scenario
     model::Symbol
     effective_stack_height::Number

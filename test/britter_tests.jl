@@ -20,6 +20,9 @@
     # missing model parameters
     @test_throws MissingException plume(ambient, model=:brittermcquaid)
 
+    # test type inheritance
+    @test isa(plume(ex, model=:brittermcquaid), PlumeModel)
+
     @testset "Britter-McQuaid plume tests for class $class" for class in ["A", "B", "C", "D", "E", "F"]
         # because the windspeed is at 10m, the class should not impact the
         # calculations but this is a check that getting the corresponding

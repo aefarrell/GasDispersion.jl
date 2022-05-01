@@ -1,4 +1,4 @@
-struct SimpleJet
+struct SimpleJet <: PlumeModel
     scenario::Scenario
     model::Symbol
     jetmodel::Symbol

@@ -13,7 +13,7 @@ Britter_McQuaid_correlations = Dict(
                βs=[1.92, 1.92, 2.06, 2.06, 1.4]),
 )
 
-struct BritterPlume
+struct BritterPlume <: PlumeModel
     scenario::Scenario
     model::Symbol
     temperature_correction::Number
