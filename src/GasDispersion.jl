@@ -1,8 +1,14 @@
 module GasDispersion
 
-export Scenario, Plume, Puff, plume, puff, scenario_builder
-
+# imports
 using Interpolations: Extrapolation, Line, LinearInterpolation
+
+# exports
+export Scenario, PlumeModel, PuffModel, plume, puff, scenario_builder
+
+# abstract types
+abstract type PlumeModel end
+abstract type PuffModel end
 
 # helpful utilities
 include("utils/scenario.jl")

@@ -15,6 +15,9 @@ include("../src/models/plume_rise.jl")
     # known answers
     x₁ = 500.0
 
+    # test type inheritance
+    @test isa(plume(ex, model=:gaussian), PlumeModel)
+
     # missing model params
     @test_throws MissingException plume(ambient, model=:gaussian)
 
@@ -116,6 +119,9 @@ end
     u = ex.windspeed
     x₁ = 500.0
     t₁ = x₁/u
+
+    # test type inheritance
+    @test isa(puff(ex, model=:gaussian), PuffModel)
 
     # missing model params
     @test_throws MissingException puff(ambient, model=:gaussian)

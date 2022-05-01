@@ -1,4 +1,4 @@
-struct GaussianPuff
+struct GaussianPuff <: PuffModel
     scenario::Scenario
     model::Symbol
     downwind_dispersion::Dispersion
