@@ -1,6 +1,14 @@
 include("plume_rise.jl")
 
+# gaussian plume model
 struct GaussianPlume <: PlumeModel
+    downwash::Bool
+    plumerise::Bool
+end
+GaussianPlume(;downwash=false, plumerise=false) = GaussianPlume(downwash,plumerise)
+
+# Solution to the gaussian plume
+struct GaussianPlumeSolution <: Plume
     scenario::Scenario
     model::Symbol
     effective_stack_height::Number
@@ -9,8 +17,9 @@ struct GaussianPlume <: PlumeModel
     vertical_dispersion::Dispersion
 end
 
+
 """
-    gaussian_plume_factory(scenario; downwash=false, plumerise=false)
+    plume(::Scenario; GaussianPlume(downwash=false, plumerise=false))
 
 Generates a gaussian dispersion model on the given scenario and returns a
 callable struct giving the concentration of the form
@@ -21,7 +30,7 @@ is not
 `plumerise` controls whether or not plume height is adjusted, by default there
 is no plume rise
 """
-function gaussian_plume_factory(scenario::Scenario; downwash=false, plumerise=false)
+function plume(scenario::Scenario, model::GaussianPlume)
 
     required_params = [:mass_emission_rate, :jet_diameter, :jet_velocity,
                        :release_height, :windspeed, :pasquill_gifford]
@@ -43,7 +52,7 @@ function gaussian_plume_factory(scenario::Scenario; downwash=false, plumerise=fa
     end
 
     # stack-tip downwash check
-    if (downwash==true) && (uⱼ < 1.5*u)
+    if (model.downwash==true) && (uⱼ < 1.5*u)
         Δh_dw = 2*Dⱼ*( (uⱼ/u) - 1.5 )
     else
         Δh_dw = 0.0
@@ -52,13 +61,13 @@ function gaussian_plume_factory(scenario::Scenario; downwash=false, plumerise=fa
     hᵣ = hᵣ + Δh_dw
 
     # plume rise
-    Δh = plume_rise(scenario, plumerise)
+    Δh = plume_rise(scenario, model.plumerise)
 
     # Pasquill-Gifford dispersion
     σy = crosswind_dispersion(stability)
     σz = vertical_dispersion(stability)
 
-    return GaussianPlume(
+    return GaussianPlumeSolution(
     scenario, #scenario::Scenario
     :gaussian, #model::Symbol
     hᵣ, #effective_stack_height::Number
@@ -69,7 +78,7 @@ function gaussian_plume_factory(scenario::Scenario; downwash=false, plumerise=fa
 
 end
 
-function (g::GaussianPlume)(x, y, z, t=0)
+function (g::GaussianPlumeSolution)(x, y, z, t=0)
     Q = g.scenario.mass_emission_rate
     u = g.scenario.windspeed
     hᵣ = g.effective_stack_height

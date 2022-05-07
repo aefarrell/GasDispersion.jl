@@ -1,3 +1,13 @@
+struct BritterMcQuaidPlume <: PlumeModel end
+
+struct BritterMcQuaidPlumeSolution <: Plume
+    scenario::Scenario
+    model::Symbol
+    temperature_correction::Number
+    critical_distance::Number
+    interpolation::Extrapolation
+end
+
 Britter_McQuaid_correlations = Dict(
     0.010 => ( αs=[-1.0, -0.7, -0.29, -0.2, 1.0],
                βs=[2.25, 2.25, 2.45, 2.45, 1.83]),
@@ -13,16 +23,9 @@ Britter_McQuaid_correlations = Dict(
                βs=[1.92, 1.92, 2.06, 2.06, 1.4]),
 )
 
-struct BritterPlume <: PlumeModel
-    scenario::Scenario
-    model::Symbol
-    temperature_correction::Number
-    critical_distance::Number
-    interpolation::Extrapolation
-end
 
 """
-    britter_plume_factory(scenario)
+    plume(scenario::Scenario, BritterMcQuaidPlume())
 
 Generates a Britter-McQuaid dispersion model on the given scenario and returns a
 callable struct giving the centerline concentration of the form
@@ -32,7 +35,7 @@ Currently only implements the max concentration at a downwind distance x, the
 other coordinates are ignored.
 
 """
-function britter_plume_factory(scenario)
+function plume(scenario::Scenario, model::BritterMcQuaidPlume)
 
     required_params = [:mass_emission_rate, :release_height, :jet_density,
                        :release_temperature, :windspeed, :ambient_density,
@@ -96,7 +99,7 @@ function britter_plume_factory(scenario)
     # linear interpolation, extrapolates past the end with a straight line
     interpolation = LinearInterpolation(βs, concs, extrapolation_bc=Line())
 
-    return BritterPlume(
+    return BritterMcQuaidPlumeSolution(
         scenario, #scenario::Scenario
         :brittermcquaid, #model::Symbol
         T′,    #temperature_correction::Number
@@ -105,7 +108,7 @@ function britter_plume_factory(scenario)
     )
 end
 
-function (b::BritterPlume)(x, y=0, z=0)
+function (b::BritterMcQuaidPlumeSolution)(x, y=0, z=0)
     ρⱼ = b.scenario.jet_density
     T′ = b.temperature_correction
     D  = b.critical_distance

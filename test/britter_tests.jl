@@ -18,17 +18,17 @@
     x₂, c₂ = 367.0, 0.0872919843565787
 
     # missing model parameters
-    @test_throws MissingException plume(ambient, model=:brittermcquaid)
+    @test_throws MissingException plume(ambient, BritterMcQuaidPlume())
 
     # test type inheritance
-    @test isa(plume(ex, model=:brittermcquaid), PlumeModel)
+    @test isa(plume(ex, BritterMcQuaidPlume()), Plume)
 
     @testset "Britter-McQuaid plume tests for class $class" for class in ["A", "B", "C", "D", "E", "F"]
         # because the windspeed is at 10m, the class should not impact the
         # calculations but this is a check that getting the corresponding
         # correlation doesn't throw any errors or do anything deeply strange
         s = Scenario( ex; pasquill_gifford=class )
-        britter_mcquaid = plume(s, model=:brittermcquaid)
+        britter_mcquaid = plume(s, BritterMcQuaidPlume())
         @test britter_mcquaid(x₁,0,0) ≈ c₁
         @test britter_mcquaid(x₂,0,0) ≈ c₂
 
@@ -47,6 +47,6 @@ end
     :pasquill_gifford => "F"
     ]))
 
-    @test_throws ErrorException puff(ex, model=:brittermcquaid)
+    @test_throws ErrorException puff(ex, BritterMcQuaidPuff())
 
 end
