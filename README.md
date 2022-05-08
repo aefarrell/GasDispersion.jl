@@ -20,33 +20,46 @@ pkg> add https://github.com/aefarrell/GasDispersion.jl
 
 ## Example usage
 
-Suppose a chemical release of some substance with a release rate of 1kg/s, at a
-height of 1m. Using some standard engineering estimates we might end up with a
-release scenario with the following parameters:
+This scenario is adapted from CCPS *Guidelines for Consequence Analysis of
+Chemical Releases*, CCPS, pg 40.
+
+Suppose a leak of a liquid from a storage tank through a hole. At the hole, the
+liquid pressure is 120kPa, the liquid has a density of 490 kg/m³, and is in
+thermal equilibrium with the environment. Assume a circular hole with a
+discharge coefficient of 0.63 and a diameter of 1cm.
+
+For ambient conditions we assume the atmosphere is at standard conditions of
+1atm and 25°C, with a windspeed of 1.5m/s and class F stability (a "worst case"
+atmospheric stability)
+
+Assumptions:
++ discharge coefficient, 0.63
++ diameter of the hole, 0.010m
++ liquid density, 490kg/m3
++ liquid temperature, 25C or 298.15K
++ liquid pressure, 120kPA or 120000Pa
++ ambient pressure, 1atm or 101325Pa
++ ambient temperature, 25C or 298.15K
++ density of air at standard conditions, 1.225kg/m3
++ ambient windspeed, 1.5m/s
++ Pasquill-Gifford stability F
 
 ```julia
-scenario = Scenario(
-    1.0,   # mass emission rate, kg/s
-    10.0,  # release duration, s
-    0.25,  # jet diameter, m
-    15.67, # jet velocity, m/s
-    1.3,   # jet density, kg/m^3
-    101325,# release_pressure, Pa
-    450,   # release temperature, K
-    1.0,   # release height, m
-    1.5,   # windspeed, m/s
-    1.225, # ambient density, kg/m^3
-    101325,# ambient pressure, Pa
-    298.15,# ambient temperature, K
-    "F",   # pasquill stability class
-)
+using GasDispersion
+
+s = scenario_builder(120000, 298.15; windspeed=1.5, stability="F",
+                     model=:jet, phase=:liquid, liquid_density=490,
+                     hole_diameter=0.01, discharge_coeff=0.63)
 ```
-Once we have this defined we can determine the concentration at any point
-downwind of the release point, assuming the release is a continuous plume, using
+
+Returns a `Scenario` defined for a liquid jet discharging into the air at
+standard conditions. Once we have this defined we can determine the
+concentration at any point downwind of the release point, assuming the release
+is a continuous plume, using
 
 ```julia
 # returns a function
-c = plume(scenario, GaussianPlume())
+c = plume(s, GaussianPlume())
 
 c(x,y,z) # gives the concentration in kg/m^3 at the point x, y, z
 ```
@@ -57,16 +70,12 @@ Similarly we could model an instantaneous release, assuming all of the mass was
 released during 1 second, using a "puff" model
 ```julia
 # returns a function
-c = puff(scenario, GaussianPuff())
+c = puff(s, GaussianPuff())
 
 c(x,y,z,t) # gives the concentration in kg/m^3 at the point x, y, z and time t
 ```
 
 ## Future
 
-Currently the only models implemented are simple gaussian plumes and puffs, in
-the future I would like to implement some dense gas models as well.
-
-Additionally constructing a scenario is relatively user unfriendly, and I would
-like to implement some helper functions to generate `Scenario`s given some
-minimal input.
+In the future I would like to implement more dense gas dispersion models, as
+well as a more diverse set of release scenarios.
