@@ -1,7 +1,9 @@
 # GasDispersion.jl
 
 GasDispersion.jl aims to bring together several models for dispersion modeling
-of chemical releases with a consistent interface.
+of chemical releases with a consistent interface. Currently it is very much
+under development and significant portions of the code and interface are subject
+to change.
 
 ## Installation
 
@@ -24,7 +26,9 @@ height of 1m. Using some standard engineering estimates we might end up with a
 release scenario with the following parameters:
 
 ```julia
-scenario = Scenario(
+using GasDispersion
+
+s = Scenario(
     1.0,   # mass emission rate, kg/s
     10.0,  # release duration, s
     0.25,  # jet diameter, m
@@ -45,9 +49,9 @@ downwind of the release point, assuming the release is a continuous plume, using
 
 ```julia
 # returns a function
-plume_conc = plume(scenario, model=:gaussian)
+c = plume(s)
 
-plume_conc(x,y,z) # gives the concentration in kg/m^3 at the point x, y, z
+c(x,y,z) # gives the concentration in kg/m^3 at the point x, y, z
 ```
 
 where the coordinate system is such that the release point is at x=0, y=0, z=h
@@ -56,24 +60,55 @@ Similarly we could model an instantaneous release, assuming all of the mass was
 released during 1 second, using a "puff" model
 ```julia
 # returns a function
-puff_conc = puff(scenario, model=:gaussian)
+c = puff(s)
 
-puff_conc(x,y,z,t) # gives the concentration in kg/m^3 at the point x, y, z and time t
+c(x,y,z,t) # gives the concentration in kg/m^3 at the point x, y, z and time t
 ```
 
-## Future
 
-Currently the only models implemented are simple gaussian plumes and puffs, in
-the future I would like to implement some dense gas models as well.
+## Building Scenarios
 
-Additionally constructing a scenario is relatively user unfriendly, and I would
-like to implement some helper functions to generate `Scenario`s given some
-minimal input.
+A `Scenario` is a container for all of the information that a model may need to
+produce a solution. The intention is for the `Scenario` to be re-usable, so that
+the user may run the same scenario with multiple models without much difficulty.
+Models also have specific parameters, those are handled in the model itself.
 
-# Function Reference
+By default a `Scenario` can have any field `missing`, this is because not all
+models require all fields. Each model then verifies that none of the necessary
+fields are `missing` and throws an error otherwise.
+
+```@docs
+Scenario
+```
+
+A `scenario_builder` function exists to help create valid `Scenario`s for
+various standard release scenarios.
+```@docs
+scenario_builder
+```
+
+
+## Plume Models
+
+Plume models are models of continuous, steady-state, releases and are time
+independent, this includes, for example, emissions from elevated stacks.
 
 ```@docs
 plume
+```
 
+
+## Puff Models
+
+Puff models are for "instantaneous" releases or other time-dependent releases,
+this often includes, for example, releases of vapour clouds.
+
+```@docs
 puff
 ```
+
+
+## Future
+
+In the future I would like to implement more dense gas dispersion models, as
+well as a more diverse set of release scenarios.

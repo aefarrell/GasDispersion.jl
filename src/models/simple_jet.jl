@@ -16,12 +16,19 @@ struct SimpleJetSolution <: Plume
     k3::Number
 end
 
-"""
+@doc doc"""
     plume(scenario::Scenario, SimpleJet(release_angle=0.0, k2=6, k3=5)
 
 Generates a simple turbulent jet dispersion model on the given scenario and
 returns a callable struct giving the concentration of the form
 c(x, y, z[, t])
+
+```math
+c\left(x,y,z\right) = k_2 c_0 \left( d \over z \right) \sqrt{ \rho_j \over \rho_a }
+\exp \left( - \left( k_2 { y \over x } \right)^2 \right)
+\left[ \exp \left( - \left( k_2 { (z-h) \over x }\right)^2 \right)
++ \exp \left( - \left( k_3 { (z+h) \over x }\right)^2 \right) \right]
+```
 
 Assumes a circular jet with diameter equal to the jet diameter. Uses a gaussian
 concentration profile.

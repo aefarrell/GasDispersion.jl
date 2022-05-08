@@ -1,6 +1,7 @@
 module GasDispersion
 
 # imports
+using Markdown 
 using Interpolations: Extrapolation, Line, LinearInterpolation
 
 # exports

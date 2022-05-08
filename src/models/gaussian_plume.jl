@@ -17,13 +17,19 @@ struct GaussianPlumeSolution <: Plume
     vertical_dispersion::Dispersion
 end
 
-
-"""
+@doc doc"""
     plume(::Scenario; GaussianPlume(downwash=false, plumerise=false))
 
 Generates a gaussian dispersion model on the given scenario and returns a
 callable struct giving the concentration of the form
 c(x, y, z[, t])
+
+```math
+c\left(x,y,z\right) = {Q \over 2 \pi u \sigma_{y} \sigma_{z} }
+\exp \left[ -\frac{1}{2} \left( y \over \sigma_{y} \right)^2 \right]
+\left\{ \exp \left[ -\frac{1}{2} \left( { z -h } \over \sigma_{z} \right)^2 \right]
++ \exp \left[ -\frac{1}{2} \left( { z + h } \over \sigma_{z} \right)^2 \right] \right\}
+```
 
 `downwash` controls whether or not stack-downwash is included, by default it
 is not

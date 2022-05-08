@@ -46,9 +46,9 @@ downwind of the release point, assuming the release is a continuous plume, using
 
 ```julia
 # returns a function
-plume_conc = plume(scenario, model=:gaussian)
+c = plume(scenario, GaussianPlume())
 
-plume_conc(x,y,z) # gives the concentration in kg/m^3 at the point x, y, z
+c(x,y,z) # gives the concentration in kg/m^3 at the point x, y, z
 ```
 
 where the coordinate system is such that the release point is at x=0, y=0, z=h
@@ -57,9 +57,9 @@ Similarly we could model an instantaneous release, assuming all of the mass was
 released during 1 second, using a "puff" model
 ```julia
 # returns a function
-puff_conc = puff(scenario, model=:gaussian)
+c = puff(scenario, GaussianPuff())
 
-puff_conc(x,y,z,t) # gives the concentration in kg/m^3 at the point x, y, z and time t
+c(x,y,z,t) # gives the concentration in kg/m^3 at the point x, y, z and time t
 ```
 
 ## Future
