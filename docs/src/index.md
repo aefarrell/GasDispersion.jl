@@ -88,10 +88,6 @@ By default a `Scenario` can have any field `missing`, this is because not all
 models require all fields. Each model then verifies that none of the necessary
 fields are `missing` and throws an error otherwise.
 
-```@docs
-Scenario
-```
-
 A `scenario_builder` function exists to help create valid `Scenario`s for
 various standard release scenarios.
 ```@docs
