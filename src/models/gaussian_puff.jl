@@ -1,4 +1,8 @@
-struct GaussianPuff <: PuffModel
+
+# gaussian puff model
+struct GaussianPuff <: PuffModel end
+
+struct GaussianPuffSolution <: Puff
     scenario::Scenario
     model::Symbol
     downwind_dispersion::Dispersion
@@ -6,16 +10,23 @@ struct GaussianPuff <: PuffModel
     vertical_dispersion::Dispersion
 end
 
-"""
-    gaussian_puff_factory(scenario)
+@doc doc"""
+    puff(scenario::Scenario, GaussianPuff())
 
 Generates a gaussian dispersion model on the given scenario and returns a
 callable struct giving the concentration of the form
 c(x, y, z, t)
 
-"""
+```math
+c\left(x,y,z,t\right) = { m \over { (2 \pi)^{3/2} \sigma_x \sigma_y \sigma_z } }
+\exp \left( -\frac{1}{2} \left( {x - ut} \over \sigma_x \right)^2 \right)
+\exp \left( -\frac{1}{2} \left( {y} \over \sigma_y \right)^2 \right)
+\times \left[ \exp \left( -\frac{1}{2} \left( {z - h} \over \sigma_z \right)^2 \right)
++ \exp \left( -\frac{1}{2} \left( {z + h} \over \sigma_z \right)^2 \right)\right]
+```
 
-function gaussian_puff_factory(scenario)
+"""
+function puff(scenario::Scenario, model::GaussianPuff)
 
     required_params = [:mass_emission_rate, :release_duration, :release_height,
                        :windspeed, :pasquill_gifford]
@@ -33,7 +44,7 @@ function gaussian_puff_factory(scenario)
     σy = σx
     σz = vertical_dispersion(stability; plume=false)
 
-    return GaussianPuff(
+    return GaussianPuffSolution(
         scenario,  #scenario::Scenario
         :gaussian, #model::Symbol
         σx, #downwind_dispersion::Dispersion
@@ -44,7 +55,7 @@ function gaussian_puff_factory(scenario)
 end
 
 
-function (g::GaussianPuff)(x,y,z,t)
+function (g::GaussianPuffSolution)(x,y,z,t)
     m = g.scenario.mass_emission_rate*g.scenario.release_duration
     h = g.scenario.release_height
     u = g.scenario.windspeed

@@ -1,6 +1,5 @@
 @testset "Simple turbulent jet tests" begin
-    # Gaussian plume example, *Guidelines for Consequence Analysis of Chemical
-    # Releases* CCPS, 1999, pg 97
+    # example scenario
     ex = Scenario( Dict([
         :mass_emission_rate => 1.0,
         :jet_diameter => 1.0,
@@ -16,17 +15,14 @@
     c = (2/π)*(1+exp(-25/9))
 
     # test type inheritance
-    @test isa(plume(ex, model=:simplejet), PlumeModel)
+    @test isa(plume(ex, SimpleJet()), Plume)
 
     # missing model params
-    @test_throws MissingException plume(ambient, model=:simplejet)
+    @test_throws MissingException plume(ambient, SimpleJet())
 
     # horizontal jet
-    j1 = plume(ex, model=:simplejet, release_angle=0.0, k₁=a, k₂=b)
-    @test j1(x,y,z) ≈ c
-
-    # check for zero concentration behind the jet
-    j1 = plume(ex, model=:simplejet, release_angle=0.0, k₁=a, k₂=b)
-    @test j1(-x,y,z) ≈ 0.0
+    j = plume(ex, SimpleJet(release_angle=0.0, k2=a, k3=b))
+    @test j(x,y,z) ≈ c
+    @test j(-x,y,z) ≈ 0.0
 
 end

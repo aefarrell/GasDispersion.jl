@@ -16,14 +16,14 @@ include("../src/models/plume_rise.jl")
     x₁ = 500.0
 
     # test type inheritance
-    @test isa(plume(ex, model=:gaussian), PlumeModel)
+    @test isa(plume(ex, GaussianPlume()), Plume)
 
     # missing model params
-    @test_throws MissingException plume(ambient, model=:gaussian)
+    @test_throws MissingException plume(ambient, GaussianPlume())
 
     # missing params exclusively for plume rise
     s = Scenario(ex; release_temperature=missing)
-    @test_throws MissingException plume(s, model=:gaussian, plumerise=true)
+    @test_throws MissingException plume(s, GaussianPlume(plumerise=true))
 
     # invalid stability class for plume rise
     s = Scenario(ex; release_temperature=325, ambient_temperature=298,
@@ -38,7 +38,7 @@ include("../src/models/plume_rise.jl")
         c₁ = m / (π*σy*σz*u)
 
         # basic model, no plume rise no stack downwash
-        no_plume_rise = plume(s, model=:gaussian)
+        no_plume_rise = plume(s, GaussianPlume())
         @test no_plume_rise(x₁,0,0) ≈ c₁
 
         # basic model, with stack downwash included
@@ -46,7 +46,7 @@ include("../src/models/plume_rise.jl")
         u, h = 2*uⱼ, 1.0
         hₑ = h + 2*Dⱼ*( (uⱼ/u) - 1.5 )
         c₂ = m / (2π*σy*σz*u)*( exp(-0.5*((h-hₑ)/σz)^2) + exp(-0.5*((h+hₑ)/σz)^2) )
-        downwash = plume(Scenario(s; release_height=h, windspeed=u), model=:gaussian, downwash=true)
+        downwash = plume(Scenario(s; release_height=h, windspeed=u), GaussianPlume(downwash=true))
         @test downwash(x₁, 0, h) ≈ c₂
 
         # models with plume rise
@@ -60,7 +60,7 @@ include("../src/models/plume_rise.jl")
         σyₑ = √( (Δh/3.5)^2 + σy^2 )
         σzₑ = √( (Δh/3.5)^2 + σz^2 )
         c₃ = m / (2π*σyₑ*σzₑ*u)*( exp(-0.5*((h-hₑ)/σzₑ)^2) + exp(-0.5*((h+hₑ)/σzₑ)^2) )
-        b1 = plume(Scenario(bs1), model=:gaussian, plumerise=true)
+        b1 = plume(Scenario(bs1), GaussianPlume(plumerise=true))
         @test b1(x₁, 0, h) ≈ c₃
 
         # buoyancy driven, Fb>55
@@ -71,7 +71,7 @@ include("../src/models/plume_rise.jl")
         σyₑ = √( (Δh/3.5)^2 + σy^2 )
         σzₑ = √( (Δh/3.5)^2 + σz^2 )
         c₄ = m / (2π*σyₑ*σzₑ*u)*( exp(-0.5*((h-hₑ)/σzₑ)^2) + exp(-0.5*((h+hₑ)/σzₑ)^2) )
-        b2 = plume(Scenario(bs2), model=:gaussian, plumerise=true)
+        b2 = plume(Scenario(bs2), GaussianPlume(plumerise=true))
         @test b2(x₁, 0, h) ≈ c₄
 
         # momentum driven, Fb<55
@@ -82,7 +82,7 @@ include("../src/models/plume_rise.jl")
         σyₑ = √( (Δh/3.5)^2 + σy^2 )
         σzₑ = √( (Δh/3.5)^2 + σz^2 )
         c₅ = m / (2π*σyₑ*σzₑ*u)*( exp(-0.5*((h-hₑ)/σzₑ)^2) + exp(-0.5*((h+hₑ)/σzₑ)^2) )
-        m1 = plume(Scenario(ms1), model=:gaussian, plumerise=true)
+        m1 = plume(Scenario(ms1), GaussianPlume(plumerise=true))
         @test m1(x₁, 0, h) ≈ c₅
 
         # momentum driven, Fb>55
@@ -94,7 +94,7 @@ include("../src/models/plume_rise.jl")
         σyₑ = √( (Δh/3.5)^2 + σy^2 )
         σzₑ = √( (Δh/3.5)^2 + σz^2 )
         c₆ = m / (2π*σyₑ*σzₑ*u)*( exp(-0.5*((h-hₑ)/σzₑ)^2) + exp(-0.5*((h+hₑ)/σzₑ)^2) )
-        m2 = plume(Scenario(ms2), model=:gaussian, plumerise=true)
+        m2 = plume(Scenario(ms2), GaussianPlume(plumerise=true))
         @test m2(x₁, 0, h) ≈ c₆
 
     end
@@ -121,10 +121,10 @@ end
     t₁ = x₁/u
 
     # test type inheritance
-    @test isa(puff(ex, model=:gaussian), PuffModel)
+    @test isa(puff(ex, GaussianPuff()), Puff)
 
     # missing model params
-    @test_throws MissingException puff(ambient, model=:gaussian)
+    @test_throws MissingException puff(ambient, GaussianPuff())
 
     @testset "Gaussian puff tests for class $class" for class in ["A", "B", "C", "D", "E", "F"]
         s = Scenario( ex; pasquill_gifford=class )
@@ -135,7 +135,7 @@ end
 
         c₁ = m / (√(2π)*π*σx*σy*σz)
 
-        test_puff = puff(s, model=:gaussian)
+        test_puff = puff(s, GaussianPuff())
         @test test_puff(x₁,0,h,t₁) ≈ c₁
 
     end

@@ -1,12 +1,14 @@
+struct BritterMcQuaidPuff <: PuffModel end
+
 """
-    britter_puff_factory(scenario)
+    puff(scenario::Scenario, BritterMcQuaidPuff())
 
 Generates a Britter-McQuaid dispersion model on the given scenario and returns a
 callable struct giving the concentration of the form
 c(x, y, z, t)
 
 """
-function britter_puff_factory(scenario)
+function puff(scenario::Scenario, model::BritterMcQuaidPuff)
     # TODO
     error("Britter-McQuaid puff dispersion model is not currently implemented")
 end
