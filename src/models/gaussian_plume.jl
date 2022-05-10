@@ -11,6 +11,8 @@ GaussianPlume(;downwash=false, plumerise=false) = GaussianPlume(downwash,plumeri
 struct GaussianPlumeSolution <: Plume
     scenario::Scenario
     model::Symbol
+    mass_rate::Number
+    windspeed::Number
     effective_stack_height::Number
     plume_rise::Function
     crosswind_dispersion::Dispersion
@@ -37,25 +39,15 @@ is not
 is no plume rise
 """
 function plume(scenario::Scenario, model::GaussianPlume)
+    # parameters of the jet
+    Q  = scenario.release.mass_rate
+    Dⱼ = scenario.release.diameter
+    uⱼ = scenario.release.velocity
+    hᵣ = scenario.release.height
 
-    required_params = [:mass_emission_rate, :jet_diameter, :jet_velocity,
-                       :release_height, :windspeed, :pasquill_gifford]
-    if all(key -> !(ismissing(getproperty(scenario,key))), required_params)
-        # parameters of the jet
-        Q = scenario.mass_emission_rate
-        Dⱼ = scenario.jet_diameter
-        uⱼ = scenario.jet_velocity
-        hᵣ = scenario.release_height
-
-        # parameters of the environment
-        u = scenario.windspeed
-        stability = scenario.pasquill_gifford
-    else
-        missing_params = [ String(i) for i in filter(key -> ismissing(getproperty(scenario,key)), required_params)]
-        error_string = "These parameters cannot be missing: " * join(missing_params, ", ")
-        e = MissingException(error_string)
-        throw(e)
-    end
+    # parameters of the environment
+    u = scenario.atmosphere.windspeed
+    stability = scenario.atmosphere.stability
 
     # stack-tip downwash check
     if (model.downwash==true) && (uⱼ < 1.5*u)
@@ -76,17 +68,19 @@ function plume(scenario::Scenario, model::GaussianPlume)
     return GaussianPlumeSolution(
     scenario, #scenario::Scenario
     :gaussian, #model::Symbol
+    Q,  #mass emission rate
+    u,  #windspeed
     hᵣ, #effective_stack_height::Number
     Δh, #plume_rise::Function
     σy, #crosswind_dispersion::Function
-    σz #vertical_dispersion::Function
+    σz  #vertical_dispersion::Function
     )
 
 end
 
 function (g::GaussianPlumeSolution)(x, y, z, t=0)
-    Q = g.scenario.mass_emission_rate
-    u = g.scenario.windspeed
+    Q = g.mass_rate
+    u = g.windspeed
     hᵣ = g.effective_stack_height
     Δh = g.plume_rise(x)
     σy = g.crosswind_dispersion(x)

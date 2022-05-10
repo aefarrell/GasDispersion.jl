@@ -3,6 +3,7 @@ struct BritterMcQuaidPlume <: PlumeModel end
 struct BritterMcQuaidPlumeSolution <: Plume
     scenario::Scenario
     model::Symbol
+    jet_density::Number
     temperature_correction::Number
     critical_distance::Number
     interpolation::Extrapolation
@@ -37,25 +38,15 @@ other coordinates are ignored.
 """
 function plume(scenario::Scenario, model::BritterMcQuaidPlume)
 
-    required_params = [:mass_emission_rate, :release_height, :jet_density,
-                       :release_temperature, :windspeed, :ambient_density,
-                       :ambient_temperature, :pasquill_gifford]
-    if all(key -> !(ismissing(getproperty(scenario,key))), required_params)
-        Q = scenario.mass_emission_rate
-        h = scenario.release_height
-        ρⱼ = scenario.jet_density
-        Tᵣ = scenario.release_temperature
+    Q = scenario.release.mass_rate
+    h = scenario.release.height
+    ρⱼ = scenario.release.density
+    Tᵣ = scenario.release.temperature
 
-        u = scenario.windspeed
-        ρₐ = scenario.ambient_density
-        Tₐ = scenario.ambient_temperature
-        class = scenario.pasquill_gifford
-    else
-        missing_params = [ String(i) for i in filter(key -> ismissing(getproperty(scenario,key)), required_params)]
-        error_string = "These parameters cannot be missing: " * join(missing_params, ", ")
-        e = MissingException(error_string)
-        throw(e)
-    end
+    u = scenario.atmosphere.windspeed
+    ρₐ = scenario.atmosphere.density
+    Tₐ = scenario.atmosphere.temperature
+    class = scenario.atmosphere.stability
 
     # Setting up the Britter-McQuaid curves
     britter_interps = [ ]
@@ -102,6 +93,7 @@ function plume(scenario::Scenario, model::BritterMcQuaidPlume)
     return BritterMcQuaidPlumeSolution(
         scenario, #scenario::Scenario
         :brittermcquaid, #model::Symbol
+        ρⱼ,    #jet_density::Number
         T′,    #temperature_correction::Number
         D,     #D::Number
         interpolation #interpolation::Extrapolation
@@ -109,7 +101,7 @@ function plume(scenario::Scenario, model::BritterMcQuaidPlume)
 end
 
 function (b::BritterMcQuaidPlumeSolution)(x, y=0, z=0)
-    ρⱼ = b.scenario.jet_density
+    ρⱼ = b.jet_density
     T′ = b.temperature_correction
     D  = b.critical_distance
     x′ = x/D
