@@ -13,6 +13,13 @@ include("../src/models/plume_rise.jl")
     # test type inheritance
     @test isa(plume(ex, GaussianPlume()), Plume)
 
+    # test for bad classes
+    bad = Scenario(Release(mass_rate = 0.1, duration = Inf, diameter = 10.0,
+                velocity = 1.0, height = 0.0, pressure = 0, temperature = 0,
+                density = 0), Ambient(windspeed=2.0, stability="error"))
+    @test_throws ErrorException plume(bad, GaussianPlume(plumerise=false))
+    @test_throws ErrorException plume(bad, GaussianPlume(plumerise=true))
+
     @testset "Gaussian plume tests for class $class" for class in ["A", "B", "C", "D", "E", "F"]
 
         s = Scenario( Release(mass_rate = 0.1, duration = Inf, diameter = 10.0,
@@ -114,6 +121,12 @@ end
 
     # test type inheritance
     @test isa(puff(ex, GaussianPuff()), Puff)
+
+    # test for bad classes
+    bad = Scenario(Release(mass_rate = 0.1, duration = Inf, diameter = 10.0,
+                velocity = 1.0, height = 0.0, pressure = 0, temperature = 0,
+                density = 0), Ambient(windspeed=2.0, stability="error"))
+    @test_throws ErrorException puff(bad, GaussianPuff())
 
     @testset "Gaussian puff tests for class $class" for class in ["A", "B", "C", "D", "E", "F"]
         s = Scenario(Release(mass_rate = 0.1, duration = 10.0, diameter = 10.0,

@@ -14,14 +14,18 @@ JetSource(; phase=:liquid, dischargecoef=0.63, diameter,
 
 
 """
-    scenario_builder(source::JetSource(), atmosphere::Atmosphere=Ambient())
-Returns a scenario
+    scenario_builder(source::JetSource(kwargs), atmosphere::Atmosphere=Ambient())
+Returns returns a scenario with a simple jet source from a circular hole. The
+jet can either be a liquid or a gas, which case it is assumed to be an ideal
+gas and the jet is isentropic.
+
 # Arguments
-- P₁::Number, the internal pressure in Pa
-- P₂::Number, the external pressure in Pa
-- ρ::Number, the liquid density in kg/m^3
-- D::Number, the diameter of the hole in m, assumed circular
-- cd::Number=0.61, the discharge coefficient
+- phase=:liquid         the phase of the release, either :liquid or :gas
+- dischargecoef=0.63    the discharge coefficient Cd
+- diameter              the diameter of the hole
+- pressure              the pressure upstream of the jet
+- temperature           the temperature upstream of the jet
+- density               the density of the fluid upstream of the jet
 """
 function scenario_builder( source::JetSource, atmosphere::Atmosphere=Ambient())
     cd = source.cd

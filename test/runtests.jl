@@ -4,14 +4,11 @@ using Test
 include("test_scenarios.jl")
 
 @testset "GasDispersion.jl tests" begin
-    @test_throws UndefKeywordError Scenario()
+    @test_throws MethodError scenario_builder()
 
     @test_throws MethodError plume()
-    @test_throws ErrorException plume(bad_class)
 
     @test_throws MethodError puff()
-    @test_throws ErrorException puff(bad_class)
-
 end
 
 # testing utilities
