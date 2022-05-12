@@ -94,7 +94,8 @@ A `scenario_builder` function exists to help create valid `Scenario`s for
 various standard release scenarios.
 ```@docs
 scenario_builder
-scenario_builder(::SourceModel, ::Atmosphere)
+
+scenario_builder(::JetSource, ::Atmosphere)
 ```
 
 
@@ -105,7 +106,38 @@ independent, this includes, for example, emissions from elevated stacks.
 
 ```@docs
 plume
-plume(::Scenario, ::PlumeModel)
+```
+
+### Gaussian Plumes
+
+A gaussian plume is a steady state plume defined by a gaussian distribution in
+the y and z directions and an exponential decay in the x direction. The
+dispersion parameters are correlated to the downwind distance.
+
+```@docs
+plume(::Scenario, ::GaussianPlume)
+```
+
+### Simple Jet Plumes
+
+The simple jet plume is a steady state turbulent jet defined by a gaussian
+distribution in the y and z directions. It is similar to the gaussian plume,
+however in this case the momentum forming the plume comes entirely from the jet
+and not the ambient windspeed.
+
+```@docs
+plume(::Scenario, ::SimpleJet)
+```
+
+### Britter-McQuaid Model
+
+The Britter-McQuaid model is an empirical correlation for dense plume
+dispersion. The model generates an interpolation function for the centerline
+concentration at the downwind distance z.
+
+
+```@docs
+plume(::Scenario, ::BritterMcQuaidPlume)
 ```
 
 
@@ -116,7 +148,16 @@ this often includes, for example, releases of vapour clouds.
 
 ```@docs
 puff
-puff(::Scenario, ::PuffModel)
+```
+
+### Gaussian Puffs
+
+A gaussian puff model is defined by gaussian distributions in the x, y, and z
+directions and travels downwind at the ambient windspeed. The dispersion
+parameters of the gaussians are correlated with the downwind distance.
+
+```@docs
+puff(::Scenario, ::GaussianPuff)
 ```
 
 
