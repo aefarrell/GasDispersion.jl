@@ -10,6 +10,9 @@ include("../src/models/plume_rise.jl")
     # known answers
     x₁ = 500.0
 
+    # test default behaviour
+    @test plume(ex) == plume(ex, GaussianPlume())
+
     # test type inheritance
     @test isa(plume(ex, GaussianPlume()), Plume)
 
@@ -118,6 +121,9 @@ end
     u = ex.atmosphere.windspeed
     x₁ = 500.0
     t₁ = x₁/u
+
+    # test default behaviour
+    @test puff(ex) == puff(ex, GaussianPuff())
 
     # test type inheritance
     @test isa(puff(ex, GaussianPuff()), Puff)

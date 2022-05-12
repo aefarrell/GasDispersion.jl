@@ -1,5 +1,9 @@
-test_scenario = Scenario(Release(1.0, 10.0, 0.25, 15.67, 1.0, 101325.0, 450, 1.3),
-                         Ambient() )
+r = Release(1.0, 10.0, 0.25, 15.67, 1.0, 101325.0, 450, 1.3)
+a = Ambient()
+test_scenario = Scenario(r,a)
+
+# test constructor
+@test test_scenario == Scenario(release=r, atmosphere=a)
 
 # I have shamelessly stolen this from the tests for show()
 replstr(x, kv::Pair...) = sprint((io,x) -> show(IOContext(io, :limit => true, :displaysize => (24, 80), kv...), MIME("text/plain"), x), x)
@@ -26,8 +30,12 @@ test_scenario_str = "Atmospheric conditions:\n    pressure: 101325 Pa \n    temp
                 pressure = 120935.0368,
                 temperature = 298.15,
                 density = 490.0 ), a )
+
     # using default ambient properties
     @test jet == scenario_builder(js,a)
+
+    # testing default behaviour
+    @test scenario_builder(js) == scenario_builder(js, a)
 
 
 end

@@ -5,9 +5,9 @@ using Markdown
 using Interpolations: Extrapolation, Line, LinearInterpolation
 
 # source models
-export Ambient
+export Atmosphere, Ambient
 export Release, Scenario, scenario_builder
-export JetSource
+export SourceModel, JetSource
 
 # plume models
 export PlumeModel, Plume, plume
@@ -44,7 +44,10 @@ If `model` is unspecified, defaults to gaussian.
 All model parameters are assumed to be in SI base units (i.e.
 distances in m, velocities in m/s, mass in kg, etc.)
 """
-function plume(scenario::Scenario, model::PlumeModel=GaussianPlume()) end
+function plume end
+
+#default behaviour
+plume(s) = plume(s, GaussianPlume())
 
 # plume models
 include("models/gaussian_plume.jl")
@@ -64,7 +67,10 @@ If `model` is unspecified, defaults to gaussian.
 All model parameters are assumed to be in SI base units (i.e.
 distances in m, velocities in m/s, mass in kg, etc.)
 """
-function puff(scenario::Scenario, model::PlumeModel=GaussianPuff()) end
+function puff end
+
+#default behaviour
+puff(s) = puff(s, GaussianPuff())
 
 # puff models
 include("models/gaussian_puff.jl")
@@ -74,10 +80,14 @@ include("models/britter_mcquaid_puff.jl")
 """
     scenario_builder(source::SourceModel, atmosphere::Atmosphere)
 
-Builds a scenario given a source model and an atmosphere.
+Builds a scenario given a source model and an atmosphere. If no atmosphere is
+given defaults to ambient conditions.
 
 """
-function scenario_builder(source::SourceModel, atmosphere::Atmosphere) end
+function scenario_builder end
+
+#default behaviour
+scenario_builder(m) = scenario_builder(m, Ambient())
 
 # source models
 include("source_models/jet_source.jl")
