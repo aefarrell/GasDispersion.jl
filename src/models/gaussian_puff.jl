@@ -5,6 +5,9 @@ struct GaussianPuff <: PuffModel end
 struct GaussianPuffSolution <: Puff
     scenario::Scenario
     model::Symbol
+    mass::Number
+    height::Number
+    windspeed::Number
     downwind_dispersion::Dispersion
     crosswind_dispersion::Dispersion
     vertical_dispersion::Dispersion
@@ -28,16 +31,10 @@ c\left(x,y,z,t\right) = { m \over { (2 \pi)^{3/2} \sigma_x \sigma_y \sigma_z } }
 """
 function puff(scenario::Scenario, model::GaussianPuff)
 
-    required_params = [:mass_emission_rate, :release_duration, :release_height,
-                       :windspeed, :pasquill_gifford]
-    if all(key -> !(ismissing(getproperty(scenario,key))), required_params)
-        stability = scenario.pasquill_gifford
-    else
-        missing_params = [ String(i) for i in filter(key -> ismissing(getproperty(scenario,key)), required_params)]
-        error_string = "These parameters cannot be missing: " * join(missing_params, ", ")
-        e = MissingException(error_string)
-        throw(e)
-    end
+    stability = scenario.atmosphere.stability
+    m = scenario.release.mass_rate*scenario.release.duration
+    h = scenario.release.height
+    u = scenario.atmosphere.windspeed
 
     # Pasquill-Gifford dispersion
     σx = crosswind_dispersion(stability; plume=false)
@@ -47,6 +44,9 @@ function puff(scenario::Scenario, model::GaussianPuff)
     return GaussianPuffSolution(
         scenario,  #scenario::Scenario
         :gaussian, #model::Symbol
+        m,  #mass
+        h,  #release height
+        u,  #windspeed
         σx, #downwind_dispersion::Dispersion
         σy, #crosswind_dispersion::Dispersion
         σz  #vertical_dispersion::Dispersion
@@ -56,9 +56,9 @@ end
 
 
 function (g::GaussianPuffSolution)(x,y,z,t)
-    m = g.scenario.mass_emission_rate*g.scenario.release_duration
-    h = g.scenario.release_height
-    u = g.scenario.windspeed
+    m = g.mass
+    h = g.height
+    u = g.windspeed
     sx = g.downwind_dispersion(x)
     sy = g.crosswind_dispersion(x)
     sz = g.vertical_dispersion(x)

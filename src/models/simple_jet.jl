@@ -9,9 +9,11 @@ SimpleJet(; release_angle=0, k2=6, k3=5) = SimpleJet(release_angle,k2,k3)
 struct SimpleJetSolution <: Plume
     scenario::Scenario
     model::Symbol
-    release_angle::Number
+    diameter::Number
+    height::Number
     initial_concentration::Number
     rotation_matrix::Matrix
+    density_correction::Number
     k2::Number
     k3::Number
 end
@@ -37,34 +39,30 @@ concentration profile.
 `k2` and `k3` are the parameters of the turbulent jet model.
 """
 function plume(scenario::Scenario, model::SimpleJet)
+    # Rotation matrix
+    θ = -1*model.release_angle
+    R = [cos(θ) 0 -sin(θ); 0 1 0; sin(θ) 0 cos(θ)]
 
-    required_params = [:mass_emission_rate, :jet_diameter, :jet_velocity, :jet_density,
-                       :ambient_density, :release_height]
-    if all(key -> !(ismissing(getproperty(scenario,key))), required_params)
-        # Rotation matrix
-        θ = -1*model.release_angle
-        R = [cos(θ) 0 -sin(θ); 0 1 0; sin(θ) 0 cos(θ)]
+    # Density correction
+    ρj = scenario.release.density
+    ρa = scenario.atmosphere.density
+    kd = √(ρj/ρa)
 
-        # Initial concentration
-        m = scenario.mass_emission_rate
-        d = scenario.jet_diameter
-        u = scenario.jet_velocity
-        Q = u*(π/4)*d^2 # volumetric flow rate
-        c₀ = m/Q
-
-    else
-        missing_params = [ String(i) for i in filter(key -> ismissing(getproperty(scenario,key)), required_params)]
-        error_string = "These parameters cannot be missing: " * join(missing_params, ", ")
-        e = MissingException(error_string)
-        throw(e)
-    end
+    # Initial concentration
+    m = scenario.release.mass_rate
+    d = scenario.release.diameter
+    u = scenario.release.velocity
+    Q = u*(π/4)*d^2 # volumetric flow rate
+    c₀ = m/Q
 
     return SimpleJetSolution(
     scenario,      #scenario::Scenario
     :simple_jet,   #model::Symbol
-    model.release_angle, #release_angle::Number
-    c₀,            #initial_concentration::Number
-    R,             #rotation_matrix::Matrix
+    d,  # diameter
+    scenario.release.height,  # height
+    c₀, # concentration
+    R,  # rotation_matrix
+    kd, # density_correction
     model.k2,
     model.k3
     )
@@ -72,13 +70,11 @@ function plume(scenario::Scenario, model::SimpleJet)
 end
 
 function (j::SimpleJetSolution)(x, y, z, t=0)
-    d  = j.scenario.jet_diameter
-    uⱼ = j.scenario.jet_velocity
-    ρⱼ = j.scenario.jet_density
-    ρₐ = j.scenario.ambient_density
-    h  = j.scenario.release_height
+    d  = j.diameter
+    h  = j.height
     c₀ = j.initial_concentration
     Rθ = j.rotation_matrix
+    kd = j.density_correction
     k₂ = j.k2
     k₃ = j.k3
 
@@ -88,7 +84,7 @@ function (j::SimpleJetSolution)(x, y, z, t=0)
         c = 0.0
     else
         ξ² = (y′^2 + z′^2)/(x′^2)
-        c  = c₀*k₂*√(ρⱼ/ρₐ)*(d/x′)*exp(-k₃^2*ξ²)
+        c  = c₀*k₂*kd*(d/x′)*exp(-k₃^2*ξ²)
     end
 
     # reflected jet (method of images)
@@ -97,7 +93,7 @@ function (j::SimpleJetSolution)(x, y, z, t=0)
         cᵣ = 0.0
     else
         ξᵣ² = (yᵣ^2 + zᵣ^2)/(xᵣ^2)
-        cᵣ  = c₀*k₂*√(ρⱼ/ρₐ)*(d/xᵣ)*exp(-k₃^2*ξᵣ²)
+        cᵣ  = c₀*k₂*kd*(d/xᵣ)*exp(-k₃^2*ξᵣ²)
     end
 
     return min(c+cᵣ, c₀)

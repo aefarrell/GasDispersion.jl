@@ -12,26 +12,15 @@ function plume_rise(scenario::Scenario, plumerise)
     # physics parameters
     g = 9.80616 #m/s^2
 
-    required_params = [:jet_diameter, :jet_velocity, :release_temperature,
-                       :windspeed, :ambient_temperature, :pasquill_gifford]
-    if all(key -> !(ismissing(getproperty(scenario,key))), required_params)
+    # parameters of the jet
+    Dⱼ = scenario.release.diameter
+    uⱼ = scenario.release.velocity
+    Tᵣ = scenario.release.temperature
 
-        # parameters of the jet
-        Dⱼ = scenario.jet_diameter
-        uⱼ = scenario.jet_velocity
-        Tᵣ = scenario.release_temperature
-
-        # parameters of the environment
-        u = scenario.windspeed
-        Tₐ = scenario.ambient_temperature
-        stability = scenario.pasquill_gifford
-
-    else
-        missing_params = [ String(i) for i in filter(key -> ismissing(getproperty(scenario,key)), required_params)]
-        error_string = "These parameters cannot be missing: " * join(missing_params, ", ")
-        e = MissingException(error_string)
-        throw(e)
-    end
+    # parameters of the environment
+    u = scenario.atmosphere.windspeed
+    Tₐ = scenario.atmosphere.temperature
+    stability = scenario.atmosphere.stability
 
     # buoyancy flux
     Fb = g * uⱼ * Dⱼ^2 * (Tᵣ - Tₐ) / (4Tᵣ)

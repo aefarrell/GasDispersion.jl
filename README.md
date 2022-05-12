@@ -26,7 +26,7 @@ Chemical Releases*, CCPS, pg 40.
 Suppose a leak of a liquid from a storage tank through a hole. At the hole, the
 liquid pressure is 120kPa, the liquid has a density of 490 kg/m³, and is in
 thermal equilibrium with the environment. Assume a circular hole with a
-discharge coefficient of 0.63 and a diameter of 1cm.
+discharge coefficient of 0.63 and a diameter of 1cm that is 1m above the ground.
 
 For ambient conditions we assume the atmosphere is at standard conditions of
 1atm and 25°C, with a windspeed of 1.5m/s and class F stability (a "worst case"
@@ -47,9 +47,10 @@ Assumptions:
 ```julia
 using GasDispersion
 
-s = scenario_builder(120000, 298.15; windspeed=1.5, stability="F",
-                     model=:jet, phase=:liquid, liquid_density=490,
-                     hole_diameter=0.01, discharge_coeff=0.63)
+source=JetSource(phase=:liquid, dischargecoef=0.63, diameter=0.01,
+                 pressure=120000, temperature=298.15, density=490, height=1)
+
+s = scenario_builder(source, Ambient())
 ```
 
 Returns a `Scenario` defined for a liquid jet discharging into the air at
