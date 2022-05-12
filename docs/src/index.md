@@ -93,7 +93,8 @@ fields are `missing` and throws an error otherwise.
 A `scenario_builder` function exists to help create valid `Scenario`s for
 various standard release scenarios.
 ```@docs
-scenario_builder(source_model, atmosphere)
+scenario_builder
+scenario_builder(::SourceModel, ::Atmosphere)
 ```
 
 
@@ -103,7 +104,8 @@ Plume models are models of continuous, steady-state, releases and are time
 independent, this includes, for example, emissions from elevated stacks.
 
 ```@docs
-plume(scenario, model)
+plume
+plume(::Scenario, ::PlumeModel)
 ```
 
 
@@ -113,7 +115,8 @@ Puff models are for "instantaneous" releases or other time-dependent releases,
 this often includes, for example, releases of vapour clouds.
 
 ```@docs
-puff(scenario, model)
+puff
+puff(::Scenario, ::PuffModel)
 ```
 
 
