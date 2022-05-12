@@ -48,9 +48,10 @@ Assumptions:
 ```julia
 using GasDispersion
 
-s = scenario_builder(120000, 298.15; windspeed=1.5, stability="F",
-                     model=:jet, phase=:liquid, liquid_density=490,
-                     hole_diameter=0.01, discharge_coeff=0.63)
+source=JetSource(phase=:liquid, dischargecoef=0.63, diameter=0.01,
+                 pressure=120000, temperature=298.15, density=490, height=1)
+
+s = scenario_builder(source, Ambient())
 ```
 
 Returns a `Scenario` defined for a liquid jet discharging into the air at
@@ -60,7 +61,7 @@ is a continuous plume, using
 
 ```julia
 # returns a function
-c = plume(s)
+c = plume(s, GaussianPlume())
 
 c(x,y,z) # gives the concentration in kg/m^3 at the point x, y, z
 ```
@@ -71,10 +72,11 @@ Similarly we could model an instantaneous release, assuming all of the mass was
 released during 1 second, using a "puff" model
 ```julia
 # returns a function
-c = puff(s)
+c = puff(s, GaussianPuff())
 
 c(x,y,z,t) # gives the concentration in kg/m^3 at the point x, y, z and time t
 ```
+
 
 
 ## Building Scenarios
@@ -91,7 +93,7 @@ fields are `missing` and throws an error otherwise.
 A `scenario_builder` function exists to help create valid `Scenario`s for
 various standard release scenarios.
 ```@docs
-scenario_builder
+scenario_builder(source_model, atmosphere)
 ```
 
 
@@ -101,7 +103,7 @@ Plume models are models of continuous, steady-state, releases and are time
 independent, this includes, for example, emissions from elevated stacks.
 
 ```@docs
-plume
+plume(scenario, model)
 ```
 
 
@@ -111,7 +113,7 @@ Puff models are for "instantaneous" releases or other time-dependent releases,
 this often includes, for example, releases of vapour clouds.
 
 ```@docs
-puff
+puff(scenario, model)
 ```
 
 
