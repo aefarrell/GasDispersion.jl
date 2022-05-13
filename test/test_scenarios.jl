@@ -14,7 +14,7 @@ test_scenario_str = "Atmospheric conditions:\n    pressure: 101325 Pa \n    temp
 @testset "Scenario Builder tests" begin
     # Liquid jet example, *Guidelines for Consequence Analysis of Chemical
     # Releases* CCPS, 1999, pg 40
-    js = JetSource( phase=:liquid,
+    js1 = JetSource( phase=:liquid,
             dischargecoef=0.63,
             diameter=0.01,
             pressure=120935.0368,
@@ -22,20 +22,41 @@ test_scenario_str = "Atmospheric conditions:\n    pressure: 101325 Pa \n    temp
             density=490.0,
             height=1.0 )
     a = Ambient()
-    jet = Scenario( Release( mass_rate = 0.21691154763598,
+    ljet = Scenario( Release( mass_rate = 0.21691154763598,
                 duration = Inf,
                 diameter = 0.01,
                 velocity = 5.636333880812954,
                 height = 1.0,
-                pressure = 120935.0368,
+                pressure = 101325,
                 temperature = 298.15,
                 density = 490.0 ), a )
+    @test ljet == scenario_builder(js1,a)
 
-    # using default ambient properties
-    @test jet == scenario_builder(js,a)
+    # Gas jet example, *Guidelines for Consequence Analysis of Chemical
+    # Releases* CCPS, 1999, pg 47
+    js2 = JetSource( phase=:gas,
+            dischargecoef=0.85,
+            k=1.15,
+            diameter=0.01,
+            pressure=501e3,
+            temperature=298.15,
+            density=8.90,
+            height=1.0)
+    gjet = Scenario( Release( mass_rate = 0.09002799947040845,
+                duration = Inf,
+                diameter = 0.01,
+                velocity = 128.7946169203599,
+                height = 1.0,
+                pressure = 101325,
+                temperature = 277.3488372093023,
+                density =  5.495411838308172), a )
+    @test gjet == scenario_builder(js2,a)
 
     # testing default behaviour
-    @test scenario_builder(js) == scenario_builder(js, a)
+    @test scenario_builder(js1) == scenario_builder(js1, a)
 
+    # testing invalid phase
+    @test_throws ErrorException scenario_builder(JetSource( phase=:fake,
+                        diameter=0,pressure=0,temperature=0,density=0,height=0))
 
 end

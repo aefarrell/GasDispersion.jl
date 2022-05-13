@@ -20,27 +20,30 @@ struct GaussianPlumeSolution <: Plume
 end
 
 @doc doc"""
-    plume(::Scenario; GaussianPlume(downwash=false, plumerise=false))
+    plume(::Scenario; GaussianPlume(kwargs...))
 
-Generates a gaussian dispersion model on the given scenario and returns a
-callable struct giving the concentration of the form
-c(x, y, z[, t])
+Generates a gaussian dispersion model for the given scenario and returns a
+callable giving the concentration of the form `c(x, y, z[, t])`
+
+Gaussian plume model is per *Guidelines for Consequence Analysis of Chemical
+Release*, CCPS, New York (1999)
 
 ```math
-c\left(x,y,z\right) = {Q \over 2 \pi u \sigma_{y} \sigma_{z} }
-\exp \left[ -\frac{1}{2} \left( y \over \sigma_{y} \right)^2 \right]
-\left\{ \exp \left[ -\frac{1}{2} \left( { z -h } \over \sigma_{z} \right)^2 \right]
+c\left(x,y,z\right) = {G \over 2 \pi \sigma_{y} \sigma_{z} u}
+\exp \left[ -\frac{1}{2} \left( y \over \sigma_{y} \right)^2 \right] \\
+\times \left\{ \exp \left[ -\frac{1}{2} \left( { z -h } \over \sigma_{z} \right)^2 \right]
 + \exp \left[ -\frac{1}{2} \left( { z + h } \over \sigma_{z} \right)^2 \right] \right\}
 ```
 
-`downwash` controls whether or not stack-downwash is included, by default it
-is not
-`plumerise` controls whether or not plume height is adjusted, by default there
-is no plume rise
+where the σs are dispersion parameters correlated with the distance x
+
+# Arguments
+-`downwash::Bool=false`: when true, includes stack-downwash effects
+-`plumerise::Bool=false`: when true, includes plume-rise effects using Briggs' model
 """
 function plume(scenario::Scenario, model::GaussianPlume)
     # parameters of the jet
-    Q  = scenario.release.mass_rate
+    G  = scenario.release.mass_rate
     Dⱼ = scenario.release.diameter
     uⱼ = scenario.release.velocity
     hᵣ = scenario.release.height
@@ -68,7 +71,7 @@ function plume(scenario::Scenario, model::GaussianPlume)
     return GaussianPlumeSolution(
     scenario, #scenario::Scenario
     :gaussian, #model::Symbol
-    Q,  #mass emission rate
+    G,  #mass emission rate
     u,  #windspeed
     hᵣ, #effective_stack_height::Number
     Δh, #plume_rise::Function
@@ -79,7 +82,7 @@ function plume(scenario::Scenario, model::GaussianPlume)
 end
 
 function (g::GaussianPlumeSolution)(x, y, z, t=0)
-    Q = g.mass_rate
+    G = g.mass_rate
     u = g.windspeed
     hᵣ = g.effective_stack_height
     Δh = g.plume_rise(x)
@@ -89,7 +92,7 @@ function (g::GaussianPlumeSolution)(x, y, z, t=0)
     σyₑ = √( (Δh/3.5)^2 + σy^2 )
     σzₑ = √( (Δh/3.5)^2 + σz^2 )
 
-    c = ( Q/(2*π*u*σyₑ*σzₑ)
+    c = ( G/(2*π*u*σyₑ*σzₑ)
         * exp(-0.5*(y/σyₑ)^2)
         * ( exp(-0.5*((z-hₑ)/σzₑ)^2) + exp(-0.5*((z+hₑ)/σzₑ)^2) ) )
 
