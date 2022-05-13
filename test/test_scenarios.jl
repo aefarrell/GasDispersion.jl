@@ -42,10 +42,10 @@ test_scenario_str = "Atmospheric conditions:\n    pressure: 101325 Pa \n    temp
             temperature=298.15,
             density=8.90,
             height=1.0)
-    gjet = Scenario( Release( mass_rate = 0.09002799947040845,
+    gjet = Scenario( Release( mass_rate = 0.09002799947040846,
                 duration = Inf,
                 diameter = 0.01,
-                velocity = 128.7946169203599,
+                velocity = 208.58711308961637,
                 height = 1.0,
                 pressure = 101325,
                 temperature = 277.3488372093023,
