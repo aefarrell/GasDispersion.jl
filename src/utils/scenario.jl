@@ -8,7 +8,9 @@ struct Release
     temperature::Number
     density::Number
 end
-Release(; mass_rate, duration, diameter, velocity, height, pressure, temperature, density) = Release(mass_rate, duration, diameter, velocity, height, pressure, temperature, density)
+Release(; mass_rate, duration, diameter, velocity, height, pressure,
+    temperature, density) = Release(mass_rate, duration, diameter,
+    velocity, height, pressure, temperature, density)
 
 
 struct Scenario
@@ -46,3 +48,13 @@ function Base.show(io::IO, ::MIME"text/plain", s::Scenario)
         print(io, "$key: $val $unit \n    ")
     end
 end
+
+Base.isapprox(a::Atmosphere, b::Atmosphere) = all([
+    getproperty(a,k)≈getproperty(b,k) for k in fieldnames(typeof(a))
+    if typeof(getproperty(a,k))<:Number ])
+
+Base.isapprox(a::Release, b::Release) = all([
+    getproperty(a,k)≈getproperty(b,k) for k in fieldnames(typeof(a))
+    if typeof(getproperty(a,k))<:Number ])
+
+Base.isapprox(a::Scenario, b::Scenario) = (a.release≈b.release)&&(a.atmosphere≈b.atmosphere)

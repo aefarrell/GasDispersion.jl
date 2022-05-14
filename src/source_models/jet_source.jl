@@ -53,6 +53,7 @@ function scenario_builder( source::JetSource, atmosphere::Atmosphere)
         m  = ρ₁*A*u
         uⱼ = u
         ρⱼ = ρ₁
+        Pⱼ = P₂
         Tⱼ = T₁
     elseif phase==:gas
         # isentropic expansion, limited by choked flow
@@ -61,6 +62,7 @@ function scenario_builder( source::JetSource, atmosphere::Atmosphere)
         m = A*ρu
         ρⱼ = ρ₁*η^(1/k)
         uⱼ = ρu/ρⱼ
+        Pⱼ = η*P₁
         Tⱼ = T₁*η^((k-1)/k)
     else
         err = "$phase is not a valid phase, try either :liquid or :gas"
@@ -72,7 +74,7 @@ function scenario_builder( source::JetSource, atmosphere::Atmosphere)
                   diameter=d,
                   velocity=uⱼ,
                   height=h,
-                  pressure=P₂,
+                  pressure=Pⱼ,
                   temperature=Tⱼ,
                   density=ρⱼ)
     return Scenario(r,atmosphere)

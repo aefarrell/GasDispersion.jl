@@ -4,6 +4,7 @@ test_scenario = Scenario(r,a)
 
 # test constructor
 @test test_scenario == Scenario(release=r, atmosphere=a)
+@test test_scenario ≈ Scenario(r,a)
 
 # I have shamelessly stolen this from the tests for show()
 replstr(x, kv::Pair...) = sprint((io,x) -> show(IOContext(io, :limit => true, :displaysize => (24, 80), kv...), MIME("text/plain"), x), x)
@@ -47,7 +48,7 @@ test_scenario_str = "Atmospheric conditions:\n    pressure: 101325 Pa \n    temp
                 diameter = 0.01,
                 velocity = 208.58711308961637,
                 height = 1.0,
-                pressure = 101325,
+                pressure = 287766.01316878956,
                 temperature = 277.3488372093023,
                 density =  5.495411838308172), a )
     @test gjet == scenario_builder(js2,a)
