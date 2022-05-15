@@ -19,24 +19,27 @@ struct SimpleJetSolution <: Plume
 end
 
 @doc doc"""
-    plume(scenario::Scenario, SimpleJet(release_angle=0.0, k2=6, k3=5)
+    plume(scenario::Scenario, SimpleJet(kwargs...))
 
-Generates a simple turbulent jet dispersion model on the given scenario and
-returns a callable struct giving the concentration of the form
-c(x, y, z[, t])
+Generates a simple turbulent jet dispersion model for the given scenario and
+returns a callable giving the concentration with the form `c(x, y, z[, t])`
+
+Turbulent jet model is per Long, V.D., "Estimation of the Extent of Hazard Areas
+Around a Vent", *Chem. Process Hazard*, II, 6, 1963 ↩
 
 ```math
 c\left(x,y,z\right) = k_2 c_0 \left( d \over z \right) \sqrt{ \rho_j \over \rho_a }
-\exp \left( - \left( k_2 { y \over x } \right)^2 \right)
-\left[ \exp \left( - \left( k_2 { (z-h) \over x }\right)^2 \right)
-+ \exp \left( - \left( k_3 { (z+h) \over x }\right)^2 \right) \right]
+\exp \left( - \left( k_2 { r \over z } \right)^2 \right)
 ```
 
-Assumes a circular jet with diameter equal to the jet diameter. Uses a gaussian
-concentration profile.
+where *r* is the radial distance from the jet centerline. Assumes a circular jet
+with diameter equal to the jet diameter.Ground-reflection is included by method
+of images.
 
-`release_angle` controls the angle at which the jet is released, in radians
-`k2` and `k3` are the parameters of the turbulent jet model.
+# Arguments
+-`release_angle::Number=0`: the angle at which the jet is released, in radians
+-`k2::Number=6` parameter of the model, default value is recommended by Long
+-`k3::Number=5` parameter of the model, default value is recommended by Long
 """
 function plume(scenario::Scenario, model::SimpleJet)
     # Rotation matrix

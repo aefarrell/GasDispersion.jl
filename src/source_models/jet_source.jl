@@ -1,16 +1,18 @@
 struct JetSource <: SourceModel
     phase::Symbol
     cd::Number
+    k::Number
     diameter::Number
     pressure::Number
     temperature::Number
     density::Number
     height::Number
+    duration::Number
 end
-JetSource(; phase=:liquid, dischargecoef=0.63, diameter,
-            pressure, temperature, density,
-            height) = JetSource(phase, dischargecoef, diameter,
-            pressure, temperature, density, height)
+JetSource(; phase=:liquid, dischargecoef=0.63, k=1.4, diameter,
+            pressure, temperature, density, height,
+            duration=Inf) = JetSource(phase, dischargecoef, k, diameter,
+            pressure, temperature, density, height, duration)
 
 
 """
@@ -19,33 +21,61 @@ Returns returns a scenario with a simple jet source from a circular hole. The
 jet can either be a liquid or a gas, which case it is assumed to be an ideal
 gas and the jet is isentropic.
 
+Liquid and gas discharge models are per *Guidelines for Consequence Analysis of
+Chemical Release*, CCPS, New York (1999)
+
 # Arguments
-- phase=:liquid         the phase of the release, either :liquid or :gas
-- dischargecoef=0.63    the discharge coefficient Cd
+- phase=:liquid         the phase, either :liquid or :gas
+- dischargecoef=0.61    the discharge coefficient cd
+- k=1.4                 the heat capacity ration cp/cv
 - diameter              the diameter of the hole
 - pressure              the pressure upstream of the jet
 - temperature           the temperature upstream of the jet
 - density               the density of the fluid upstream of the jet
+
 """
 function scenario_builder( source::JetSource, atmosphere::Atmosphere)
+    phase = source.phase
+    duration = source.duration
     cd = source.cd
+    k = source.k
     d  = source.diameter
+    T₁ = source.temperature
     P₁ = source.pressure
+    ρ₁  = source.density
+    T₂ = atmosphere.temperature
     P₂ = atmosphere.pressure
-    ρ  = source.density
     h  = source.height
+    A  = (π/4)*d^2
 
-    u = cd * √( 2*( (P₁ - P₂) / ρ))
-    A = (π/4)*d^2
-    m = ρ*A*u
+    if phase==:liquid
+        u = cd*√((2/ρ₁)*(P₁-P₂))
+        m  = ρ₁*A*u
+        uⱼ = u
+        ρⱼ = ρ₁
+        Pⱼ = P₂
+        Tⱼ = T₁
+    elseif phase==:gas
+        # isentropic expansion, limited by choked flow
+        η = max((P₂/P₁),(2/(k+1))^(k/(k-1)))
+        ρu = cd*√(ρ₁*P₁*(2k/(k-1))*(η^(2/k) - η^((k+1)/k)))
+        m = A*ρu
+        ρⱼ = ρ₁*η^(1/k)
+        uⱼ = ρu/ρⱼ
+        Pⱼ = η*P₁
+        Tⱼ = T₁*η^((k-1)/k)
+    else
+        err = "$phase is not a valid phase, try either :liquid or :gas"
+        error(err)
+    end
 
     r = Release(; mass_rate=m,
-                  duration=Inf,
+                  duration=duration,
                   diameter=d,
-                  velocity=u,
+                  velocity=uⱼ,
                   height=h,
-                  pressure=P₁,
-                  temperature=source.temperature,
-                  density=ρ)
+                  pressure=Pⱼ,
+                  temperature=Tⱼ,
+                  density=ρⱼ)
     return Scenario(r,atmosphere)
 end
