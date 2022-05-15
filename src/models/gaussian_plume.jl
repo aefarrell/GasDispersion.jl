@@ -38,8 +38,8 @@ c\left(x,y,z\right) = {G \over 2 \pi \sigma_{y} \sigma_{z} u}
 where the σs are dispersion parameters correlated with the distance x
 
 # Arguments
--`downwash::Bool=false`: when true, includes stack-downwash effects
--`plumerise::Bool=false`: when true, includes plume-rise effects using Briggs' model
+- `downwash::Bool=false`: when true, includes stack-downwash effects
+- `plumerise::Bool=false`: when true, includes plume-rise effects using Briggs' model
 """
 function plume(scenario::Scenario, model::GaussianPlume)
     # parameters of the jet

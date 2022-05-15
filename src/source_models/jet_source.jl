@@ -15,7 +15,7 @@ JetSource(; phase=:liquid, dischargecoef=0.63, k=1.4, diameter,
             pressure, temperature, density, height, duration)
 
 
-"""
+@doc doc"""
     scenario_builder(source::JetSource(kwargs), atmosphere::Atmosphere)
 Returns returns a scenario with a simple jet source from a circular hole. The
 jet can either be a liquid or a gas, which case it is assumed to be an ideal
@@ -25,13 +25,13 @@ Liquid and gas discharge models are per *Guidelines for Consequence Analysis of
 Chemical Release*, CCPS, New York (1999)
 
 # Arguments
-- phase=:liquid         the phase, either :liquid or :gas
-- dischargecoef=0.61    the discharge coefficient cd
-- k=1.4                 the heat capacity ration cp/cv
-- diameter              the diameter of the hole
-- pressure              the pressure upstream of the jet
-- temperature           the temperature upstream of the jet
-- density               the density of the fluid upstream of the jet
+- `phase=:liquid`: the phase, either :liquid or :gas
+- `dischargecoef::Number=0.61`: the discharge coefficient cd
+- `k::Number=1.4`: the heat capacity ration cp/cv
+- `diameter::Number`: the diameter of the hole
+- `pressure::Number`: the pressure upstream of the jet
+- `temperature::Number`: the temperature upstream of the jet
+- `density::Number`: the density of the fluid upstream of the jet
 
 """
 function scenario_builder( source::JetSource, atmosphere::Atmosphere)

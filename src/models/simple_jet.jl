@@ -29,7 +29,7 @@ Around a Vent", *Chem. Process Hazard*, II, 6, 1963 ↩
 
 ```math
 c\left(x,y,z\right) = k_2 c_0 \left( d \over z \right) \sqrt{ \rho_j \over \rho_a }
-\exp \left( - \left( k_2 { r \over z } \right)^2 \right)
+\exp \left( - \left( k_3 { r \over z } \right)^2 \right)
 ```
 
 where *r* is the radial distance from the jet centerline. Assumes a circular jet
@@ -37,9 +37,9 @@ with diameter equal to the jet diameter.Ground-reflection is included by method
 of images.
 
 # Arguments
--`release_angle::Number=0`: the angle at which the jet is released, in radians
--`k2::Number=6` parameter of the model, default value is recommended by Long
--`k3::Number=5` parameter of the model, default value is recommended by Long
+- `release_angle::Number=0`: the angle at which the jet is released, in radians
+- `k2::Number=6` parameter of the model, default value is recommended by Long
+- `k3::Number=5` parameter of the model, default value is recommended by Long
 """
 function plume(scenario::Scenario, model::SimpleJet)
     # Rotation matrix
