@@ -48,7 +48,7 @@ Assumptions:
 ```julia
 using GasDispersion
 
-source=JetSource(phase=:liquid, dischargecoef=0.63, diameter=0.01,
+source=JetSource(phase=:liquid, dischargecoef=0.63, diameter=0.01, duration=1,
                  pressure=120000, temperature=298.15, density=490, height=1)
 
 s = scenario_builder(source, Ambient())
