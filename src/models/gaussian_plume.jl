@@ -29,7 +29,7 @@ Gaussian plume model is per *Guidelines for Consequence Analysis of Chemical
 Release*, CCPS, New York (1999)
 
 ```math
-c\left(x,y,z\right) = {G \over 2 \pi \sigma_{y} \sigma_{z} u}
+c\left(x,y,z\right) = { \dot{m} \over { 2 \pi \sigma_{y} \sigma_{z} u } }
 \exp \left[ -\frac{1}{2} \left( y \over \sigma_{y} \right)^2 \right] \\
 \times \left\{ \exp \left[ -\frac{1}{2} \left( { z -h } \over \sigma_{z} \right)^2 \right]
 + \exp \left[ -\frac{1}{2} \left( { z + h } \over \sigma_{z} \right)^2 \right] \right\}
