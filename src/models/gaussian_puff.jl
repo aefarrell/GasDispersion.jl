@@ -23,11 +23,11 @@ Gaussian puff model is per *Guidelines for Consequence Analysis of Chemical
 Release*, CCPS, New York (1999)
 
 ```math
-c\left(x,y,z,t\right) = { G^{\star} \over { (2 \pi)^{3/2} \sigma_x \sigma_y \sigma_z } }
-\exp \left( -\frac{1}{2} \left( {x - ut} \over \sigma_x \right)^2 \right)
-\exp \left( -\frac{1}{2} \left( {y} \over \sigma_y \right)^2 \right) \\
-\times \left[ \exp \left( -\frac{1}{2} \left( {z - h} \over \sigma_z \right)^2 \right)
-+ \exp \left( -\frac{1}{2} \left( {z + h} \over \sigma_z \right)^2 \right)\right]
+c\left(x,y,z,t\right) = { {\dot{m} \Delta t} \over n }
+{ { \exp \left( -\frac{1}{2} \left( {x - u t } \over \sigma_x \right)^2 \right) } \over { \sqrt{2\pi} \sigma_x } }
+{ { \exp \left( -\frac{1}{2} \left( {y} \over \sigma_y \right)^2 \right) } { \sqrt{2\pi} \sigma_y } }\\
+\times { { \exp \left( -\frac{1}{2} \left( {z - h} \over \sigma_z \right)^2 \right)
++ \exp \left( -\frac{1}{2} \left( {z + h} \over \sigma_z \right)^2 \right) } \over { \sqrt{2\pi} \sigma_z } }
 ```
 
 """

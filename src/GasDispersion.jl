@@ -3,6 +3,7 @@ module GasDispersion
 # imports
 using Markdown
 using Interpolations: Extrapolation, Line, LinearInterpolation
+using SpecialFunctions: erf
 
 # source models
 export Atmosphere, Ambient
@@ -15,7 +16,7 @@ export GaussianPlume, SimpleJet, BritterMcQuaidPlume
 
 # puff models
 export PuffModel, Puff, puff
-export GaussianPuff, BritterMcQuaidPuff
+export GaussianPuff, IntPuff, BritterMcQuaidPuff
 
 
 # abstract types
@@ -74,6 +75,7 @@ puff(s) = puff(s, GaussianPuff())
 
 # puff models
 include("models/gaussian_puff.jl")
+include("models/intpuff.jl")
 include("models/britter_mcquaid_puff.jl")
 
 

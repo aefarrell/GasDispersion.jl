@@ -150,3 +150,35 @@ end
 
     end
 end
+
+@testset "Integrated Gaussian puff tests" begin
+    # Gaussian plume example, *Guidelines for Consequence Analysis of Chemical
+    # Releases* CCPS, 1999, pg 97
+    ex = Scenario(Release(mass_rate = 0.1, duration = 10.0, diameter = 10.0,
+                velocity = 1.0, height = 0.0, pressure = 0, temperature = 0,
+                density = 0), Ambient(windspeed=2.0, stability="F"))
+    h = ex.release.height
+    u = ex.atmosphere.windspeed
+    x₁ = 500.0
+    t₁ = x₁/u
+    Δt = ex.release.duration
+
+    # test types
+    @test isa(puff(ex, IntPuff(;npuffs=3)), GasDispersion.IntPuffSolution{<:Integer})
+    @test isa(puff(ex, IntPuff()), GasDispersion.IntPuffSolution{<:Float64})
+
+    # testing default behaviour, npuffs=1 is a gaussian puff
+    @test isa(puff(ex, IntPuff(;npuffs=1)), GasDispersion.GaussianPuffSolution)
+
+    # testing invalid numbers of puffs
+    @test_throws ErrorException puff(ex, IntPuff(0))
+
+    # testing 3 puffs
+    gp = puff(ex, GaussianPuff())
+    ip = puff(ex, IntPuff(npuffs=3))
+    @test ip(x₁,0,h,t₁) ≈ (1/3)*(gp(x₁,0,h,t₁) + gp(x₁,0,h,t₁-0.5*Δt) + gp(x₁,0,h,t₁-Δt))
+
+    # testing ∞ puffs
+    ip∞ = puff(ex,IntPuff())
+    @test ip∞(x₁,0,h,t₁) ≈ 0.000711709646491573
+end
