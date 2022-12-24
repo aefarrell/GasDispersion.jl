@@ -160,6 +160,15 @@ parameters of the gaussians are correlated with the downwind distance.
 puff(::Scenario, ::GaussianPuff)
 ```
 
+### Integrated Gaussian Puffs
+
+The integrated gaussian puff model treats the release as a sum of $n$
+equally spaced gaussian puffs, starting at $t = 0$ to $t = \Delta t$. The
+default behaviour is to take the limit $n \to \infty$, hence *integrated*.
+
+```@docs
+puff(::Scenario, ::IntPuff)
+```
 
 ## Future
 
