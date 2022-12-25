@@ -82,6 +82,12 @@ function plume(scenario::Scenario, model::GaussianPlume)
 end
 
 function (g::GaussianPlumeSolution)(x, y, z, t=0)
+
+    # domain check
+    if (x<0)||(z<0)
+        return 0.0
+    end
+
     G = g.mass_rate
     u = g.windspeed
     hᵣ = g.effective_stack_height
