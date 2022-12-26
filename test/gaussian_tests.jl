@@ -7,14 +7,14 @@ include("../src/models/plume_rise.jl")
     ex = Scenario(Release(mass_rate = 0.1, duration = Inf, diameter = 10.0,
                 velocity = 1.0, height = 0.0, pressure = 0, temperature = 0,
                 density = 0), Ambient(windspeed=2.0, stability="F"))
-    # known answers
     x₁ = 500.0
+    pl = plume(ex)
 
-    # test default behaviour
-    @test plume(ex) == plume(ex, GaussianPlume())
-
-    # test type inheritance
-    @test isa(plume(ex, GaussianPlume()), Plume)
+    # test default behaviour and type inheritance
+    @test isa(pl,GasDispersion.GaussianPlumeSolution)
+    @test isa(pl, Plume)
+    @test pl(-1,0,0) == 0.0
+    @test pl(0,0,0) == pl.max_concentration
 
     # test for bad classes
     bad = Scenario(Release(mass_rate = 0.1, duration = Inf, diameter = 10.0,
@@ -121,12 +121,12 @@ end
     u = ex.atmosphere.windspeed
     x₁ = 500.0
     t₁ = x₁/u
+    pf = puff(ex)
 
-    # test default behaviour
-    @test puff(ex) == puff(ex, GaussianPuff())
-
-    # test type inheritance
-    @test isa(puff(ex, GaussianPuff()), Puff)
+    # test default behaviour and type inheritance
+    @test isa(pf,GasDispersion.GaussianPuffSolution)
+    @test isa(pf, Puff)
+    @test pf(-1,0,h,t₁) == 0.0
 
     # test for bad classes
     bad = Scenario(Release(mass_rate = 0.1, duration = Inf, diameter = 10.0,
@@ -163,22 +163,20 @@ end
     t₁ = x₁/u
     Δt = ex.release.duration
 
-    # test types
+    # testing default behaviour
+    @test isa(puff(ex, IntPuff(;npuffs=1)), GasDispersion.GaussianPuffSolution)
     @test isa(puff(ex, IntPuff(;npuffs=3)), GasDispersion.IntPuffSolution{<:Integer})
     @test isa(puff(ex, IntPuff()), GasDispersion.IntPuffSolution{<:Float64})
-
-    # testing default behaviour, npuffs=1 is a gaussian puff
-    @test isa(puff(ex, IntPuff(;npuffs=1)), GasDispersion.GaussianPuffSolution)
-
-    # testing invalid numbers of puffs
     @test_throws ErrorException puff(ex, IntPuff(0))
 
     # testing 3 puffs
     gp = puff(ex, GaussianPuff())
     ip = puff(ex, IntPuff(npuffs=3))
     @test ip(x₁,0,h,t₁) ≈ (1/3)*(gp(x₁,0,h,t₁) + gp(x₁,0,h,t₁-0.5*Δt) + gp(x₁,0,h,t₁-Δt))
+    @test ip(-1,0,h,t₁) == 0.0
 
     # testing ∞ puffs
     ip∞ = puff(ex,IntPuff())
     @test ip∞(x₁,0,h,t₁) ≈ 0.000711709646491573
+    @test ip∞(-1,0,h,t₁) == 0.0
 end

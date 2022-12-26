@@ -1,4 +1,4 @@
-@recipe function f(p::Plume; nx=100, ny=100, height=2)
+@recipe function f(p::Puff, t::Number; nx=100, ny=100, height=2)
 
     xlims --> (-1,1000)
     ylims --> (-50,50)
@@ -16,6 +16,6 @@
     ymin, ymax = plotattributes[:ylims]
     ys = range(start=ymin,stop=ymax,length=ny)
 
-    xs,ys,(x,y)->p(x,y,height)
+    xs,ys,(x,y)->p(x,y,height,t)
 
 end
