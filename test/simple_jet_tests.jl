@@ -10,12 +10,11 @@
     x, y, z =  a, √(a^2*ξ²), 1.0
     c = (2/π)*(1+exp(-25/9))
 
-    # test type inheritance
-    @test isa(plume(ex, SimpleJet()), Plume)
-
     # horizontal jet
     j = plume(ex, SimpleJet(release_angle=0.0, k2=a, k3=b))
+    @test isa(j, GasDispersion.SimpleJetSolution)
+    @test isa(j, Plume)
     @test j(x,y,z) ≈ c
-    @test j(-x,y,z) ≈ 0.0
+    @test j(-x,y,z) == 0.0
 
 end

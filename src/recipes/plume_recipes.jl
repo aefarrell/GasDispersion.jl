@@ -10,11 +10,11 @@
 
     # define the x part of the grid
     xmin, xmax = plotattributes[:xlims]
-    xs = range(start=xmin,stop=xmax,length=nx)
+    xs = range(xmin, xmax; length=nx)
 
     # define the y part of the grid
     ymin, ymax = plotattributes[:ylims]
-    ys = range(start=ymin,stop=ymax,length=ny)
+    ys = range(ymin, ymax;length=ny)
 
     xs,ys,(x,y)->p(x,y,height)
 
