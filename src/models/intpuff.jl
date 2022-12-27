@@ -95,6 +95,11 @@ end
 
 
 function (ip::IntPuffSolution{<:Integer})(x,y,z,t)
+    # domain check
+    if (x<0)||(z<0)||(t<0)
+        return 0.0
+    end
+
     ṁ = ip.massrate
     Δt = ip.duration
     n = ip.npuffs # number of intervals = number of puffs - 1
@@ -130,6 +135,11 @@ function (ip::IntPuffSolution{<:Integer})(x,y,z,t)
 end
 
 function (ip::IntPuffSolution{Float64})(x,y,z,t)
+    # domain check
+    if (x<0)||(z<0)||(t<0)
+        return 0.0
+    end
+
     ṁ = ip.massrate
     Δt = ip.duration
     h = ip.height

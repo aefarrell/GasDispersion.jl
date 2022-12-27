@@ -58,6 +58,12 @@ end
 
 
 function (g::GaussianPuffSolution)(x,y,z,t)
+
+    # domain check
+    if (x<0)||(z<0)||(t<0)
+        return 0.0
+    end
+
     G = g.mass
     h = g.height
     u = g.windspeed

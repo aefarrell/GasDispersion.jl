@@ -4,6 +4,7 @@ module GasDispersion
 using Markdown
 using Interpolations: Extrapolation, Line, LinearInterpolation
 using SpecialFunctions: erf
+using RecipesBase
 
 # source models
 export Atmosphere, Ambient
@@ -31,6 +32,10 @@ abstract type Puff end
 include("utils/scenario.jl")
 include("utils/atmosphere.jl")
 include("utils/utils.jl")
+
+# plot recipes
+include("recipes/plume_recipes.jl")
+include("recipes/puff_recipes.jl")
 
 
 """

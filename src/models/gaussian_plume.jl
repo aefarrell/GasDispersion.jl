@@ -11,6 +11,7 @@ GaussianPlume(;downwash=false, plumerise=false) = GaussianPlume(downwash,plumeri
 struct GaussianPlumeSolution <: Plume
     scenario::Scenario
     model::Symbol
+    max_concentration::Number
     mass_rate::Number
     windspeed::Number
     effective_stack_height::Number
@@ -52,6 +53,9 @@ function plume(scenario::Scenario, model::GaussianPlume)
     u = scenario.atmosphere.windspeed
     stability = scenario.atmosphere.stability
 
+    # max concentration
+    c_max = G/((π/4)*Dⱼ^2*uⱼ)
+
     # stack-tip downwash check
     if (model.downwash==true) && (uⱼ < 1.5*u)
         Δh_dw = 2*Dⱼ*( (uⱼ/u) - 1.5 )
@@ -71,6 +75,7 @@ function plume(scenario::Scenario, model::GaussianPlume)
     return GaussianPlumeSolution(
     scenario, #scenario::Scenario
     :gaussian, #model::Symbol
+    c_max, # max concentration
     G,  #mass emission rate
     u,  #windspeed
     hᵣ, #effective_stack_height::Number
@@ -82,20 +87,27 @@ function plume(scenario::Scenario, model::GaussianPlume)
 end
 
 function (g::GaussianPlumeSolution)(x, y, z, t=0)
-    G = g.mass_rate
-    u = g.windspeed
-    hᵣ = g.effective_stack_height
-    Δh = g.plume_rise(x)
-    σy = g.crosswind_dispersion(x)
-    σz = g.vertical_dispersion(x)
-    hₑ  = hᵣ + Δh
-    σyₑ = √( (Δh/3.5)^2 + σy^2 )
-    σzₑ = √( (Δh/3.5)^2 + σz^2 )
 
-    c = ( G/(2*π*u*σyₑ*σzₑ)
-        * exp(-0.5*(y/σyₑ)^2)
-        * ( exp(-0.5*((z-hₑ)/σzₑ)^2) + exp(-0.5*((z+hₑ)/σzₑ)^2) ) )
+    # domain check
+    if x==0
+        return g.max_concentration
+    elseif (x<0)||(z<0)
+        return 0.0
+    else
+        G = g.mass_rate
+        u = g.windspeed
+        hᵣ = g.effective_stack_height
+        Δh = g.plume_rise(x)
+        σy = g.crosswind_dispersion(x)
+        σz = g.vertical_dispersion(x)
+        hₑ  = hᵣ + Δh
+        σyₑ = √( (Δh/3.5)^2 + σy^2 )
+        σzₑ = √( (Δh/3.5)^2 + σz^2 )
 
-    return c
+        c = ( G/(2*π*u*σyₑ*σzₑ)
+            * exp(-0.5*(y/σyₑ)^2)
+            * ( exp(-0.5*((z-hₑ)/σzₑ)^2) + exp(-0.5*((z+hₑ)/σzₑ)^2) ) )
 
+        return min(g.max_concentration,c)
+    end
 end
