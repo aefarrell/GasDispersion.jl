@@ -1,12 +1,19 @@
 include("../src/utils/pasquill_gifford.jl")
 include("../src/models/plume_rise.jl")
 
+null_substance = Substance(name=:test,gas_density=NaN,liquid_density=NaN,
+                boiling_temp=NaN,latent_heat=NaN,gas_heat_capacity=NaN,
+                liquid_heat_capacity=NaN)
+
 @testset "Gaussian plume tests" begin
     # Gaussian plume example, *Guidelines for Consequence Analysis of Chemical
     # Releases* CCPS, 1999, pg 97
-    ex = Scenario(Release(mass_rate = 0.1, duration = Inf, diameter = 10.0,
-                velocity = 1.0, height = 0.0, pressure = 0, temperature = 0,
-                density = 0), Ambient(windspeed=2.0, stability="F"))
+
+    ex = Scenario(null_substance,
+                  Release(mass_rate=0.1,duration=Inf,diameter=10.0,
+                    velocity=1.0,height=0.0,pressure=0.0,temperature=0.0,
+                    fraction_liquid=0.0),
+                  Ambient(windspeed=2.0, stability=:F))
     x₁ = 500.0
     pl = plume(ex)
 
@@ -17,19 +24,23 @@ include("../src/models/plume_rise.jl")
     @test pl(0,0,0) == pl.max_concentration
 
     # test for bad classes
-    bad = Scenario(Release(mass_rate = 0.1, duration = Inf, diameter = 10.0,
-                velocity = 1.0, height = 0.0, pressure = 0, temperature = 0,
-                density = 0), Ambient(windspeed=2.0, stability="error"))
+    bad = Scenario(null_substance,
+                  Release(mass_rate=0.1,duration=Inf,diameter=10.0,
+                    velocity=1.0,height=0.0,pressure=0.0,temperature=0.0,
+                    fraction_liquid=0.0),
+                  Ambient(windspeed=2.0, stability=:not_a_class))
     @test_throws ErrorException plume(bad, GaussianPlume(plumerise=false))
     @test_throws ErrorException plume(bad, GaussianPlume(plumerise=true))
 
-    @testset "Gaussian plume tests for class $class" for class in ["A", "B", "C", "D", "E", "F"]
+    @testset "Gaussian plume tests for class $class" for class in [:A, :B, :C, :D, :E, :F]
 
-        s = Scenario( Release(mass_rate = 0.1, duration = Inf, diameter = 10.0,
-                    velocity = 1.0, height = 0.0, pressure = 0, temperature = 0,
-                    density = 0), Ambient(windspeed=2.0, stability=class))
+        s = Scenario(null_substance,
+                      Release(mass_rate=0.1,duration=Inf,diameter=10.0,
+                        velocity=1.0,height=0.0,pressure=0.0,temperature=0.0,
+                        fraction_liquid=0.0),
+                      Ambient(windspeed=2.0, stability=class))
 
-        m, u = s.release.mass_rate, s.atmosphere.windspeed
+        m, u = _mass_rate(s), _windspeed(s)
         σy, σz = crosswind_dispersion(class)(x₁), vertical_dispersion(class)(x₁)
         c₁ = m / (π*σy*σz*u)
 
@@ -38,14 +49,16 @@ include("../src/models/plume_rise.jl")
         @test no_plume_rise(x₁,0,0) ≈ c₁
 
         # basic model, with stack downwash included
-        Dⱼ, uⱼ = s.release.diameter, s.release.velocity
+        Dⱼ, uⱼ = _release_diameter(s), _release_velocity(s)
         u, h = 2*uⱼ, 1.0
         hₑ = h + 2*Dⱼ*( (uⱼ/u) - 1.5 )
         c₂ = m / (2π*σy*σz*u)*( exp(-0.5*((h-hₑ)/σz)^2) + exp(-0.5*((h+hₑ)/σz)^2) )
 
-        dw = Scenario( Release(mass_rate=m, duration=Inf, diameter=Dⱼ,
+        dw = Scenario(null_substance,
+                    Release(mass_rate=m, duration=Inf, diameter=Dⱼ,
                      velocity=uⱼ, height=h, pressure=0, temperature=0,
-                     density=0), Ambient(windspeed=u, stability=class))
+                     fraction_liquid=0),
+                    Ambient(windspeed=u, stability=class))
         downwash = plume(dw, GaussianPlume(downwash=true))
         @test downwash(x₁, 0, h) ≈ c₂
 
@@ -53,9 +66,11 @@ include("../src/models/plume_rise.jl")
         # buoyancy driven, Fb<55
         u = s.atmosphere.windspeed
         Tᵣ, Tₐ = 315, 298
-        bs1 = Scenario(Release(mass_rate=m, duration=Inf, diameter=Dⱼ,
+        bs1 = Scenario(null_substance,
+                    Release(mass_rate=m, duration=Inf, diameter=Dⱼ,
                      velocity=uⱼ, height=h, pressure=0, temperature=Tᵣ,
-                     density=0), Ambient(windspeed=u, stability=class, temperature=Tₐ))
+                     fraction_liquid=0),
+                    Ambient(windspeed=u, stability=class, temperature=Tₐ))
         Δh = plume_rise(bs1, true)(x₁)
         hₑ  = h + Δh
         σyₑ = √( (Δh/3.5)^2 + σy^2 )
@@ -66,9 +81,11 @@ include("../src/models/plume_rise.jl")
 
         # buoyancy driven, Fb>55
         Tᵣ = 400
-        bs2 = Scenario(Release(mass_rate=m, duration=Inf, diameter=Dⱼ,
+        bs2 = Scenario(null_substance,
+                    Release(mass_rate=m, duration=Inf, diameter=Dⱼ,
                      velocity=uⱼ, height=h, pressure=0, temperature=Tᵣ,
-                     density=0), Ambient(windspeed=u, stability=class, temperature=Tₐ))
+                     fraction_liquid=0),
+                    Ambient(windspeed=u, stability=class, temperature=Tₐ))
         Δh = plume_rise(bs2, true)(x₁)
         hₑ  = h + Δh
         σyₑ = √( (Δh/3.5)^2 + σy^2 )
@@ -79,9 +96,11 @@ include("../src/models/plume_rise.jl")
 
         # momentum driven, Fb<55
         Tᵣ = Tₐ
-        ms1 = Scenario(Release(mass_rate=m, duration=Inf, diameter=Dⱼ,
+        ms1 = Scenario(null_substance,
+                    Release(mass_rate=m, duration=Inf, diameter=Dⱼ,
                      velocity=uⱼ, height=h, pressure=0, temperature=Tᵣ,
-                     density=0), Ambient(windspeed=u, stability=class, temperature=Tₐ))
+                     fraction_liquid=0),
+                    Ambient(windspeed=u, stability=class, temperature=Tₐ))
         Δh = plume_rise(ms1, true)(x₁)
         hₑ  = h + Δh
         σyₑ = √( (Δh/3.5)^2 + σy^2 )
@@ -94,9 +113,11 @@ include("../src/models/plume_rise.jl")
         Tᵣ = 315
         g  = 9.80616
         uⱼ = ( (4/0.00575)*55*g )^(3/5) * (1/Dⱼ)
-        ms2 = Scenario(Release(mass_rate=m, duration=Inf, diameter=Dⱼ,
+        ms2 = Scenario(null_substance,
+                    Release(mass_rate=m, duration=Inf, diameter=Dⱼ,
                      velocity=uⱼ, height=h, pressure=0, temperature=Tᵣ,
-                     density=0), Ambient(windspeed=u, stability=class, temperature=Tₐ))
+                     fraction_liquid=0),
+                    Ambient(windspeed=u, stability=class, temperature=Tₐ))
         Δh = plume_rise(ms2, true)(x₁)
         hₑ  = h + Δh
         σyₑ = √( (Δh/3.5)^2 + σy^2 )
@@ -112,13 +133,15 @@ end
 @testset "Gaussian puff tests" begin
     # Gaussian plume example, *Guidelines for Consequence Analysis of Chemical
     # Releases* CCPS, 1999, pg 97
-    ex = Scenario(Release(mass_rate = 0.1, duration = 10.0, diameter = 10.0,
+    ex = Scenario(null_substance,
+                Release(mass_rate = 0.1, duration = 10.0, diameter = 10.0,
                 velocity = 1.0, height = 0.0, pressure = 0, temperature = 0,
-                density = 0), Ambient(windspeed=2.0, stability="F"))
+                fraction_liquid = 0),
+                Ambient(windspeed=2.0, stability=:F))
     # knowns
-    m = ex.release.mass_rate*ex.release.duration
-    h = ex.release.height
-    u = ex.atmosphere.windspeed
+    m = _release_mass(ex)
+    h = _release_height(ex)
+    u = _windspeed(ex)
     x₁ = 500.0
     t₁ = x₁/u
     pf = puff(ex)
@@ -129,15 +152,19 @@ end
     @test pf(-1,0,h,t₁) == 0.0
 
     # test for bad classes
-    bad = Scenario(Release(mass_rate = 0.1, duration = Inf, diameter = 10.0,
+    bad = Scenario(null_substance,
+                Release(mass_rate = 0.1, duration = Inf, diameter = 10.0,
                 velocity = 1.0, height = 0.0, pressure = 0, temperature = 0,
-                density = 0), Ambient(windspeed=2.0, stability="error"))
+                fraction_liquid = 0),
+                Ambient(windspeed=2.0, stability=:not_a_class))
     @test_throws ErrorException puff(bad, GaussianPuff())
 
-    @testset "Gaussian puff tests for class $class" for class in ["A", "B", "C", "D", "E", "F"]
-        s = Scenario(Release(mass_rate = 0.1, duration = 10.0, diameter = 10.0,
+    @testset "Gaussian puff tests for class $class" for class in [:A, :B, :C, :D, :E, :F]
+        s = Scenario(null_substance,
+                    Release(mass_rate = 0.1, duration = 10.0, diameter = 10.0,
                     velocity = 1.0, height = 0.0, pressure = 0, temperature = 0,
-                    density = 0), Ambient(windspeed=2.0, stability=class))
+                    fraction_liquid = 0),
+                    Ambient(windspeed=2.0, stability=class))
 
         σx = crosswind_dispersion(class, plume=false)(x₁)
         σy = σx
@@ -154,14 +181,16 @@ end
 @testset "Integrated Gaussian puff tests" begin
     # Gaussian plume example, *Guidelines for Consequence Analysis of Chemical
     # Releases* CCPS, 1999, pg 97
-    ex = Scenario(Release(mass_rate = 0.1, duration = 10.0, diameter = 10.0,
+    ex = Scenario(null_substance,
+                Release(mass_rate = 0.1, duration = 10.0, diameter = 10.0,
                 velocity = 1.0, height = 0.0, pressure = 0, temperature = 0,
-                density = 0), Ambient(windspeed=2.0, stability="F"))
-    h = ex.release.height
-    u = ex.atmosphere.windspeed
+                fraction_liquid = 0),
+                Ambient(windspeed=2.0, stability=:F))
+    h = _release_height(ex)
+    u = _windspeed(ex)
     x₁ = 500.0
     t₁ = x₁/u
-    Δt = ex.release.duration
+    Δt = _duration(ex)
 
     # testing default behaviour
     @test isa(puff(ex, IntPuff(;npuffs=1)), GasDispersion.GaussianPuffSolution)

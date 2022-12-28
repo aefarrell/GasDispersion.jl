@@ -13,14 +13,14 @@ function plume_rise(scenario::Scenario, plumerise)
     g = 9.80616 #m/s^2
 
     # parameters of the jet
-    Dⱼ = scenario.release.diameter
-    uⱼ = scenario.release.velocity
-    Tᵣ = scenario.release.temperature
+    Dⱼ = _release_diameter(scenario)
+    uⱼ = _release_velocity(scenario)
+    Tᵣ = _release_temperature(scenario)
 
     # parameters of the environment
-    u = scenario.atmosphere.windspeed
-    Tₐ = scenario.atmosphere.temperature
-    stability = scenario.atmosphere.stability
+    u = _windspeed(scenario)
+    Tₐ = _atmosphere_temperature(scenario)
+    stab = _stability(scenario)
 
     # buoyancy flux
     Fb = g * uⱼ * Dⱼ^2 * (Tᵣ - Tₐ) / (4Tᵣ)
@@ -29,18 +29,18 @@ function plume_rise(scenario::Scenario, plumerise)
     Fm = uⱼ^2 * Dⱼ^2 * Tₐ/(4Tᵣ)
 
     # stability check
-    if stability ∈ Set(["A","B","C","D"])
+    if stab ∈ [:A,:B,:C,:D]
         stable = false
-    elseif stability == "E"
+    elseif stab == :E
         stable = true
         Γ = 0.020    # default lapse rate K/m
         s = (g/Tₐ)*Γ # stability
-    elseif stability == "F"
+    elseif stab == :F
         stable = true
         Γ = 0.035    # default lapse rate K/m
         s = (g/Tₐ)*Γ # stability
     else
-        err = "$stability is not a valid stability class"
+        err = "$stab is not a valid stability class"
         error(err)
     end
 

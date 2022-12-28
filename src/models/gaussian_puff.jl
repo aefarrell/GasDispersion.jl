@@ -33,20 +33,20 @@ c\left(x,y,z,t\right) = { {\dot{m} \Delta t} \over n }
 """
 function puff(scenario::Scenario, model::GaussianPuff)
 
-    stability = scenario.atmosphere.stability
-    G = scenario.release.mass_rate*scenario.release.duration
-    h = scenario.release.height
-    u = scenario.atmosphere.windspeed
+    stab = _stability(scenario)
+    m = _release_mass(scenario)
+    h = _release_height(scenario)
+    u = _windspeed(scenario)
 
     # Pasquill-Gifford dispersion
-    σx = crosswind_dispersion(stability; plume=false)
+    σx = crosswind_dispersion(stab; plume=false)
     σy = σx
-    σz = vertical_dispersion(stability; plume=false)
+    σz = vertical_dispersion(stab; plume=false)
 
     return GaussianPuffSolution(
         scenario,  #scenario::Scenario
         :gaussian, #model::Symbol
-        G,  #mass
+        m,  #mass
         h,  #release height
         u,  #windspeed
         σx, #downwind_dispersion::Dispersion

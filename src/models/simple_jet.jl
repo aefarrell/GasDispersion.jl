@@ -11,8 +11,8 @@ struct SimpleJetSolution <: Plume
     model::Symbol
     diameter::Number
     height::Number
+    angle::Number
     initial_concentration::Number
-    rotation_matrix::Matrix
     density_correction::Number
     k2::Number
     k3::Number
@@ -42,29 +42,24 @@ of images.
 - `k3::Number=5` parameter of the model, default value is recommended by Long
 """
 function plume(scenario::Scenario, model::SimpleJet)
-    # Rotation matrix
-    θ = -1*model.release_angle
-    R = [cos(θ) 0 -sin(θ); 0 1 0; sin(θ) 0 cos(θ)]
-
     # Density correction
-    ρj = scenario.release.density
-    ρa = scenario.atmosphere.density
+    ρj = _release_density(scenario)
+    ρa = _atmosphere_density(scenario)
     kd = √(ρj/ρa)
 
     # Initial concentration
-    m = scenario.release.mass_rate
-    d = scenario.release.diameter
-    u = scenario.release.velocity
-    Q = u*(π/4)*d^2 # volumetric flow rate
-    c₀ = m/Q
+    m = _mass_rate(scenario)
+    d = _release_diameter(scenario)
+    Q = _release_flowrate(scenario)
+    c0 = m/Q
 
     return SimpleJetSolution(
     scenario,      #scenario::Scenario
     :simple_jet,   #model::Symbol
     d,  # diameter
-    scenario.release.height,  # height
-    c₀, # concentration
-    R,  # rotation_matrix
+    _release_height(scenario),  # height
+    -1*model.release_angle, # release angle
+    c0, # concentration
     kd, # density_correction
     model.k2,
     model.k3
@@ -75,30 +70,34 @@ end
 function (j::SimpleJetSolution)(x, y, z, t=0)
     d  = j.diameter
     h  = j.height
-    c₀ = j.initial_concentration
-    Rθ = j.rotation_matrix
+    θ  = j.angle
+    c0 = j.initial_concentration
     kd = j.density_correction
     k₂ = j.k2
     k₃ = j.k3
 
     # rotated jet
-    x′, y′, z′ = Rθ*[x y z-h]'
+    x′ = x*cos(θ)-(z-h)*sin(θ)
+    y′ = y
+    z′ = x*sin(θ)+(z-h)*cos(θ)
     if x′ ≤ 0
         c = 0.0
     else
         ξ² = (y′^2 + z′^2)/(x′^2)
-        c  = c₀*k₂*kd*(d/x′)*exp(-k₃^2*ξ²)
+        c  = c0*k₂*kd*(d/x′)*exp(-k₃^2*ξ²)
     end
 
     # reflected jet (method of images)
-    xᵣ, yᵣ, zᵣ = Rθ*[x y -z-h]'
+    xᵣ = x*cos(θ)-(-z-h)*sin(θ)
+    yᵣ = y
+    zᵣ = x*sin(θ)+(-z-h)*cos(θ)
     if xᵣ ≤ 0
         cᵣ = 0.0
     else
         ξᵣ² = (yᵣ^2 + zᵣ^2)/(xᵣ^2)
-        cᵣ  = c₀*k₂*kd*(d/xᵣ)*exp(-k₃^2*ξᵣ²)
+        cᵣ  = c0*k₂*kd*(d/xᵣ)*exp(-k₃^2*ξᵣ²)
     end
 
-    return min(c+cᵣ, c₀)
+    return min(c+cᵣ, c0)
 
 end

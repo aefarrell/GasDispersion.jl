@@ -1,8 +1,11 @@
 @testset "Simple turbulent jet tests" begin
     # example scenario
-    ex = Scenario( Release(mass_rate = 1.0, duration = Inf, diameter = 1.0,
+    ex = Scenario( Substance(name=:test,gas_density=1.2,liquid_density=1000.0,
+                    boiling_temp=NaN,latent_heat=NaN,gas_heat_capacity=NaN,
+                    liquid_heat_capacity=NaN),
+                   Release(mass_rate = 1.0, duration = Inf, diameter = 1.0,
                             velocity = 1.0, height = 1.0, pressure = 0,
-                            temperature = 0, density = 1.2),
+                            temperature = 0, fraction_liquid=0.0),
                    Ambient(density=1.2))
     # known answers
     a, b = 6.0, 5.0

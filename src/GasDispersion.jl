@@ -8,7 +8,7 @@ using RecipesBase
 
 # source models
 export Atmosphere, Ambient
-export Release, Scenario, scenario_builder
+export Substance, Release, Scenario, scenario_builder
 export SourceModel, JetSource
 
 # plume models
@@ -28,14 +28,12 @@ abstract type Plume end
 abstract type PuffModel end
 abstract type Puff end
 
-# helpful utilities
-include("utils/scenario.jl")
-include("utils/atmosphere.jl")
-include("utils/utils.jl")
+# basic type definitions and such
+include("base/scenario.jl")
+include("base/plot_recipes.jl")
 
-# plot recipes
-include("recipes/plume_recipes.jl")
-include("recipes/puff_recipes.jl")
+# helpful utilities
+include("utils/utils.jl")
 
 
 """
@@ -85,16 +83,16 @@ include("models/britter_mcquaid_puff.jl")
 
 
 """
-    scenario_builder(source::SourceModel, atmosphere::Atmosphere)
+    scenario_builder(substance::Substance, source::SourceModel, atmosphere::Atmosphere)
 
-Builds a scenario given a source model and an atmosphere. If no atmosphere is
-given defaults to ambient conditions.
+Builds a scenario given a substance, source model and an atmosphere.
+If no atmosphere is given defaults to ambient conditions.
 
 """
 function scenario_builder end
 
 #default behaviour
-scenario_builder(m) = scenario_builder(m, Ambient())
+scenario_builder(s,m) = scenario_builder(s,m, Ambient())
 
 # source models
 include("source_models/jet_source.jl")

@@ -44,17 +44,18 @@ where the σs are dispersion parameters correlated with the distance x
 """
 function plume(scenario::Scenario, model::GaussianPlume)
     # parameters of the jet
-    G  = scenario.release.mass_rate
-    Dⱼ = scenario.release.diameter
-    uⱼ = scenario.release.velocity
-    hᵣ = scenario.release.height
+    ṁ  = _mass_rate(scenario)
+    Dⱼ = _release_diameter(scenario)
+    Qⱼ = _release_flowrate(scenario)
+    uⱼ = _release_velocity(scenario)
+    hᵣ = _release_height(scenario)
 
     # parameters of the environment
-    u = scenario.atmosphere.windspeed
-    stability = scenario.atmosphere.stability
+    u = _windspeed(scenario)
+    stab = _stability(scenario)
 
     # max concentration
-    c_max = G/((π/4)*Dⱼ^2*uⱼ)
+    c_max = ṁ/Qⱼ
 
     # stack-tip downwash check
     if (model.downwash==true) && (uⱼ < 1.5*u)
@@ -69,14 +70,14 @@ function plume(scenario::Scenario, model::GaussianPlume)
     Δh = plume_rise(scenario, model.plumerise)
 
     # Pasquill-Gifford dispersion
-    σy = crosswind_dispersion(stability)
-    σz = vertical_dispersion(stability)
+    σy = crosswind_dispersion(stab)
+    σz = vertical_dispersion(stab)
 
     return GaussianPlumeSolution(
     scenario, #scenario::Scenario
     :gaussian, #model::Symbol
     c_max, # max concentration
-    G,  #mass emission rate
+    ṁ,  #mass emission rate
     u,  #windspeed
     hᵣ, #effective_stack_height::Number
     Δh, #plume_rise::Function

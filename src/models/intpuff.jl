@@ -52,17 +52,17 @@ where δt is Δt/n, and the σs are dispersion parameters correlated with the di
 """
 function puff(scenario::Scenario, model::IntPuff)
 
-    stability = scenario.atmosphere.stability
-    ṁ = scenario.release.mass_rate
-    Δt = scenario.release.duration
+    stab = _stability(scenario)
+    ṁ = _mass_rate(scenario)
+    Δt = _duration(scenario)
     n = model.npuffs
-    h = scenario.release.height
-    u = scenario.atmosphere.windspeed
+    h = _release_height(scenario)
+    u = _windspeed(scenario)
 
     # Pasquill-Gifford dispersion
-    σx = crosswind_dispersion(stability; plume=false)
+    σx = crosswind_dispersion(stab; plume=false)
     σy = σx
-    σz = vertical_dispersion(stability; plume=false)
+    σz = vertical_dispersion(stab; plume=false)
 
     if n > 1
         return IntPuffSolution(
