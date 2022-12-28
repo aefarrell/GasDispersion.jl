@@ -11,5 +11,6 @@ SpecialFunctions = "276daf66-3868-5448-9aa4-cd146d93841b"
 
 [compat]
 Interpolations = "0.13, 0.14"
+RecipesBase = "1"
 SpecialFunctions = "2"
 julia = "1"
