@@ -3,9 +3,8 @@
 include("../src/utils/utils.jl")
 
 @testset "Monin-Obukhov length tests" begin
-    @test _monin_obukhov(:A, 1.2) ≈ -11.4*1.2^0.10
-    @test _monin_obukhov(:D, 1.2) ≈ Inf
-    @test_throws ErrorException _monin_obukhov(:Q, 1.2)
+    @test _monin_obukhov(1.2, ClassA) ≈ -11.4*1.2^0.10
+    @test _monin_obukhov(1.2, ClassD) ≈ Inf
 end
 
 @testset "Pasquill-Gifford dispersion tests" begin
@@ -29,7 +28,7 @@ end
 
 @testset "Windspeed by Monin-Obukhov length" begin
     ustar, zR, k = 3.0, 1.0, 0.35
-    λ = _monin_obukhov(:A, zR)
+    λ = _monin_obukhov(zR, ClassA)
     a(z) = (1-15*(z/λ))^0.25
     Ψ(a) = 2*log((1+a)/2) + log((1+a^2)/2) - 2*atan(a) + π/2
 

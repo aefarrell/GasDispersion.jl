@@ -1,4 +1,4 @@
-# Plume crosswind dispersion functions
+# Plume crosswind dispersion correlations
 function crosswind_dispersion(x, ::Type{Plume}, ::Type{ClassA}; avg_time=600.0)
     δ, β, tₐ = 0.423, 0.9, 18.4
     δ = δ*(max(avg_time, tₐ)/600)^0.2
@@ -35,45 +35,24 @@ function crosswind_dispersion(x, ::Type{Plume}, ::Type{ClassF}; avg_time=600.0)
     return δ*x^β
 end
 
-# Puff crosswind dispersion functions
-function crosswind_dispersion(x, ::Type{Puff}, ::Type{ClassA})
-    δ, β = 0.18, 0.92
-    return δ*x^β
-end
+# Puff crosswind dispersion correlations
+crosswind_dispersion(x, ::Type{Puff}, ::Type{ClassA}) = 0.18*x^0.92
+crosswind_dispersion(x, ::Type{Puff}, ::Type{ClassB}) = 0.14*x^0.92
+crosswind_dispersion(x, ::Type{Puff}, ::Type{ClassC}) = 0.10*x^0.92
+crosswind_dispersion(x, ::Type{Puff}, ::Type{ClassD}) = 0.06*x^0.92
+crosswind_dispersion(x, ::Type{Puff}, ::Type{ClassE}) = 0.04*x^0.92
+crosswind_dispersion(x, ::Type{Puff}, ::Type{ClassF}) = 0.02*x^0.89
 
-function crosswind_dispersion(x, ::Type{Puff}, ::Type{ClassB})
-    δ, β = 0.14, 0.92
-    return δ*x^β
-end
-
-function crosswind_dispersion(x, ::Type{Puff}, ::Type{ClassC})
-    δ, β = 0.10, 0.92
-    return δ*x^β
-end
-
-function crosswind_dispersion(x, ::Type{Puff}, ::Type{ClassD})
-    δ, β = 0.06, 0.92
-    return δ*x^β
-end
-
-function crosswind_dispersion(x, ::Type{Puff}, ::Type{ClassE})
-    δ, β = 0.04, 0.92
-    return δ*x^β
-end
-
-function crosswind_dispersion(x, ::Type{Puff}, ::Type{ClassF})
-    δ, β = 0.02, 0.89
-    return δ*x^β
-end
-
-# Puff downwind dispersion functions
+# Puff downwind dispersion correlations
 function downwind_dispersion(x, ::Type{Puff}, stab::Union{Type{ClassA},Type{ClassB},Type{ClassC},Type{ClassD},Type{ClassE},Type{ClassF}})
     return crosswind_dispersion(x, Puff, stab)
 end
 
-# Plume vertical dispersion functions
+# Plume vertical dispersion correlations
 function vertical_dispersion(x, ::Type{Plume}, ::Type{ClassA})
-    δ, β, γ = 107.7, -1.7172, 0.2770
+    δ = 107.7
+    β = -1.7172
+    γ = 0.2770
     return δ*(x^β)*exp(γ*log(x)^2)
 end
 
@@ -113,38 +92,9 @@ function vertical_dispersion(x, ::Type{Plume}, ::Type{ClassF})
 end
 
 # Puff vertical dispersion functions
-function vertical_dispersion(x, ::Type{Puff}, ::Type{ClassA})
-    δ=0.60
-    β=0.75
-    return δ*x^β
-end
-
-function vertical_dispersion(x, ::Type{Puff}, ::Type{ClassB})
-    δ=0.53
-    β=0.73
-    return δ*x^β
-end
-
-function vertical_dispersion(x, ::Type{Puff}, ::Type{ClassC})
-    δ=0.34
-    β=0.71
-    return δ*x^β
-end
-
-function vertical_dispersion(x, ::Type{Puff}, ::Type{ClassD})
-    δ=0.15
-    β=0.70
-    return δ*x^β
-end
-
-function vertical_dispersion(x, ::Type{Puff}, ::Type{ClassE})
-    δ=0.10
-    β=0.65
-    return δ*x^β
-end
-
-function vertical_dispersion(x, ::Type{Puff}, ::Type{ClassF})
-    δ=0.05
-    β=0.61
-    return δ*x^β
-end
+vertical_dispersion(x, ::Type{Puff}, ::Type{ClassA}) = 0.60*x^0.75
+vertical_dispersion(x, ::Type{Puff}, ::Type{ClassB}) = 0.53*x^0.73
+vertical_dispersion(x, ::Type{Puff}, ::Type{ClassC}) = 0.34*x^0.71
+vertical_dispersion(x, ::Type{Puff}, ::Type{ClassD}) = 0.15*x^0.70
+vertical_dispersion(x, ::Type{Puff}, ::Type{ClassE}) = 0.10*x^0.65
+vertical_dispersion(x, ::Type{Puff}, ::Type{ClassF}) = 0.05*x^0.61

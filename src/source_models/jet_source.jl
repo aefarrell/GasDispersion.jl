@@ -31,6 +31,8 @@ function scenario_builder(substance::Substance, ::Type{JetSource}, atmosphere::A
     h  = height
     A  = (π/4)*d^2
 
+    if (h < 0) error("Height must be a positive number, instead got h = $h") end
+
     if phase==:liquid
         ρ₁ = _liquid_density(substance, T₁, P₁)
         u = cd*√((2/ρ₁)*(P₁-P₂))
@@ -52,8 +54,7 @@ function scenario_builder(substance::Substance, ::Type{JetSource}, atmosphere::A
         Tⱼ = T₁*η^((k-1)/k)
         f_l = 0.0
     else
-        err = "$phase is not a valid phase, try either :liquid or :gas"
-        error(err)
+        error("$phase is not a valid phase, try either :liquid or :gas")
     end
 
     r = Release(; mass_rate=m,
