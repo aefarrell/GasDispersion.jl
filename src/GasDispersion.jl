@@ -8,6 +8,7 @@ using RecipesBase
 
 # source models
 export Atmosphere, Ambient
+export StabilityClass, ClassA, ClassB, ClassC, ClassD, ClassE, ClassF
 export Substance, Release, Scenario, scenario_builder
 export SourceModel, JetSource
 
@@ -22,6 +23,7 @@ export GaussianPuff, IntPuff, BritterMcQuaidPuff
 
 # abstract types
 abstract type Atmosphere end
+abstract type StabilityClass end
 abstract type SourceModel end
 abstract type PlumeModel end
 abstract type Plume end
@@ -43,7 +45,7 @@ Runs the plume dispersion model on the given scenario and returns a callable
 giving the concentration of the form
     c(x, y, z[, t])
 
-If `model` is unspecified, defaults to gaussian.
+The concentration is in kg/m³, if `model` is unspecified, defaults to gaussian.
 
 All model parameters are assumed to be in SI base units (i.e.
 distances in m, velocities in m/s, mass in kg, etc.)
@@ -51,7 +53,7 @@ distances in m, velocities in m/s, mass in kg, etc.)
 function plume end
 
 #default behaviour
-plume(s) = plume(s, GaussianPlume())
+plume(s) = plume(s, GaussianPlume)
 
 # plume models
 include("models/gaussian_plume.jl")
@@ -66,7 +68,7 @@ Runs the puff dispersion model on the given scenario and returns a callable
 giving the concentration of the form
     c(x, y, z, t)
 
-If `model` is unspecified, defaults to gaussian.
+The concentration is in kg/m³, if `model` is unspecified, defaults to gaussian.
 
 All model parameters are assumed to be in SI base units (i.e.
 distances in m, velocities in m/s, mass in kg, etc.)
@@ -74,7 +76,7 @@ distances in m, velocities in m/s, mass in kg, etc.)
 function puff end
 
 #default behaviour
-puff(s) = puff(s, GaussianPuff())
+puff(s) = puff(s, GaussianPuff)
 
 # puff models
 include("models/gaussian_puff.jl")
@@ -90,9 +92,6 @@ If no atmosphere is given defaults to ambient conditions.
 
 """
 function scenario_builder end
-
-#default behaviour
-scenario_builder(s,m) = scenario_builder(s,m, Ambient())
 
 # source models
 include("source_models/jet_source.jl")

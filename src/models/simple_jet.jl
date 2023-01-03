@@ -1,10 +1,5 @@
-
-struct SimpleJet <: PlumeModel
-    release_angle::Number
-    k2::Number
-    k3::Number
-end
-SimpleJet(; release_angle=0, k2=6, k3=5) = SimpleJet(release_angle,k2,k3)
+# defining type for dispatch
+struct SimpleJet <: PlumeModel end
 
 struct SimpleJetSolution <: Plume
     scenario::Scenario
@@ -19,7 +14,7 @@ struct SimpleJetSolution <: Plume
 end
 
 @doc doc"""
-    plume(scenario::Scenario, SimpleJet(kwargs...))
+    plume(scenario::Scenario, SimpleJet; kwargs...)
 
 Generates a simple turbulent jet dispersion model for the given scenario and
 returns a callable giving the concentration with the form `c(x, y, z[, t])`
@@ -41,7 +36,7 @@ of images.
 - `k2::Number=6` parameter of the model, default value is recommended by Long
 - `k3::Number=5` parameter of the model, default value is recommended by Long
 """
-function plume(scenario::Scenario, model::SimpleJet)
+function plume(scenario::Scenario, ::Type{SimpleJet}; release_angle::Number=0.0, k2::Number=6.0, k3::Number=5.0)
     # Density correction
     ρj = _release_density(scenario)
     ρa = _atmosphere_density(scenario)
@@ -58,11 +53,11 @@ function plume(scenario::Scenario, model::SimpleJet)
     :simple_jet,   #model::Symbol
     d,  # diameter
     _release_height(scenario),  # height
-    -1*model.release_angle, # release angle
+    -1*release_angle, # release angle
     c0, # concentration
     kd, # density_correction
-    model.k2,
-    model.k3
+    k2,
+    k3
     )
 
 end

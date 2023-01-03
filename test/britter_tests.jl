@@ -3,20 +3,22 @@
     # Releases* CCPS, 1999, pg 122
     s = Substance(name = :test,
                   gas_density = 1.76,
-                  liquid_density = 1000.0,
+                  liquid_density = 425.6,
+                  reference_temp=(273.15-162),
+                  reference_pressure=101325.0,
                   boiling_temp = NaN,
                   latent_heat = NaN,
                   gas_heat_capacity = NaN,
                   liquid_heat_capacity = NaN)
     r = Release( mass_rate = (0.23*425.6),
-                 duration = Inf,
+                 duration = 174,
                  diameter = 0,
                  velocity = 0,
                  height = 10.0,
-                 pressure = 0,
+                 pressure = 101325.0,
                  temperature = (273.15-162),
                  fraction_liquid = 0.0)
-    a = Ambient(windspeed=10.9, density=1.224, temperature=298, stability=:F)
+    a = Ambient(windspeed=10.9, density=1.224, temperature=298, stability=ClassF)
     ex = Scenario(s,r,a)
     # known answers
     # set 1 is covers the short-distance correlation
@@ -25,15 +27,15 @@
     x₂, c₂ = 367.0, 0.0872919843565787
 
     # test type inheritance
-    @test isa(plume(ex, BritterMcQuaidPlume()), Plume)
+    @test isa(plume(ex, BritterMcQuaidPlume), Plume)
 
-    @testset "Britter-McQuaid plume tests for class $class" for class in [:A, :B, :C, :D, :E, :F]
+    @testset "Britter-McQuaid plume tests for class $class" for class in [ClassA, ClassB, ClassC, ClassD, ClassE, ClassF]
         # because the windspeed is at 10m, the class should not impact the
         # calculations but this is a check that getting the corresponding
         # correlation doesn't throw any errors or do anything deeply strange
         a = Ambient(windspeed=10.9, density=1.224, temperature=298, stability=class)
         ex = Scenario(s,r,a)
-        britter_mcquaid = plume(ex, BritterMcQuaidPlume())
+        britter_mcquaid = plume(ex, BritterMcQuaidPlume)
         @test britter_mcquaid(x₁,0,0) ≈ c₁
         @test britter_mcquaid(x₂,0,0) ≈ c₂
 
@@ -56,9 +58,9 @@ end
                  pressure = 0,
                  temperature = (273.15-162),
                  fraction_liquid = 0.0)
-    a = Ambient(windspeed=10.9, density=1.224, temperature=298, stability=:F)
+    a = Ambient(windspeed=10.9, density=1.224, temperature=298, stability=ClassF)
     ex = Scenario(s,r,a)
 
-    @test_throws ErrorException puff(ex, BritterMcQuaidPuff())
+    @test_throws ErrorException puff(ex, BritterMcQuaidPuff)
 
 end

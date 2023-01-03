@@ -1,19 +1,7 @@
+# defining type for dispatch
+struct IntPuff <: PuffModel end
 
-# gaussian puff model
-struct IntPuff{T<:Number} <: PuffModel
-    npuffs::T
-end
-
-function IntPuff(;npuffs=Inf)
-    if isfinite(npuffs)
-        n = Int(npuffs)
-        return IntPuff{Integer}(n)
-    else
-        return IntPuff{Float64}(Inf)
-    end
-end
-
-struct IntPuffSolution{T<:Number} <: Puff
+struct IntPuffSolution{T<:Number,S<:StabilityClass} <: Puff
     scenario::Scenario
     model::Symbol
     massrate::Number
@@ -21,16 +9,11 @@ struct IntPuffSolution{T<:Number} <: Puff
     npuffs::T
     height::Number
     windspeed::Number
-    downwind_dispersion::Dispersion
-    crosswind_dispersion::Dispersion
-    vertical_dispersion::Dispersion
+    stability::Type{S}
 end
 
-
-
-
 @doc doc"""
-    puff(scenario::Scenario, IntPuff(kwargs...))
+    puff(scenario::Scenario, IntPuff; kwargs...)
 
 Generates an integrated gaussian dispersion model, where the release is modeled
 as a sequence of gaussian puffs, for the given scenario and returns a
@@ -47,22 +30,16 @@ c\left(x,y,z,t\right) = \sum_{i}^{n-1} { {\dot{m} \Delta t} \over n }
 where δt is Δt/n, and the σs are dispersion parameters correlated with the distance x
 
 # Arguments
-- `npuffs::Integer`: the number of discrete gaussian puffs, defaults to infinity
+- `n::Integer`: the number of discrete gaussian puffs, defaults to infinity
 
 """
-function puff(scenario::Scenario, model::IntPuff)
+function puff(scenario::Scenario, ::Type{IntPuff}; n::Number=Inf)
 
     stab = _stability(scenario)
     ṁ = _mass_rate(scenario)
     Δt = _duration(scenario)
-    n = model.npuffs
     h = _release_height(scenario)
     u = _windspeed(scenario)
-
-    # Pasquill-Gifford dispersion
-    σx = crosswind_dispersion(stab; plume=false)
-    σy = σx
-    σz = vertical_dispersion(stab; plume=false)
 
     if n > 1
         return IntPuffSolution(
@@ -73,9 +50,7 @@ function puff(scenario::Scenario, model::IntPuff)
             n, #number of puffs
             h,  #release height
             u,  #windspeed
-            σx, #downwind_dispersion::Dispersion
-            σy, #crosswind_dispersion::Dispersion
-            σz  #vertical_dispersion::Dispersion
+            stab #stability class
         )
     elseif n==1
         return GaussianPuffSolution(
@@ -84,9 +59,7 @@ function puff(scenario::Scenario, model::IntPuff)
             ṁ*Δt,  #mass
             h,  #release height
             u,  #windspeed
-            σx, #downwind_dispersion::Dispersion
-            σy, #crosswind_dispersion::Dispersion
-            σz  #vertical_dispersion::Dispersion
+            stab #stability class
         )
     else
         error("Number of puffs must be a positive integer value, or Inf")
@@ -94,7 +67,7 @@ function puff(scenario::Scenario, model::IntPuff)
 end
 
 
-function (ip::IntPuffSolution{<:Integer})(x,y,z,t)
+function (ip::IntPuffSolution{<:Integer,<:StabilityClass})(x,y,z,t)
     # domain check
     if (x<0)||(z<0)||(t<0)
         return 0.0
@@ -105,9 +78,10 @@ function (ip::IntPuffSolution{<:Integer})(x,y,z,t)
     n = ip.npuffs # number of intervals = number of puffs - 1
     h = ip.height
     u = ip.windspeed
-    σx = ip.downwind_dispersion(x)
-    σy = ip.crosswind_dispersion(x)
-    σz = ip.vertical_dispersion(x)
+    stab = ip.stability
+    σx = downwind_dispersion(x, Puff, stab)
+    σy = crosswind_dispersion(x, Puff, stab)
+    σz = vertical_dispersion(x, Puff, stab)
 
     # Only account for puffs that have already been emitted
     Δt = min(t,Δt)
@@ -134,7 +108,7 @@ function (ip::IntPuffSolution{<:Integer})(x,y,z,t)
     return c
 end
 
-function (ip::IntPuffSolution{Float64})(x,y,z,t)
+function (ip::IntPuffSolution{Float64,<:StabilityClass})(x,y,z,t)
     # domain check
     if (x<0)||(z<0)||(t<0)
         return 0.0
@@ -144,9 +118,10 @@ function (ip::IntPuffSolution{Float64})(x,y,z,t)
     Δt = ip.duration
     h = ip.height
     u = ip.windspeed
-    σx = ip.downwind_dispersion(x)
-    σy = ip.crosswind_dispersion(x)
-    σz = ip.vertical_dispersion(x)
+    stab = ip.stability
+    σx = downwind_dispersion(x, Puff, stab)
+    σy = crosswind_dispersion(x, Puff, stab)
+    σz = vertical_dispersion(x, Puff, stab)
 
     # Only account for puffs that have already been emitted
     Δt = min(t,Δt)

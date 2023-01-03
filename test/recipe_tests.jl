@@ -8,7 +8,7 @@ using Plots
                   Release(mass_rate=0.1,duration=10.0,diameter=10.0,
                    velocity=1.0,height=0.0,pressure=0.0,temperature=0.0,
                    fraction_liquid=0.0),
-                  Ambient(windspeed=2.0, stability=:F))
+                  Ambient(windspeed=2.0, stability=ClassF))
 
     pl = plume(ex)
     p1 = plot(pl; height=0, xlims=(-1,100), ylims=(-50,50), clims=(0,pl.max_concentration))
