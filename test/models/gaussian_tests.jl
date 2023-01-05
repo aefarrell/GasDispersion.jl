@@ -1,5 +1,5 @@
-include("../src/utils/pasquill_gifford.jl")
-include("../src/models/plume_rise.jl")
+include("../../src/utils/pasquill_gifford.jl")
+include("../../src/utils/plume_rise.jl")
 
 null_substance = Substance(name=:test,gas_density=NaN,liquid_density=NaN,
                 boiling_temp=NaN,latent_heat=NaN,gas_heat_capacity=NaN,

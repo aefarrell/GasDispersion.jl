@@ -1,5 +1,3 @@
-include("plume_rise.jl")
-
 # for dispatch
 struct GaussianPlume <: PlumeModel end
 

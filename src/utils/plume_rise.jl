@@ -10,21 +10,29 @@ struct BuoyantPlume <: BriggsModel
     final_rise::Number
 end
 
+Base.isapprox(a::BuoyantPlume, b::BuoyantPlume) = all([
+    getproperty(a,k)≈getproperty(b,k) for k in fieldnames(typeof(a))
+    if typeof(getproperty(a,k))<:Number ])
+
 struct MomentumPlume{S<:StabilityClass} <: BriggsModel
     Fm::Number
     xf::Number
     β::Number
-    s::Number
+    s::Union{Number,Nothing}
     final_rise::Number
     stab::Type{S}
 end
+
+Base.isapprox(a::MomentumPlume, b::MomentumPlume) = all([
+    getproperty(a,k)≈getproperty(b,k) for k in fieldnames(typeof(a))
+    if typeof(getproperty(a,k))<:Number ])
 
 """
     plume_rise(Dⱼ, uⱼ, Tᵣ, u, Tₐ, ::Type{Union{ClassA, ClassB, ClassC, ClassD}})
 Implements the Briggs plume rise equations for buoyancy and momentum driven
 plume rise as described in the ISC3 model guide EPA-454/B-95-003b
 """
-function plume_rise(Dⱼ,uⱼ,Tᵣ,u,Tₐ, stab::Type{Union{ClassA, ClassB, ClassC, ClassD}})
+function plume_rise(Dⱼ,uⱼ,Tᵣ,u,Tₐ, stab::Union{Type{ClassA},Type{ClassB},Type{ClassC},Type{ClassD}})
     # physics parameters
     g = 9.80616 #m/s^2
 
@@ -54,7 +62,7 @@ function plume_rise(Dⱼ,uⱼ,Tᵣ,u,Tₐ, stab::Type{Union{ClassA, ClassB, Clas
         xf = if (Fb<=0) 4Dⱼ*(uⱼ+3u)^2/(uⱼ*u) else xf end
         β = (1/3) + (u/uⱼ)
         final_rise = 3Dⱼ*(uⱼ/u)
-        return MomentumPlume(Fm,xf,β,NaN,final_rise,stab)
+        return MomentumPlume(Fm,xf,β,nothing,final_rise,stab)
     end
 end
 
@@ -69,16 +77,18 @@ function plume_rise(Dⱼ,uⱼ,Tᵣ,u,Tₐ, ::Type{ClassE})
 
     if (Tᵣ - Tₐ) > ΔTc
         # buoyancy dominated plume rise
-        final_rise = 2.6*(Fb/(u*s))^(1/3)
         xf = 2.0715*u/√(s)
+        Δhf = 2.6*(Fb/(u*s))^(1/3)
+        Δhf_calm = 4*(Fb^0.25)/(s^0.375)
+        final_rise = min(Δhf,Δhf_calm)
         return BuoyantPlume(Fb,xf,u,final_rise)
     else
         # momentum dominated plume rise
-        stable_momentum_rise = 1.5*(Fm/(uⱼ*√(s)))^(1/3)
-        unstable_momentum_rise = 3*Dⱼ*(uⱼ/u)
-        final_rise = min(stable_momentum_rise, unstable_momentum_rise)
         xf = (π/2)*(u/√(s))
         β = (1/3) + (u/uⱼ)
+        Δhf = 1.5*(Fm/(uⱼ*√(s)))^(1/3)
+        Δhf_unstable = 3*Dⱼ*(uⱼ/u)
+        final_rise = min(Δhf,Δhf_unstable)
         return MomentumPlume(Fm,xf,β,s,final_rise,ClassE)
     end
 end
@@ -94,17 +104,19 @@ function plume_rise(Dⱼ,uⱼ,Tᵣ,u,Tₐ, ::Type{ClassF})
 
     if (Tᵣ - Tₐ) > ΔTc
         # buoyancy dominated plume rise
-        final_rise = 2.6*(Fb/(u*s))^(1/3)
         xf = 2.0715*u/√(s)
+        Δhf = 2.6*(Fb/(u*s))^(1/3)
+        Δhf_calm = 4*(Fb^0.25)/(s^0.375)
+        final_rise = min(Δhf,Δhf_calm)
         return BuoyantPlume(Fb,xf,u,final_rise)
     else
         # momentum dominated plume rise
-        stable_momentum_rise = 1.5*(Fm/(uⱼ*√(s)))^(1/3)
-        unstable_momentum_rise = 3*Dⱼ*(uⱼ/u)
-        final_rise = min(stable_momentum_rise, unstable_momentum_rise)
         xf = (π/2)*(u/√(s))
         β = (1/3) + (u/uⱼ)
-        return MomentumPlume(Fm,xf,β,s,final_rise,ClassF)
+        Δhf = 1.5*(Fm/(uⱼ*√(s)))^(1/3)
+        Δhf_unstable = 3*Dⱼ*(uⱼ/u)
+        final_rise = min(Δhf,Δhf_unstable)
+        return MomentumPlume(Fm,xf,β,s,final_rise,ClassE)
     end
 end
 

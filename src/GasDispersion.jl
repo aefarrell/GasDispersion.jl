@@ -7,7 +7,7 @@ using SpecialFunctions: erf
 using RecipesBase
 
 # source models
-export Atmosphere, Ambient
+export Atmosphere, DryAir
 export StabilityClass, ClassA, ClassB, ClassC, ClassD, ClassE, ClassF
 export Substance, Release, Scenario, scenario_builder
 export SourceModel, JetSource
@@ -31,7 +31,7 @@ abstract type PuffModel end
 abstract type Puff end
 
 # basic type definitions and such
-include("base/scenario.jl")
+include("base/base_types.jl")
 include("base/plot_recipes.jl")
 
 # helpful utilities
@@ -53,7 +53,7 @@ distances in m, velocities in m/s, mass in kg, etc.)
 function plume end
 
 #default behaviour
-plume(s) = plume(s, GaussianPlume)
+plume(s; kwargs...) = plume(s, GaussianPlume; kwargs...)
 
 # plume models
 include("models/gaussian_plume.jl")
@@ -75,8 +75,8 @@ distances in m, velocities in m/s, mass in kg, etc.)
 """
 function puff end
 
-#default behaviour
-puff(s) = puff(s, GaussianPuff)
+# default behaviour
+puff(s; kwargs...) = puff(s, GaussianPuff; kwargs...)
 
 # puff models
 include("models/gaussian_puff.jl")
@@ -92,6 +92,9 @@ If no atmosphere is given defaults to ambient conditions.
 
 """
 function scenario_builder end
+
+# default behaviour
+scenario_builder(s,m; kwargs...) = scenario_builder(s,m,DryAir(); kwargs...)
 
 # source models
 include("source_models/jet_source.jl")

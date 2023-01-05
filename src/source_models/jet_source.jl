@@ -21,7 +21,7 @@ Chemical Release*, CCPS, New York (1999)
 - `duration::Number`: the duration of the leak, s
 
 """
-function scenario_builder(substance::Substance, ::Type{JetSource}, atmosphere::Atmosphere=Ambient(); phase=:liquid, dischargecoef=0.63, k=1.4, diameter, pressure,temperature, height, duration=Inf)
+function scenario_builder(substance::Substance, ::Type{JetSource}, atmosphere::Atmosphere; phase=:liquid, dischargecoef=0.63, k=1.4, diameter, pressure,temperature, height, duration=Inf)
     cd = dischargecoef
     d  = diameter
     T₁ = temperature
