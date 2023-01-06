@@ -51,7 +51,7 @@ end
 function (g::GaussianPuffSolution)(x,y,z,t)
 
     # domain check
-    if (x<0)||(z<0)||(t<0)
+    if (z<0)||(t<0)
         return 0.0
     end
 
@@ -59,9 +59,10 @@ function (g::GaussianPuffSolution)(x,y,z,t)
     h = g.height
     u = g.windspeed
     stab = g.stability
-    σx = downwind_dispersion(x, Puff, stab)
-    σy = crosswind_dispersion(x, Puff, stab)
-    σz = vertical_dispersion(x, Puff, stab)
+    xc = abs(u*t) # location of center of cloud
+    σx = downwind_dispersion(xc, Puff, stab)
+    σy = crosswind_dispersion(xc, Puff, stab)
+    σz = vertical_dispersion(xc, Puff, stab)
 
     c = ( G/((2*π)^(1.5)*σx*σy*σz)
         * exp(-0.5*((x-u*t)/σx)^2)

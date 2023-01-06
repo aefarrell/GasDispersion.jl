@@ -69,7 +69,7 @@ end
 
 function (ip::IntPuffSolution{<:Integer,<:StabilityClass})(x,y,z,t)
     # domain check
-    if (x<0)||(z<0)||(t<0)
+    if (z<0)||(t<0)
         return 0.0
     end
 
@@ -79,9 +79,6 @@ function (ip::IntPuffSolution{<:Integer,<:StabilityClass})(x,y,z,t)
     h = ip.height
     u = ip.windspeed
     stab = ip.stability
-    σx = downwind_dispersion(x, Puff, stab)
-    σy = crosswind_dispersion(x, Puff, stab)
-    σz = vertical_dispersion(x, Puff, stab)
 
     # Only account for puffs that have already been emitted
     Δt = min(t,Δt)
@@ -90,27 +87,37 @@ function (ip::IntPuffSolution{<:Integer,<:StabilityClass})(x,y,z,t)
     G = ṁ*Δt/n
 
     # Gaussian dispersion in the x direction
-    gx = 0
+    ∑g = 0
     δt = Δt/(n-1)
     for i in 0:(n-1)
         t′ = t-i*δt
-        gx′ = t′>0 ? exp(-0.5*((x-u*t′)/σx)^2)/(√(2π)*σx) : 0
-        gx += isnan(gx′) ? 0 : gx′
+        xc = u*t′ # center of cloud
+
+        σx = downwind_dispersion(xc, Puff, stab)
+        gx = t′>0 ? exp(-0.5*((x-u*t′)/σx)^2)/(√(2π)*σx) : 0
+
+        σy = crosswind_dispersion(xc, Puff, stab)
+        gy = exp(-0.5*(y/σy)^2)/(√(2π)*σy)
+
+        σz = vertical_dispersion(xc, Puff, stab)
+        gz = ( exp(-0.5*((z-h)/σz)^2) + exp(-0.5*((z+h)/σz)^2) )/(√(2π)*σz)
+
+        g = gx*gy*gz
+        ∑g += isnan(g) ? 0 : g
     end
 
     # Gaussian dispersion in the y and z directions
-    gy = exp(-0.5*(y/σy)^2)/(√(2π)*σy)
-    gz = ( exp(-0.5*((z-h)/σz)^2) + exp(-0.5*((z+h)/σz)^2) )/(√(2π)*σz)
+
 
     # concentration
-    c = G*gx*gy*gz
+    c = G*∑g
 
     return c
 end
 
 function (ip::IntPuffSolution{Float64,<:StabilityClass})(x,y,z,t)
     # domain check
-    if (x<0)||(z<0)||(t<0)
+    if (z<0)||(t<0)
         return 0.0
     end
 
@@ -119,20 +126,23 @@ function (ip::IntPuffSolution{Float64,<:StabilityClass})(x,y,z,t)
     h = ip.height
     u = ip.windspeed
     stab = ip.stability
-    σx = downwind_dispersion(x, Puff, stab)
-    σy = crosswind_dispersion(x, Puff, stab)
-    σz = vertical_dispersion(x, Puff, stab)
+    xc = u*t # center of cloud
 
     # Only account for puffs that have already been emitted
     Δt = min(t,Δt)
 
     # Gaussian dispersion in the x direction
+    σx = downwind_dispersion(xc, Puff, stab)
     a  = (x-u*(t-Δt))/(√2*σx)
     b  = (x-u*t)/(√2*σx)
     ∫gx = erf(b,a)/(2u)
 
-    # Gaussian dispersion in the y and z directions
+    # Gaussian dispersion in the y direction
+    σy = crosswind_dispersion(xc, Puff, stab)
     gy = exp((-1/2)*(y/σy)^2)/(√(2π)*σy)
+
+    # Gaussian dispersion in the z direction
+    σz = vertical_dispersion(xc, Puff, stab)
     gz = ( exp((-1/2)*((z-h)/σz)^2) + exp((-1/2)*((z+h)/σz)^2) )/(√(2π)*σz)
 
     # concentration
