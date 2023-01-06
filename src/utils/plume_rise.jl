@@ -19,6 +19,7 @@ struct MomentumPlume{S<:StabilityClass} <: BriggsModel
     xf::Number
     β::Number
     s::Union{Number,Nothing}
+    u::Number
     final_rise::Number
     stab::Type{S}
 end
@@ -62,7 +63,7 @@ function plume_rise(Dⱼ,uⱼ,Tᵣ,u,Tₐ, stab::Union{Type{ClassA},Type{ClassB}
         xf = if (Fb<=0) 4Dⱼ*(uⱼ+3u)^2/(uⱼ*u) else xf end
         β = (1/3) + (u/uⱼ)
         final_rise = 3Dⱼ*(uⱼ/u)
-        return MomentumPlume(Fm,xf,β,nothing,final_rise,stab)
+        return MomentumPlume(Fm,xf,β,nothing,u,final_rise,stab)
     end
 end
 
@@ -90,7 +91,7 @@ function plume_rise(Dⱼ,uⱼ,Tᵣ,u,Tₐ, ::Type{ClassE})
         Δhf = 1.5*(Fm/(uⱼ*√(s)))^(1/3)
         Δhf_unstable = 3*Dⱼ*(uⱼ/u)
         final_rise = min(Δhf,Δhf_unstable)
-        return MomentumPlume(Fm,xf,β,s,final_rise,ClassE)
+        return MomentumPlume(Fm,xf,β,s,u,final_rise,ClassE)
     end
 end
 
@@ -118,7 +119,7 @@ function plume_rise(Dⱼ,uⱼ,Tᵣ,u,Tₐ, ::Type{ClassF})
         Δhf = 1.5*(Fm/(uⱼ*√(s)))^(1/3)
         Δhf_unstable = 3*Dⱼ*(uⱼ/u)
         final_rise = min(Δhf,Δhf_unstable)
-        return MomentumPlume(Fm,xf,β,s,final_rise,ClassE)
+        return MomentumPlume(Fm,xf,β,s,u,final_rise,ClassF)
     end
 end
 
@@ -132,7 +133,7 @@ end
 
 function plume_rise(x, m::MomentumPlume{<:Union{ClassA,ClassB,ClassC,ClassD}})
     if x < m.xf
-        return min((3m.Fm*x/(m.β*u)^2)^(1/3), m.final_rise)
+        return min((3m.Fm*x/(m.β*m.u)^2)^(1/3), m.final_rise)
     else
         return m.final_rise
     end

@@ -85,6 +85,7 @@ end
               (ClassF, 0.023523465599668385, 0.05588182287353654)]
     @testset "Stability class $class" for (class,cwind,vert) in knowns
         @test crosswind_dispersion(1.2, Puff, class) ≈ cwind
+        @test downwind_dispersion(1.2, Puff, class) ≈ cwind
         @test vertical_dispersion(1.2, Puff, class) ≈ vert
     end
 end
@@ -129,7 +130,8 @@ end
     # test Briggs model of plume rise
     g = 9.80616 # m/s^2
     Tₐ = 288.15 # ambient temperature, K
-    u = 4 # windspeed, m/s
+    u = 4. # windspeed, m/s
+    x = 50. # test point, m
 
     # Buoyant unstable plume
     # Fb = 50 case
@@ -140,6 +142,8 @@ end
     sln = plume_rise(1.0,uⱼ,Tᵣ,u,Tₐ,ClassA)
     @test isa(sln,BuoyantPlume)
     @test sln ≈ BuoyantPlume(50.0,xf,u,Δhf)
+    @test plume_rise(x, sln) ≈ 20.0
+    @test plume_rise(2xf, sln) ≈ Δhf
 
     # Fb = 60 case
     uⱼ = 87.52583639607202
@@ -159,7 +163,9 @@ end
     Δhf = 3*(uⱼ/u) # m
     sln = plume_rise(1.0,uⱼ,Tᵣ,u,Tₐ,ClassA)
     @test isa(sln,MomentumPlume)
-    @test sln ≈ MomentumPlume(Fm,xf,β,nothing,Δhf,ClassA)
+    @test sln ≈ MomentumPlume(Fm,xf,β,nothing,u,Δhf,ClassA)
+    @test plume_rise(x, sln) ≈ 81.01824072514351
+    @test plume_rise(2xf, sln) ≈ Δhf
 
     # Buoyant stable plume
     # Fb = 50, class E
@@ -191,7 +197,9 @@ end
     Δhf = 19.04522445600697 # m
     sln = plume_rise(1.0,uⱼ,Tᵣ,u,Tₐ,ClassE)
     @test isa(sln,MomentumPlume)
-    @test sln ≈ MomentumPlume(Fm,xf,β,s,Δhf,ClassE)
+    @test sln ≈ MomentumPlume(Fm,xf,β,s,u,Δhf,ClassE)
+    @test plume_rise(x, sln) ≈ Δhf
+    @test plume_rise(2xf, sln) ≈ Δhf
 
     # Momentum dominated stable plume
     # Fb = 67, class F
@@ -204,6 +212,6 @@ end
     Δhf = 17.349211998937378 # m
     sln = plume_rise(1.0,uⱼ,Tᵣ,u,Tₐ,ClassF)
     @test isa(sln,MomentumPlume)
-    @test sln ≈ MomentumPlume(Fm,xf,β,s,Δhf,ClassF)
+    @test sln ≈ MomentumPlume(Fm,xf,β,s,u,Δhf,ClassF)
 
 end
