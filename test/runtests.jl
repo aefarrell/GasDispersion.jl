@@ -22,9 +22,9 @@ include("source_models/jet_source_tests.jl")
 include("models/gaussian_plume_tests.jl")
 include("models/gaussian_puff_tests.jl")
 include("models/intpuff_tests.jl")
-# include("models/simple_jet_tests.jl")
-# include("models/britter_mcquaid_plume_tests.jl")
-# include("models/britter_mcquaid_puff_tests.jl")
+include("models/simple_jet_tests.jl")
+include("models/britter_mcquaid_plume_tests.jl")
+include("models/britter_mcquaid_puff_tests.jl")
 #
 # # testing plot recipes
 # # this is comedically slow

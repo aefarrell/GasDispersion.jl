@@ -82,16 +82,15 @@ function plume(scenario::Scenario, ::Type{GaussianPlume}; downwash::Bool=false, 
 end
 
 function (g::GaussianPlumeSolution{NoPlumeRise, <:StabilityClass})(x, y, z, t=0)
-
     # domain check
-    if x==0
+    h = g.effective_stack_height
+    if (x==0)&&(y==0)&&(z==h)
         return g.max_concentration
-    elseif (x<0)||(z<0)
+    elseif (x≤0)||(z<0)
         return 0.0
     else
         G = g.mass_rate
         u = g.windspeed
-        h = g.effective_stack_height
         stab = g.stability
         σy = crosswind_dispersion(x,Plume,stab)
         σz = vertical_dispersion(x,Plume,stab)
@@ -105,22 +104,22 @@ function (g::GaussianPlumeSolution{NoPlumeRise, <:StabilityClass})(x, y, z, t=0)
 end
 
 function (g::GaussianPlumeSolution{<:BriggsModel, <:StabilityClass})(x, y, z, t=0)
-
     # domain check
-    if x==0
+    h = g.effective_stack_height
+    if (x==0)&&(y==0)&&(z==h)
         return g.max_concentration
-    elseif (x<0)||(z<0)
+    elseif (x≤0)||(z<0)
         return 0.0
     else
         G = g.mass_rate
         u = g.windspeed
-        hᵣ = g.effective_stack_height
+        h = g.effective_stack_height
         stab = g.stability
         m = g.plumerise
         Δh = plume_rise(x, m)
         σy = crosswind_dispersion(x,Plume,stab)
         σz = vertical_dispersion(x,Plume,stab)
-        hₑ  = hᵣ + Δh
+        hₑ  = h + Δh
         σyₑ = √( (Δh/3.5)^2 + σy^2 )
         σzₑ = √( (Δh/3.5)^2 + σz^2 )
 

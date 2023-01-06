@@ -1,12 +1,27 @@
 @testset "Simple turbulent jet tests" begin
     # example scenario
-    ex = Scenario( Substance(name=:test,gas_density=1.2,liquid_density=1000.0,
-                    boiling_temp=NaN,latent_heat=NaN,gas_heat_capacity=NaN,
-                    liquid_heat_capacity=NaN),
-                   Release(mass_rate = 1.0, duration = Inf, diameter = 1.0,
-                            velocity = 1.0, height = 1.0, pressure = 101325.0,
-                            temperature = 288.15, fraction_liquid=0.0),
-                   Ambient(density=1.2))
+    sub = Substance(name="test gas",
+                    gas_density=1.1845208097888285,
+                    liquid_density=1000.,
+                    reference_temp=298.,
+                    reference_pressure=101325.0,
+                    boiling_temp=100.,
+                    latent_heat=1.,
+                    gas_heat_capacity=1.,
+                    liquid_heat_capacity=1.)
+    rel = Release(mass_rate=1.0,
+                  duration=Inf,
+                  diameter=1.0,
+                  velocity=1.0,
+                  height=1.0,
+                  temperature=298.,
+                  pressure=101325.,
+                  fraction_liquid=0.0)
+    atm = DryAir(temperature=298.0,
+                 pressure=101325.0,
+                 windspeed=2.0,
+                 stability=ClassF)
+    scn = Scenario(sub,rel,atm)
     # known answers
     a, b = 6.0, 5.0
     ξ² = log(2)/b^2
@@ -14,7 +29,7 @@
     c = (2/π)*(1+exp(-25/9))
 
     # horizontal jet
-    j = plume(ex, SimpleJet; release_angle=0.0, k2=a, k3=b)
+    j = plume(scn, SimpleJet; release_angle=0.0, k2=a, k3=b)
     @test isa(j, GasDispersion.SimpleJetSolution)
     @test isa(j, Plume)
     @test j(x,y,z) ≈ c

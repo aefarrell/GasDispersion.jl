@@ -48,6 +48,8 @@
     # test with plume rise
     pl = plume(scn; plumerise=true)
     @test isa(pl.plumerise,GasDispersion.BriggsModel)
+    @test pl(-1,0,0) == 0.0
+    @test pl(0,0,10) ≈ 0.1/(π/4)
     @test pl(500, 0, 10) ≈ 5.297761895423843e-5
 
 end
