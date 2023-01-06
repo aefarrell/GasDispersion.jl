@@ -1,27 +1,20 @@
-include("plume_rise.jl")
-
-# gaussian plume model
-struct GaussianPlume <: PlumeModel
-    downwash::Bool
-    plumerise::Bool
-end
-GaussianPlume(;downwash=false, plumerise=false) = GaussianPlume(downwash,plumerise)
+# for dispatch
+struct GaussianPlume <: PlumeModel end
 
 # Solution to the gaussian plume
-struct GaussianPlumeSolution <: Plume
+struct GaussianPlumeSolution{P<:PlumeRise, S<:StabilityClass} <: Plume
     scenario::Scenario
     model::Symbol
     max_concentration::Number
     mass_rate::Number
     windspeed::Number
     effective_stack_height::Number
-    plume_rise::Function
-    crosswind_dispersion::Dispersion
-    vertical_dispersion::Dispersion
+    plumerise::P
+    stability::Type{S}
 end
 
 @doc doc"""
-    plume(::Scenario; GaussianPlume(kwargs...))
+    plume(::Scenario, GaussianPlume; kwargs...)
 
 Generates a gaussian dispersion model for the given scenario and returns a
 callable giving the concentration of the form `c(x, y, z[, t])`
@@ -42,22 +35,23 @@ where the σs are dispersion parameters correlated with the distance x
 - `downwash::Bool=false`: when true, includes stack-downwash effects
 - `plumerise::Bool=false`: when true, includes plume-rise effects using Briggs' model
 """
-function plume(scenario::Scenario, model::GaussianPlume)
+function plume(scenario::Scenario, ::Type{GaussianPlume}; downwash::Bool=false, plumerise::Bool=false)
     # parameters of the jet
-    G  = scenario.release.mass_rate
-    Dⱼ = scenario.release.diameter
-    uⱼ = scenario.release.velocity
-    hᵣ = scenario.release.height
+    ṁ  = _mass_rate(scenario)
+    Dⱼ = _release_diameter(scenario)
+    Qⱼ = _release_flowrate(scenario)
+    uⱼ = _release_velocity(scenario)
+    hᵣ = _release_height(scenario)
 
     # parameters of the environment
-    u = scenario.atmosphere.windspeed
-    stability = scenario.atmosphere.stability
+    u = _windspeed(scenario)
+    stab = _stability(scenario)
 
     # max concentration
-    c_max = G/((π/4)*Dⱼ^2*uⱼ)
+    c_max = ṁ/Qⱼ
 
     # stack-tip downwash check
-    if (model.downwash==true) && (uⱼ < 1.5*u)
+    if (downwash==true) && (uⱼ < 1.5*u)
         Δh_dw = 2*Dⱼ*( (uⱼ/u) - 1.5 )
     else
         Δh_dw = 0.0
@@ -66,41 +60,66 @@ function plume(scenario::Scenario, model::GaussianPlume)
     hᵣ = hᵣ + Δh_dw
 
     # plume rise
-    Δh = plume_rise(scenario, model.plumerise)
-
-    # Pasquill-Gifford dispersion
-    σy = crosswind_dispersion(stability)
-    σz = vertical_dispersion(stability)
+    if plumerise == true
+        Tᵣ = _release_temperature(scenario)
+        Tₐ = _atmosphere_temperature(scenario)
+        plume = plume_rise(Dⱼ,uⱼ,Tᵣ,u,Tₐ, stab)
+    else
+        plume = NoPlumeRise()
+    end
 
     return GaussianPlumeSolution(
     scenario, #scenario::Scenario
     :gaussian, #model::Symbol
     c_max, # max concentration
-    G,  #mass emission rate
-    u,  #windspeed
-    hᵣ, #effective_stack_height::Number
-    Δh, #plume_rise::Function
-    σy, #crosswind_dispersion::Function
-    σz  #vertical_dispersion::Function
+    ṁ,     #mass emission rate
+    u,     #windspeed
+    hᵣ,    #effective_stack_height::Number
+    plume, #plume rise model
+    stab   #stability class
     )
 
 end
 
-function (g::GaussianPlumeSolution)(x, y, z, t=0)
-
+function (g::GaussianPlumeSolution{NoPlumeRise, <:StabilityClass})(x, y, z, t=0)
     # domain check
-    if x==0
+    h = g.effective_stack_height
+    if (x==0)&&(y==0)&&(z==h)
         return g.max_concentration
-    elseif (x<0)||(z<0)
+    elseif (x≤0)||(z<0)
         return 0.0
     else
         G = g.mass_rate
         u = g.windspeed
-        hᵣ = g.effective_stack_height
-        Δh = g.plume_rise(x)
-        σy = g.crosswind_dispersion(x)
-        σz = g.vertical_dispersion(x)
-        hₑ  = hᵣ + Δh
+        stab = g.stability
+        σy = crosswind_dispersion(x,Plume,stab)
+        σz = vertical_dispersion(x,Plume,stab)
+
+        c = ( G/(2*π*u*σy*σz)
+            * exp(-0.5*(y/σy)^2)
+            * ( exp(-0.5*((z-h)/σz)^2) + exp(-0.5*((z+h)/σz)^2) ) )
+
+        return min(g.max_concentration,c)
+    end
+end
+
+function (g::GaussianPlumeSolution{<:BriggsModel, <:StabilityClass})(x, y, z, t=0)
+    # domain check
+    h = g.effective_stack_height
+    if (x==0)&&(y==0)&&(z==h)
+        return g.max_concentration
+    elseif (x≤0)||(z<0)
+        return 0.0
+    else
+        G = g.mass_rate
+        u = g.windspeed
+        h = g.effective_stack_height
+        stab = g.stability
+        m = g.plumerise
+        Δh = plume_rise(x, m)
+        σy = crosswind_dispersion(x,Plume,stab)
+        σz = vertical_dispersion(x,Plume,stab)
+        hₑ  = h + Δh
         σyₑ = √( (Δh/3.5)^2 + σy^2 )
         σzₑ = √( (Δh/3.5)^2 + σz^2 )
 

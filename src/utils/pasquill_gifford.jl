@@ -1,142 +1,113 @@
-struct Dispersion
-    direction::Symbol
-    equation::Symbol
-    δ::Number
-    β::Number
-    γ::Number
+# Plume crosswind dispersion correlations
+# Reference:
+#  Spicer, T. O. and J. A. Havens, "Development of Vapor Dispersion Models
+#  for Non-Neutrally Buoyant Gas Mixtures--Analysis of TFI/NH3 Test Data"
+#  USAF Engineering and Services Laboratory, Final Report, 1988
+function crosswind_dispersion(x, ::Type{Plume}, ::Type{ClassA}; avg_time=600.0)
+    δ, β, tₐ = 0.423, 0.9, 18.4
+    δ = δ*(max(avg_time, tₐ)/600)^0.2
+    return δ*x^β
 end
 
-plume_z_params = Dict(
-    "A" => (δ=107.7, β=-1.7172, γ=0.2770),
-    "B" => (δ=0.1355, β=0.8752, γ=0.0136),
-    "C" => (δ=0.09623, β=0.9477, γ=-0.0020),
-    "D" => (δ=0.04134, β=1.1737, γ=-0.0316),
-    "E" => (δ=0.02275, β=1.3010, γ=-0.0450),
-    "F" => (δ=0.01122, β=1.4024, γ=-0.0540)
-)
-
-puff_z_params = Dict(
-    "A" => (δ=0.60, β=0.75),
-    "B" => (δ=0.53, β=0.73),
-    "C" => (δ=0.34, β=0.71),
-    "D" => (δ=0.15, β=0.70),
-    "E" => (δ=0.10, β=0.65),
-    "F" => (δ=0.05, β=0.61),
-)
-
-plume_y_params = Dict(
-    "A" => (δ=0.423, β=0.9, tₐ=18.4),
-    "B" => (δ=0.313, β=0.9, tₐ=18.4),
-    "C" => (δ=0.210, β=0.9, tₐ=18.4),
-    "D" => (δ=0.136, β=0.9, tₐ=18.3),
-    "E" => (δ=0.102, β=0.9, tₐ=11.4),
-    "F" => (δ=0.0674, β=0.9, tₐ=4.6)
-)
-
-puff_y_params = Dict(
-    "A" => (δ=0.18, β=0.92),
-    "B" => (δ=0.14, β=0.92),
-    "C" => (δ=0.10, β=0.92),
-    "D" => (δ=0.06, β=0.92),
-    "E" => (δ=0.04, β=0.92),
-    "F" => (δ=0.02, β=0.89),
-)
-
-"""
-    crosswind_dispersion(stability_class::String; <keyword arguments>)
-returns the crosswind dispersion function σy(x) for a given Pasquill-Gifford
-stability class, `x` is assumed to be in meters and `σy` is in meters
-
-# Arguments
-`plume` determines if the dispersion is for a plume or instantaneous release
-(puff), by default a plume is assumed.
-`avg_time` the averaging time in seconds, falls back to an "instantaneous"
-averaging time
-
-# References
-plume dispersion correlations are from
-Spicer, T.O., and J.A. Havens, *User's Guide for the DEGADIS 2.1 Dense Gas
-Dispersion Model*, EPA-450/4-89-019, November 1989, pp 45-46
-
-puff dispersion correlations are from:
-Slade, D.H., Diffusion from Instantaneous Sources. *Meteorology and Atomic
-Energy*, TID-24190, USAEC, 1968, pp 163-175
-"""
-function crosswind_dispersion(stability_class::String; plume=true, avg_time=600)
-    if stability_class ∈ Set(["A","B","C","D","E","F"])
-        if plume
-            δ, β, tₐ = plume_y_params[stability_class]
-            δ = δ*(max(avg_time, tₐ)/600)^0.2
-        else
-            δ, β = puff_y_params[stability_class]
-        end
-    else
-        err = "$stability_class is not a valid Pasquill-Gifford stability class"
-        error(err)
-    end
-
-    return Dispersion(
-        :crosswind, #direction::Symbol
-        :eqn1,      #equation::Symbol
-        δ,
-        β,
-        0.0
-    )
+function crosswind_dispersion(x, ::Type{Plume}, ::Type{ClassB}; avg_time=600.0)
+    δ, β, tₐ = 0.313, 0.9, 18.4
+    δ = δ*(max(avg_time, tₐ)/600)^0.2
+    return δ*x^β
 end
 
-"""
-vertical_dispersion(stability_class::String, plume=true)
-returns the vertical dispersion function σz(x) for a given Pasquill-Gifford
-stability class
-`x` is assumed to be in meters and `σz` is in meters
-`plume` determines if the dispersion is for a plume or instantaneous release
-(puff), by default a plume is assumed.
-
-# References
-plume dispersion correlations are from
-Seinfeld, J.H., *Atmospheric Chemistry and Physics of Air Pollution*, John
-Wiley and Sons, New York, 1986
-
-puff dispersion correlations are from:
-Slade, D.H., Diffusion from Instantaneous Sources. *Meteorology and
-Atomic Energy*, TID-24190, USAEC, 1968, pp163-175
-"""
-function vertical_dispersion(stability_class::String; plume=true)
-    if stability_class ∈ Set(["A","B","C","D","E","F"])
-        if plume
-            δ, β, γ = plume_z_params[stability_class]
-            return Dispersion(
-                :vertical, #direction::Symbol
-                :eqn2,      #equation::Symbol
-                δ,
-                β,
-                γ
-            )
-        else
-            δ, β = puff_z_params[stability_class]
-            return Dispersion(
-                :vertical, #direction::Symbol
-                :eqn1,      #equation::Symbol
-                δ,
-                β,
-                0.0
-            )
-        end
-    else
-        err = "$stability_class is not a valid Pasquill-Gifford stability class"
-        error(err)
-    end
+function crosswind_dispersion(x, ::Type{Plume}, ::Type{ClassC}; avg_time=600.0)
+    δ, β, tₐ = 0.210, 0.9, 18.4
+    δ = δ*(max(avg_time, tₐ)/600)^0.2
+    return δ*x^β
 end
 
-
-function(d::Dispersion)(x)
-    eqn = d.equation
-    if eqn == :eqn1
-        return d.δ*x^d.β
-    elseif eqn == :eqn2
-        return d.δ*(x^d.β)*exp(d.γ*log(x)^2)
-    else
-        err = "$eqn is not a valid equation set"
-        error(err)
-    end
+function crosswind_dispersion(x, ::Type{Plume}, ::Type{ClassD}; avg_time=600.0)
+    δ, β, tₐ = 0.136, 0.9, 18.3
+    δ = δ*(max(avg_time, tₐ)/600)^0.2
+    return δ*x^β
 end
+
+function crosswind_dispersion(x, ::Type{Plume}, ::Type{ClassE}; avg_time=600.0)
+    δ, β, tₐ = 0.102, 0.9, 11.4
+    δ = δ*(max(avg_time, tₐ)/600)^0.2
+    return δ*x^β
+end
+
+function crosswind_dispersion(x, ::Type{Plume}, ::Type{ClassF}; avg_time=600.0)
+    δ, β, tₐ = 0.0674, 0.9, 4.6
+    δ = δ*(max(avg_time, tₐ)/600)^0.2
+    return δ*x^β
+end
+
+# Plume vertical dispersion correlations
+# Reference:
+#  Seinfeld, J. H. *Atmospheric Chemistry and Physics of Air Pollution*, John
+#  Wiley and Sons, New York, 1986
+function vertical_dispersion(x, ::Type{Plume}, ::Type{ClassA})
+    δ = 107.7
+    β = -1.7172
+    γ = 0.2770
+    return δ*(x^β)*exp(γ*log(x)^2)
+end
+
+function vertical_dispersion(x, ::Type{Plume}, ::Type{ClassB})
+    δ=0.1355
+    β=0.8752
+    γ=0.0136
+    return δ*(x^β)*exp(γ*log(x)^2)
+end
+
+function vertical_dispersion(x, ::Type{Plume}, ::Type{ClassC})
+    δ=0.09623
+    β=0.9477
+    γ=-0.0020
+    return δ*(x^β)*exp(γ*log(x)^2)
+end
+
+function vertical_dispersion(x, ::Type{Plume}, ::Type{ClassD})
+    δ=0.04134
+    β=1.1737
+    γ=-0.0316
+    return δ*(x^β)*exp(γ*log(x)^2)
+end
+
+function vertical_dispersion(x, ::Type{Plume}, ::Type{ClassE})
+    δ=0.02275
+    β=1.3010
+    γ=-0.0450
+    return δ*(x^β)*exp(γ*log(x)^2)
+end
+
+function vertical_dispersion(x, ::Type{Plume}, ::Type{ClassF})
+    δ=0.01122
+    β=1.4024
+    γ=-0.0540
+    return δ*(x^β)*exp(γ*log(x)^2)
+end
+
+# Puff crosswind dispersion correlations
+# Reference:
+#  CCPS, *Guidelines for Consequence Analysis of Chemical Releases*, American
+#  Institute of Chemical Engineers, New York, 1999
+crosswind_dispersion(x, ::Type{Puff}, ::Type{ClassA}) = 0.18*x^0.92
+crosswind_dispersion(x, ::Type{Puff}, ::Type{ClassB}) = 0.14*x^0.92
+crosswind_dispersion(x, ::Type{Puff}, ::Type{ClassC}) = 0.10*x^0.92
+crosswind_dispersion(x, ::Type{Puff}, ::Type{ClassD}) = 0.06*x^0.92
+crosswind_dispersion(x, ::Type{Puff}, ::Type{ClassE}) = 0.04*x^0.92
+crosswind_dispersion(x, ::Type{Puff}, ::Type{ClassF}) = 0.02*x^0.89
+
+# Puff downwind dispersion correlations
+function downwind_dispersion(x, ::Type{Puff}, stab::Union{Type{ClassA},Type{ClassB},Type{ClassC},Type{ClassD},Type{ClassE},Type{ClassF}})
+    return crosswind_dispersion(x, Puff, stab)
+end
+
+# Puff vertical dispersion functions
+# Reference:
+#  CCPS, *Guidelines for Consequence Analysis of Chemical Releases*, American
+#  Institute of Chemical Engineers, New York, 1999
+vertical_dispersion(x, ::Type{Puff}, ::Type{ClassA}) = 0.60*x^0.75
+vertical_dispersion(x, ::Type{Puff}, ::Type{ClassB}) = 0.53*x^0.73
+vertical_dispersion(x, ::Type{Puff}, ::Type{ClassC}) = 0.34*x^0.71
+vertical_dispersion(x, ::Type{Puff}, ::Type{ClassD}) = 0.15*x^0.70
+vertical_dispersion(x, ::Type{Puff}, ::Type{ClassE}) = 0.10*x^0.65
+vertical_dispersion(x, ::Type{Puff}, ::Type{ClassF}) = 0.05*x^0.61

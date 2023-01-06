@@ -1,22 +1,8 @@
-struct JetSource <: SourceModel
-    phase::Symbol
-    cd::Number
-    k::Number
-    diameter::Number
-    pressure::Number
-    temperature::Number
-    density::Number
-    height::Number
-    duration::Number
-end
-JetSource(; phase=:liquid, dischargecoef=0.63, k=1.4, diameter,
-            pressure, temperature, density, height,
-            duration=Inf) = JetSource(phase, dischargecoef, k, diameter,
-            pressure, temperature, density, height, duration)
-
+# defining type for dispatch
+struct JetSource <: SourceModel end
 
 @doc doc"""
-    scenario_builder(source::JetSource(kwargs), atmosphere::Atmosphere)
+    scenario_builder(substance::Substance, JetSource, atmosphere::Atmosphere; kwargs...)
 Returns returns a scenario with a simple jet source from a circular hole. The
 jet can either be a liquid or a gas, which case it is assumed to be an ideal
 gas and the jet is isentropic.
@@ -27,36 +13,38 @@ Chemical Release*, CCPS, New York (1999)
 # Arguments
 - `phase=:liquid`: the phase, either :liquid or :gas
 - `dischargecoef::Number=0.61`: the discharge coefficient cd
-- `k::Number=1.4`: the heat capacity ration cp/cv
-- `diameter::Number`: the diameter of the hole
-- `pressure::Number`: the pressure upstream of the jet
-- `temperature::Number`: the temperature upstream of the jet
-- `density::Number`: the density of the fluid upstream of the jet
+- `k::Number=1.4`: the heat capacity ratio Cp/Cv
+- `diameter::Number`: the diameter of the hole, m
+- `height::Number`: the height of the hole, m
+- `pressure::Number`: the pressure upstream of the jet, m
+- `temperature::Number`: the temperature upstream of the jet, K
+- `duration::Number`: the duration of the leak, s
 
 """
-function scenario_builder( source::JetSource, atmosphere::Atmosphere)
-    phase = source.phase
-    duration = source.duration
-    cd = source.cd
-    k = source.k
-    d  = source.diameter
-    T₁ = source.temperature
-    P₁ = source.pressure
-    ρ₁  = source.density
-    T₂ = atmosphere.temperature
-    P₂ = atmosphere.pressure
-    h  = source.height
+function scenario_builder(substance::Substance, ::Type{JetSource}, atmosphere::Atmosphere; phase=:liquid, dischargecoef=0.63, k=1.4, diameter, pressure,temperature, height, duration=Inf)
+    cd = dischargecoef
+    d  = diameter
+    T₁ = temperature
+    P₁ = pressure
+    T₂ = _temperature(atmosphere)
+    P₂ = _pressure(atmosphere)
+    h  = height
     A  = (π/4)*d^2
 
+    if (h < 0) error("Height must be a positive number, instead got h = $h") end
+
     if phase==:liquid
+        ρ₁ = _liquid_density(substance, T₁, P₁)
         u = cd*√((2/ρ₁)*(P₁-P₂))
         m  = ρ₁*A*u
         uⱼ = u
         ρⱼ = ρ₁
         Pⱼ = P₂
         Tⱼ = T₁
+        f_l = 1.0
     elseif phase==:gas
         # isentropic expansion, limited by choked flow
+        ρ₁ = _gas_density(substance, T₁, P₁)
         η = max((P₂/P₁),(2/(k+1))^(k/(k-1)))
         ρu = cd*√(ρ₁*P₁*(2k/(k-1))*(η^(2/k) - η^((k+1)/k)))
         m = A*ρu
@@ -64,9 +52,9 @@ function scenario_builder( source::JetSource, atmosphere::Atmosphere)
         uⱼ = ρu/ρⱼ
         Pⱼ = η*P₁
         Tⱼ = T₁*η^((k-1)/k)
+        f_l = 0.0
     else
-        err = "$phase is not a valid phase, try either :liquid or :gas"
-        error(err)
+        error("$phase is not a valid phase, try either :liquid or :gas")
     end
 
     r = Release(; mass_rate=m,
@@ -76,6 +64,6 @@ function scenario_builder( source::JetSource, atmosphere::Atmosphere)
                   height=h,
                   pressure=Pⱼ,
                   temperature=Tⱼ,
-                  density=ρⱼ)
-    return Scenario(r,atmosphere)
+                  fraction_liquid=f_l)
+    return Scenario(substance,r,atmosphere)
 end

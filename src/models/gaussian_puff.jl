@@ -2,19 +2,17 @@
 # gaussian puff model
 struct GaussianPuff <: PuffModel end
 
-struct GaussianPuffSolution <: Puff
+struct GaussianPuffSolution{S<:StabilityClass} <: Puff
     scenario::Scenario
     model::Symbol
     mass::Number
     height::Number
     windspeed::Number
-    downwind_dispersion::Dispersion
-    crosswind_dispersion::Dispersion
-    vertical_dispersion::Dispersion
+    stability::Type{S}
 end
 
 @doc doc"""
-    puff(scenario::Scenario, GaussianPuff())
+    puff(scenario::Scenario, GaussianPuff)
 
 Generates a gaussian dispersion model on the given scenario and returns a
 callable giving the concentration of the form `c(x, y, z, t)`
@@ -31,27 +29,20 @@ c\left(x,y,z,t\right) = { {\dot{m} \Delta t} \over n }
 ```
 
 """
-function puff(scenario::Scenario, model::GaussianPuff)
+function puff(scenario::Scenario, ::Type{GaussianPuff})
 
-    stability = scenario.atmosphere.stability
-    G = scenario.release.mass_rate*scenario.release.duration
-    h = scenario.release.height
-    u = scenario.atmosphere.windspeed
-
-    # Pasquill-Gifford dispersion
-    σx = crosswind_dispersion(stability; plume=false)
-    σy = σx
-    σz = vertical_dispersion(stability; plume=false)
+    stab = _stability(scenario)
+    m = _release_mass(scenario)
+    h = _release_height(scenario)
+    u = _windspeed(scenario)
 
     return GaussianPuffSolution(
         scenario,  #scenario::Scenario
         :gaussian, #model::Symbol
-        G,  #mass
+        m,  #mass
         h,  #release height
         u,  #windspeed
-        σx, #downwind_dispersion::Dispersion
-        σy, #crosswind_dispersion::Dispersion
-        σz  #vertical_dispersion::Dispersion
+        stab # stability class
     )
 
 end
@@ -60,21 +51,25 @@ end
 function (g::GaussianPuffSolution)(x,y,z,t)
 
     # domain check
-    if (x<0)||(z<0)||(t<0)
+    if (z<0)||(t<0)
         return 0.0
     end
 
     G = g.mass
     h = g.height
     u = g.windspeed
-    σx = g.downwind_dispersion(x)
-    σy = g.crosswind_dispersion(x)
-    σz = g.vertical_dispersion(x)
+    stab = g.stability
+    xc = abs(u*t) # location of center of cloud
+    σx = downwind_dispersion(xc, Puff, stab)
+    σy = crosswind_dispersion(xc, Puff, stab)
+    σz = vertical_dispersion(xc, Puff, stab)
 
     c = ( G/((2*π)^(1.5)*σx*σy*σz)
         * exp(-0.5*((x-u*t)/σx)^2)
         * exp(-0.5*(y/σy)^2)
         * ( exp(-0.5*((z-h)/σz)^2) + exp(-0.5*((z+h)/σz)^2) ) )
+
+    c = isnan(c) ? 0.0 : c
 
     return c
 end

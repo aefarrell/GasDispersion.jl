@@ -9,17 +9,22 @@ using Test
     @test_throws MethodError puff()
 end
 
-# testing scenarios
-include("test_scenarios.jl")
+# base tests
+include("base/base_types_tests.jl")
 
 # testing utilities
-include("util_tests.jl")
+include("utils/util_tests.jl")
 
-# testing specific models
-include("gaussian_tests.jl")
-include("simple_jet_tests.jl")
-include("britter_tests.jl")
+# testing source models
+include("source_models/jet_source_tests.jl")
+
+# testing dispersion models
+include("models/gaussian_plume_tests.jl")
+include("models/gaussian_puff_tests.jl")
+include("models/intpuff_tests.jl")
+include("models/simple_jet_tests.jl")
+include("models/britter_mcquaid_plume_tests.jl")
+include("models/britter_mcquaid_puff_tests.jl")
 
 # testing plot recipes
-# this is comedically slow
-include("recipe_tests.jl")
+include("base/recipe_tests.jl")
