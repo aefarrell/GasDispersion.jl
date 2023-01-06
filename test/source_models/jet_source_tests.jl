@@ -1,7 +1,7 @@
 @testset "Scenario Builder tests" begin
     # Liquid jet example, *Guidelines for Consequence Analysis of Chemical
     # Releases* CCPS, 1999, pg 40
-    a = Ambient()
+    a = DryAir()
     s1 = Substance(name="test liquid", gas_density=0.0, liquid_density=490.0,
          boiling_temp=0.0,latent_heat=0.0,gas_heat_capacity=0.0,
          liquid_heat_capacity=0.0)
@@ -27,4 +27,7 @@
     @test_throws ErrorException scenario_builder(s1,JetSource;phase=:fake,
                         diameter=0,pressure=0,temperature=0,height=0)
 
+    # testing default behaviour
+    @test ljet ≈ scenario_builder(s1,JetSource;phase=:liquid,dischargecoef=0.63,diameter=0.01,pressure=120935.0368,temperature=298.15,height=1.0)
+    
 end
