@@ -161,5 +161,49 @@ end
     @test isa(sln,MomentumPlume)
     @test sln ≈ MomentumPlume(Fm,xf,β,nothing,Δhf,ClassA)
 
+    # Buoyant stable plume
+    # Fb = 50, class E
+    Tᵣ = 400 # K
+    uⱼ = 72.93819699672669 # m/s
+    xf = 317.60677324769046 # m
+    Δhf = 68.59722859012221 # m
+    sln = plume_rise(1.0,uⱼ,Tᵣ,u,Tₐ,ClassE)
+    @test isa(sln,BuoyantPlume)
+    @test sln ≈ BuoyantPlume(50.0,xf,u,Δhf)
+
+    # Fb = 50, class F
+    Tᵣ = 400 # K
+    uⱼ = 72.93819699672669 # m/s
+    xf = 240.0881533494489 # m
+    Δhf = 56.92380039947288 # m
+    sln = plume_rise(1.0,uⱼ,Tᵣ,u,Tₐ,ClassF)
+    @test isa(sln,BuoyantPlume)
+    @test sln ≈ BuoyantPlume(50.0,xf,u,Δhf)
+
+    # Momentum dominated stable plume
+    # Fb = 67, class E
+    Tᵣ = 325 # K
+    uⱼ = 240.91531595745576 # m/s
+    Fm = 12864.831225945449
+    xf = 240.83782417699823 # m
+    β = (1/3)+(u/uⱼ)
+    s = 0.0006806288391462781
+    Δhf = 19.04522445600697 # m
+    sln = plume_rise(1.0,uⱼ,Tᵣ,u,Tₐ,ClassE)
+    @test isa(sln,MomentumPlume)
+    @test sln ≈ MomentumPlume(Fm,xf,β,s,Δhf,ClassE)
+
+    # Momentum dominated stable plume
+    # Fb = 67, class F
+    Tᵣ = 325 # K
+    uⱼ = 240.91531595745576 # m/s
+    Fm = 12864.831225945449
+    xf = 182.0562825914961 # m
+    β = (1/3)+(u/uⱼ)
+    s = 0.0011911004685059867
+    Δhf = 17.349211998937378 # m
+    sln = plume_rise(1.0,uⱼ,Tᵣ,u,Tₐ,ClassF)
+    @test isa(sln,MomentumPlume)
+    @test sln ≈ MomentumPlume(Fm,xf,β,s,Δhf,ClassF)
 
 end

@@ -84,6 +84,7 @@ function plume_rise(Dⱼ,uⱼ,Tᵣ,u,Tₐ, ::Type{ClassE})
         return BuoyantPlume(Fb,xf,u,final_rise)
     else
         # momentum dominated plume rise
+        Fm = uⱼ^2 * Dⱼ^2 * Tₐ/(4Tᵣ)
         xf = (π/2)*(u/√(s))
         β = (1/3) + (u/uⱼ)
         Δhf = 1.5*(Fm/(uⱼ*√(s)))^(1/3)
@@ -111,6 +112,7 @@ function plume_rise(Dⱼ,uⱼ,Tᵣ,u,Tₐ, ::Type{ClassF})
         return BuoyantPlume(Fb,xf,u,final_rise)
     else
         # momentum dominated plume rise
+        Fm = uⱼ^2 * Dⱼ^2 * Tₐ/(4Tᵣ)
         xf = (π/2)*(u/√(s))
         β = (1/3) + (u/uⱼ)
         Δhf = 1.5*(Fm/(uⱼ*√(s)))^(1/3)
