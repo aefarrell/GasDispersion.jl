@@ -69,5 +69,7 @@ function (g::GaussianPuffSolution)(x,y,z,t)
         * exp(-0.5*(y/σy)^2)
         * ( exp(-0.5*((z-h)/σz)^2) + exp(-0.5*((z+h)/σz)^2) ) )
 
+    c = isnan(c) ? 0.0 : c
+
     return c
 end

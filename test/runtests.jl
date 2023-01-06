@@ -25,7 +25,6 @@ include("models/intpuff_tests.jl")
 include("models/simple_jet_tests.jl")
 include("models/britter_mcquaid_plume_tests.jl")
 include("models/britter_mcquaid_puff_tests.jl")
-#
-# # testing plot recipes
-# # this is comedically slow
-# include("base/recipe_tests.jl")
+
+# testing plot recipes
+include("base/recipe_tests.jl")
