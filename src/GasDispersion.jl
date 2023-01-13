@@ -43,11 +43,12 @@ include("utils/utils.jl")
 """
     plume(scenario::Scenario, model::PlumeModel)
 
-Runs the plume dispersion model on the given scenario and returns a callable
-giving the concentration of the form
+Runs the plume dispersion model on the given scenario and returns the solution
+which is callable to give the concentration
     c(x, y, z[, t])
 
-The concentration is in kg/m³, if `model` is unspecified, defaults to gaussian.
+The concentration is in kg/m³, if `model` is unspecified, defaults to a simple
+gaussian plume model.
 
 All model parameters are assumed to be in SI base units (i.e.
 distances in m, velocities in m/s, mass in kg, etc.)
@@ -66,11 +67,12 @@ include("models/britter_mcquaid_plume.jl")
 """
     puff(scenario::Scenario, model::PuffModel)
 
-Runs the puff dispersion model on the given scenario and returns a callable
-giving the concentration of the form
+Runs the puff dispersion model on the given scenario and returns the solution
+which is callable to give the concentration
     c(x, y, z, t)
 
-The concentration is in kg/m³, if `model` is unspecified, defaults to gaussian.
+The concentration is in kg/m³, if `model` is unspecified, defaults to a
+simple gaussian puff.
 
 All model parameters are assumed to be in SI base units (i.e.
 distances in m, velocities in m/s, mass in kg, etc.)
@@ -90,7 +92,8 @@ include("models/britter_mcquaid_puff.jl")
     scenario_builder(substance::Substance, source::SourceModel, atmosphere::Atmosphere)
 
 Builds a scenario given a substance, source model and an atmosphere.
-If no atmosphere is given defaults to ambient conditions.
+If no atmosphere is given defaults to dry air at ambient conditions and class
+F stability.
 
 """
 function scenario_builder end

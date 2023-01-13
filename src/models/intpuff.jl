@@ -15,9 +15,8 @@ end
 @doc doc"""
     puff(scenario::Scenario, IntPuff; kwargs...)
 
-Generates an integrated gaussian dispersion model, where the release is modeled
-as a sequence of gaussian puffs, for the given scenario and returns a
-callable giving the concentration of the form `c(x, y, z, t)`
+Returns the solution to an integrated Gaussian dispersion model, where the
+release is modeled as a sequence of Gaussian puffs, for the given scenario.
 
 ```math
 c\left(x,y,z,t\right) = \sum_{i}^{n-1} { {\dot{m} \Delta t} \over n }

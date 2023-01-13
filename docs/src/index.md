@@ -28,7 +28,7 @@ Chemical Releases*, CCPS, pg 47.
 
 Suppose we wish to model the dispersion of gaseous propane from a leak from a storage tank, where the leak is from a 10 mm hole that is 3.5 m above the ground and the propane is at 25°C and 4barg. Assume the discharge coefficient $c_{D} = 0.85$
 
-For ambient conditions we assume the atmosphere is dry air at standard conditions 
+For ambient conditions we assume the atmosphere is dry air at standard conditions
 of 1atm and 25°C, with a windspeed of 1.5m/s and class F stability (a "worst case"
 atmospheric stability)
 
@@ -46,7 +46,7 @@ propane = Substance(name = :propane,
                     gas_heat_capacity = 1.6849,    # J/kg/K, NIST Webbook
                     liquid_heat_capacity = 2.2460) # J/kg/K, NIST Webbook
 
-scn = scenario_builder(propane, JetSource; 
+scn = scenario_builder(propane, JetSource;
        phase = :gas,
        diameter = 0.01, # m
        dischargecoef = 0.85,
@@ -54,7 +54,7 @@ scn = scenario_builder(propane, JetSource;
        temperature = T1, # K
        pressure = P1,    # Pa
        height = 3.5,     # m, height of hole above the ground
-       duration = 1,     # s, duration of release
+       duration = 1)     # s, duration of release
 ```
 
 This generates a `Scenario` defined for a gas jet discharging into dry air
@@ -88,10 +88,6 @@ produce a solution. The intention is for the `Scenario` to be re-usable, so that
 the user may run the same scenario with multiple models without much difficulty.
 Models also have specific parameters, those are handled in the model itself.
 
-By default a `Scenario` can have any field `missing`, this is because not all
-models require all fields. Each model then verifies that none of the necessary
-fields are `missing` and throws an error otherwise.
-
 A `scenario_builder` function exists to help create valid `Scenario`s for
 various standard release scenarios.
 ```@docs
@@ -112,7 +108,7 @@ plume
 
 ### Gaussian Plumes
 
-A gaussian plume is a steady state plume defined by a gaussian distribution in
+A Gaussian plume is a steady state plume defined by a Gaussian distribution in
 the y and z directions and an exponential decay in the x direction. The
 dispersion parameters are correlated to the downwind distance.
 
@@ -122,8 +118,8 @@ plume(::Scenario, ::Type{GaussianPlume})
 
 ### Simple Jet Plumes
 
-The simple jet plume is a steady state turbulent jet defined by a gaussian
-distribution in the y and z directions. It is similar to the gaussian plume,
+The simple jet plume is a steady state turbulent jet defined by a Gaussian
+distribution in the y and z directions. It is similar to the Gaussian plume,
 however in this case the momentum forming the plume comes entirely from the jet
 and not the ambient windspeed.
 
@@ -135,7 +131,7 @@ plume(::Scenario, ::Type{SimpleJet})
 
 The Britter-McQuaid model is an empirical correlation for dense plume
 dispersion. The model generates an interpolation function for the centerline
-concentration at the downwind distance z.
+concentration at the downwind distance x.
 
 
 ```@docs
@@ -145,8 +141,7 @@ plume(::Scenario, ::Type{BritterMcQuaidPlume})
 
 ## Puff Models
 
-Puff models are for "instantaneous" releases or other time-dependent releases,
-this often includes, for example, releases of vapour clouds.
+Puff models are for "instantaneous" releases or other time-dependent releases.
 
 ```@docs
 puff
@@ -154,9 +149,10 @@ puff
 
 ### Gaussian Puffs
 
-A gaussian puff model is defined by gaussian distributions in the x, y, and z
+A Gaussian puff model is defined by gaussian distributions in the x, y, and z
 directions and travels downwind at the ambient windspeed. The dispersion
-parameters of the gaussians are correlated with the downwind distance.
+parameters of the gaussians are correlated with the downwind distance of cloud
+center.
 
 ```@docs
 puff(::Scenario, ::Type{GaussianPuff})
@@ -164,9 +160,9 @@ puff(::Scenario, ::Type{GaussianPuff})
 
 ### Integrated Gaussian Puffs
 
-The integrated gaussian puff model treats the release as a sum of $n$
-equally spaced gaussian puffs, starting at $t = 0$ to $t = \Delta t$. The
-default behaviour is to take the limit $n \to \infty$, hence *integrated*.
+The integrated Gaussian puff model treats the release as a sum of $n$
+equally spaced Gaussian puffs, starting at $t = 0$ to $t = \Delta t$. The
+default behaviour is to take the limit $n \to \infty$.
 
 ```@docs
 puff(::Scenario, ::Type{IntPuff})

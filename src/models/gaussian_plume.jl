@@ -16,10 +16,9 @@ end
 @doc doc"""
     plume(::Scenario, GaussianPlume; kwargs...)
 
-Generates a gaussian dispersion model for the given scenario and returns a
-callable giving the concentration of the form `c(x, y, z[, t])`
+Returns the solution to a Gaussian plume dispersion model for the given scenario.
 
-Gaussian plume model is per *Guidelines for Consequence Analysis of Chemical
+The Gaussian plume model is per *Guidelines for Consequence Analysis of Chemical
 Release*, CCPS, New York (1999)
 
 ```math
