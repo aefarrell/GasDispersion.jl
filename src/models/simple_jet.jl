@@ -20,7 +20,7 @@ Generates a simple turbulent jet dispersion model for the given scenario and
 returns a callable giving the concentration with the form `c(x, y, z[, t])`
 
 Turbulent jet model is per Long, V.D., "Estimation of the Extent of Hazard Areas
-Around a Vent", *Chem. Process Hazard*, II, 6, 1963 ↩
+Around a Vent", *Chem. Process Hazard*, II, 6, 1963
 
 ```math
 c\left(x,y,z\right) = k_2 c_0 \left( d \over z \right) \sqrt{ \rho_j \over \rho_a }
