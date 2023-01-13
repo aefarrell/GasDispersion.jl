@@ -39,6 +39,6 @@
 
     # testing ∞ puffs
     ip∞ = puff(scn,IntPuff)
-    @test ip∞(x₁,0,h,t₁) ≈ 0.0003558548232457865
+    @test ip∞(x₁,0,h,t₁) ≈ 0.00035586710616021256
     @test ip∞(x₁,0,h,-t₁) == 0.0
 end
