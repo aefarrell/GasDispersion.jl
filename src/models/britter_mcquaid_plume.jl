@@ -28,9 +28,8 @@ Britter_McQuaid_correlations = Dict(
 """
     plume(scenario::Scenario, BritterMcQuaidPlume)
 
-Generates a Britter-McQuaid dispersion model on the given scenario and returns a
-callable struct giving the centerline concentration of the form
-c(x, [y, z, t])
+Returns the solution to a Britter-McQuaid dispersion model for the given
+scenario.
 
 Currently only implements the max concentration at a downwind distance x, the
 other coordinates are ignored.

@@ -16,11 +16,11 @@ end
 @doc doc"""
     plume(scenario::Scenario, SimpleJet; kwargs...)
 
-Generates a simple turbulent jet dispersion model for the given scenario and
-returns a callable giving the concentration with the form `c(x, y, z[, t])`
+Returns the solution to a simple turbulent jet dispersion model for the given
+scenario.
 
-Turbulent jet model is per Long, V.D., "Estimation of the Extent of Hazard Areas
-Around a Vent", *Chem. Process Hazard*, II, 6, 1963
+The turbulent jet model is per Long, V.D., "Estimation of the Extent of Hazard
+Areas Around a Vent", *Chem. Process Hazard*, II, 6, 1963
 
 ```math
 c\left(x,y,z\right) = k_2 c_0 \left( d \over z \right) \sqrt{ \rho_j \over \rho_a }
@@ -28,7 +28,7 @@ c\left(x,y,z\right) = k_2 c_0 \left( d \over z \right) \sqrt{ \rho_j \over \rho_
 ```
 
 where *r* is the radial distance from the jet centerline. Assumes a circular jet
-with diameter equal to the jet diameter.Ground-reflection is included by method
+with diameter equal to the jet diameter. Ground-reflection is included by method
 of images.
 
 # Arguments

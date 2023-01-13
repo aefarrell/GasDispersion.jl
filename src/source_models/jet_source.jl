@@ -3,9 +3,9 @@ struct JetSource <: SourceModel end
 
 @doc doc"""
     scenario_builder(substance::Substance, JetSource, atmosphere::Atmosphere; kwargs...)
-Returns returns a scenario with a simple jet source from a circular hole. The
-jet can either be a liquid or a gas, which case it is assumed to be an ideal
-gas and the jet is isentropic.
+Returns returns a scenario for a simple jet from a circular hole. The
+jet can either be a liquid or a gas (in which case it is assumed to be an ideal
+gas and the jet is isentropic).
 
 Liquid and gas discharge models are per *Guidelines for Consequence Analysis of
 Chemical Release*, CCPS, New York (1999)
@@ -16,7 +16,7 @@ Chemical Release*, CCPS, New York (1999)
 - `k::Number=1.4`: the heat capacity ratio Cp/Cv
 - `diameter::Number`: the diameter of the hole, m
 - `height::Number`: the height of the hole, m
-- `pressure::Number`: the pressure upstream of the jet, m
+- `pressure::Number`: the pressure upstream of the jet, Pa
 - `temperature::Number`: the temperature upstream of the jet, K
 - `duration::Number`: the duration of the leak, s
 

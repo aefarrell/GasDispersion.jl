@@ -14,10 +14,9 @@ end
 @doc doc"""
     puff(scenario::Scenario, GaussianPuff)
 
-Generates a gaussian dispersion model on the given scenario and returns a
-callable giving the concentration of the form `c(x, y, z, t)`
+Returns the solution to a Gaussian puff dispersion model for the given scenario.
 
-Gaussian puff model is per *Guidelines for Consequence Analysis of Chemical
+The Gaussian puff model is per *Guidelines for Consequence Analysis of Chemical
 Release*, CCPS, New York (1999)
 
 ```math
