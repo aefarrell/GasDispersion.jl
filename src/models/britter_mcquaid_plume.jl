@@ -114,10 +114,10 @@ function (b::BritterMcQuaidPlumeSolution)(x, y, z)
         # using a similar curve as for x>0
         x′ = x + Lu
         A = (Lh0^3)/(Lu^2)
-        Lh = ∛(A*x′^2)
+        Lh = cbrt(A*x′^2)
         Lv = (D^2)/Lh0
     else
-        Lh = Lh0 + 2.5∛(lb*x^2)
+        Lh = Lh0 + 2.5*cbrt(lb*x^2)
         Lv = (D^2)/Lh0
     end
 

@@ -32,4 +32,17 @@
     @test isa(pl, Plume)
     @test pl(x₁,0,0) ≈ c₁
     @test pl(x₂,0,0) ≈ c₂
+
+    # test plume extent
+    Lu  = 0.5*pl.D + 2*pl.lb
+    @test pl(-Lu - 2*eps(Float64), 0, 0) == 0.0
+
+    Lh0 = pl.D + 8*pl.lb
+    @test pl(0, Lh0 + 2*eps(Float64), 0) == 0.0
+    @test pl(0 - 2*eps(Float64), Lh0 + 2*eps(Float64), 0) == 0.0
+
+    Lv = pl.D^2/Lh0
+    @test pl(0, 0, -1) == 0.0
+    @test pl(0, 0, Lv + 2*eps(Float64)) == 0.0
+
 end
