@@ -3,10 +3,11 @@ struct BritterMcQuaidPlume <: PlumeModel end
 struct BritterMcQuaidPlumeSolution <: Plume
     scenario::Scenario
     model::Symbol
-    jet_density::Number
-    temperature_correction::Number
-    critical_distance::Number
-    interpolation::Extrapolation
+    ρⱼ::Number # jet density
+    T′::Number # temperature correction
+    D::Number  # critical length
+    lb::Number # plume dimension parameter, m
+    itp::Interpolations.Extrapolation
 end
 
 Britter_McQuaid_correlations = Dict(
@@ -52,7 +53,7 @@ function plume(scenario::Scenario, ::Type{BritterMcQuaidPlume})
 
     for conc in concs
         αs, βs = Britter_McQuaid_correlations[conc]
-        f = LinearInterpolation(αs, βs, extrapolation_bc=Line())
+        f = extrapolate(interpolate((αs,), βs, Gridded(Linear())), Line())
         push!(britter_interps, (c=conc, it=f))
     end
 
@@ -81,22 +82,50 @@ function plume(scenario::Scenario, ::Type{BritterMcQuaidPlume})
     concs = [ 306*30^-2 / (1+ 306*30^-2); concs ]
 
     # linear interpolation, extrapolates past the end with a straight line
-    interpolation = LinearInterpolation(βs, concs, extrapolation_bc=Line())
+    itp = extrapolate(interpolate((βs,), concs, Gridded(Linear())), Line())
+
+    # plume dimension parameters
+    lb  = Vr*gₒ/(u₁₀^3)
 
     return BritterMcQuaidPlumeSolution(
         scenario, #scenario::Scenario
         :brittermcquaid, #model::Symbol
-        ρⱼ,    #jet_density::Number
-        T′,    #temperature_correction::Number
-        D,     #D::Number
-        interpolation #interpolation::Extrapolation
+        ρⱼ,    # jet_density
+        T′,    # temperature_correction
+        D,     # critical length, m
+        lb,    # length parameter, m
+        itp    # interpolation::Extrapolation
     )
 end
 
-function (b::BritterMcQuaidPlumeSolution)(x, y=0, z=0)
-    ρⱼ = b.jet_density
-    T′ = b.temperature_correction
-    D  = b.critical_distance
+function (b::BritterMcQuaidPlumeSolution)(x, y, z)
+    D = b.D
+    lb = b.lb
+    Lu  = 0.5*D + 2*lb
+    Lh0 = D + 8*lb
+    # domain check
+    if x < -Lu
+        return 0.0
+    end
+
+    # plume dimensions
+    if x < 0
+        # connecting the upwind extent to the crosswind extent at x=0
+        # using a similar curve as for x>0
+        x′ = x + Lu
+        A = (Lh0^3)/(Lu^2)
+        Lh = ∛(A*x′^2)
+        Lv = (D^2)/Lh0
+    else
+        Lh = Lh0 + 2.5∛(lb*x^2)
+        Lv = (D^2)/Lh0
+    end
+
+    # within the extent of the plume
+    if (y < -Lh) || (y > Lh) || (z < 0) || (z > Lv)
+        return 0.0
+    end
+
     x′ = x/D
     if x′ < 30
         # use short distance correlation
@@ -104,8 +133,8 @@ function (b::BritterMcQuaidPlumeSolution)(x, y=0, z=0)
     else
         # use linear interpolation
         β = log10(x′)
-        c′ = b.interpolation(β)
+        c′ = b.itp(β)
     end
-    c = ( ρⱼ*c′*T′) / (1 - c′ + c′*T′)
+    c = ( b.ρⱼ*c′*b.T′) / (1 - c′ + c′*b.T′)
     return c
 end
