@@ -7,8 +7,8 @@ Returns returns a scenario for a simple jet from a circular hole. The
 jet can either be a liquid or a gas (in which case it is assumed to be an ideal
 gas and the jet is isentropic).
 
-Liquid and gas discharge models are per *Guidelines for Consequence Analysis of
-Chemical Release*, CCPS, New York (1999)
+# References
++ CCPS, *Guidelines for Consequence Analysis of Chemical Releases*, American Institute of Chemical Engineers, New York (1999)
 
 # Arguments
 - `phase=:liquid`: the phase, either :liquid or :gas

@@ -16,13 +16,13 @@ struct BritterMcQuaidPlumeSolution <: Plume
 end
 
 """
-    plume(scenario::Scenario, BritterMcQuaidPlume)
+    plume(::Scenario, BritterMcQuaidPlume)
 
 Returns the solution to a Britter-McQuaid dispersion model for the given
 scenario.
 
-Currently only implements the max concentration at a downwind distance x, the
-other coordinates are ignored.
+# References
++ Britter, R.E. and J. McQuaid, *Workbook on the Dispersion of Dense Gases* HSE Contract Research Report No. 17/1988, 1988
 
 """
 function plume(scenario::Scenario, ::Type{BritterMcQuaidPlume})

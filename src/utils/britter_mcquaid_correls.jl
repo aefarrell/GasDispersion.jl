@@ -1,5 +1,4 @@
-# Britter-McQuaid plume correlations
-# as digitzed in TSCREEN
+
 function _bm_pl_c_1(α)
     # corresponds to (Cm/C0) = 0.10
     if α ≤ -0.55
@@ -94,6 +93,15 @@ function _bm_pl_c_002(α)
     end
 end
 
+"""
+    _bm_pl_c(α)
+
+Britter-McQuaid plume correlations as digtized in TSCREEN
+
+# References
++ EPA, *User's Guide to TSCREEN* U.S. Environmental Protection Agency EPA-454/B-94-023 (1994)
+
+"""
 function _bm_pl_c(α)
     concs = [0.10, 0.05, 0.02, 0.01, 0.005, 0.002]
     βs = [

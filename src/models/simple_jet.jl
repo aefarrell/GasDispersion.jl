@@ -14,13 +14,10 @@ struct SimpleJetSolution <: Plume
 end
 
 @doc doc"""
-    plume(scenario::Scenario, SimpleJet; kwargs...)
+    plume(::Scenario, SimpleJet; kwargs...)
 
 Returns the solution to a simple turbulent jet dispersion model for the given
 scenario.
-
-The turbulent jet model is per Long, V.D., "Estimation of the Extent of Hazard
-Areas Around a Vent", *Chem. Process Hazard*, II, 6, 1963
 
 ```math
 c\left(x,y,z\right) = k_2 c_0 \left( d \over z \right) \sqrt{ \rho_j \over \rho_a }
@@ -31,10 +28,14 @@ where *r* is the radial distance from the jet centerline. Assumes a circular jet
 with diameter equal to the jet diameter. Ground-reflection is included by method
 of images.
 
+# References
++ Long, V.D., "Estimation of the Extent of Hazard Areas Around a Vent" *Chem. Process Hazard*, II:6 (1963)
+
 # Arguments
 - `release_angle::Number=0`: the angle at which the jet is released, in radians
 - `k2::Number=6` parameter of the model, default value is recommended by Long
 - `k3::Number=5` parameter of the model, default value is recommended by Long
+
 """
 function plume(scenario::Scenario, ::Type{SimpleJet}; release_angle::Number=0.0, k2::Number=6.0, k3::Number=5.0)
     # Density correction

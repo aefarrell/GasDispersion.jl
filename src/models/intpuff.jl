@@ -13,7 +13,7 @@ struct IntPuffSolution{T<:Number,S<:StabilityClass} <: Puff
 end
 
 @doc doc"""
-    puff(scenario::Scenario, IntPuff; kwargs...)
+    puff(::Scenario, IntPuff; kwargs...)
 
 Returns the solution to an integrated Gaussian dispersion model, where the
 release is modeled as a sequence of Gaussian puffs, for the given scenario.

@@ -18,9 +18,6 @@ end
 
 Returns the solution to a Gaussian plume dispersion model for the given scenario.
 
-The Gaussian plume model is per *Guidelines for Consequence Analysis of Chemical
-Release*, CCPS, New York (1999)
-
 ```math
 c\left(x,y,z\right) = { \dot{m} \over { 2 \pi \sigma_{y} \sigma_{z} u } }
 \exp \left[ -\frac{1}{2} \left( y \over \sigma_{y} \right)^2 \right] \\
@@ -30,9 +27,13 @@ c\left(x,y,z\right) = { \dot{m} \over { 2 \pi \sigma_{y} \sigma_{z} u } }
 
 where the σs are dispersion parameters correlated with the distance x
 
+# References
++ CCPS, *Guidelines for Consequence Analysis of Chemical Releases*, American Institute of Chemical Engineers, New York (1999)
+
 # Arguments
 - `downwash::Bool=false`: when true, includes stack-downwash effects
 - `plumerise::Bool=false`: when true, includes plume-rise effects using Briggs' model
+
 """
 function plume(scenario::Scenario, ::Type{GaussianPlume}; downwash::Bool=false, plumerise::Bool=false)
     # parameters of the jet

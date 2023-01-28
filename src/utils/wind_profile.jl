@@ -29,16 +29,16 @@ end
 returns the windspeed function u(z) for a given Pasquill-Gifford
 stability class, `z` is assumed to be in meters and `u` is in m/s
 
-# Arguments
-`u` friction velocity
-`zR` surface roughness
-`λ`  Monin-Obukhov length
-`stability_class` Pasquill stability class (A, B, C, D, E, F)
-`k`  von Karman's constant, 0.35
-
-
 # References
-    Businger et al. 1971
++ Businger et al. 1971
+
+# Arguments
+- `u` friction velocity
+- `zR` surface roughness
+- `λ`  Monin-Obukhov length
+- `stability_class` Pasquill stability class (A, B, C, D, E, F)
+- `k`  von Karman's constant, 0.35
+
 """
 function _windspeed(z, u, zR, λ, ::Union{Type{ClassA},Type{ClassB},Type{ClassC}}; k=0.35)
     a = (1-15*(z/λ))^0.25

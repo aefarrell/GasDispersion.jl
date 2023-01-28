@@ -29,9 +29,14 @@ Base.isapprox(a::MomentumPlume, b::MomentumPlume) = all([
     if typeof(getproperty(a,k))<:Number ])
 
 """
-    plume_rise(Dⱼ, uⱼ, Tᵣ, u, Tₐ, ::Type{Union{ClassA, ClassB, ClassC, ClassD}})
+    plume_rise(Dⱼ, uⱼ, Tᵣ, u, Tₐ, StabilityClass)
 Implements the Briggs plume rise equations for buoyancy and momentum driven
-plume rise as described in the ISC3 model guide EPA-454/B-95-003b
+plume rise.
+
+# References
++ Briggs, G.A. *Plume Rise* U.S. Atomic Energy Commission, Oak Ridge (1969)
++ EPA, *User's Guide for the Industrial Source Complex (ISC3) Dispersion Models, vol 2*, U.S. Environmental Protection Agency EPA-454/B-95-003b (1995)
+
 """
 function plume_rise(Dⱼ,uⱼ,Tᵣ,u,Tₐ, stab::Union{Type{ClassA},Type{ClassB},Type{ClassC},Type{ClassD}})
     # physics parameters
