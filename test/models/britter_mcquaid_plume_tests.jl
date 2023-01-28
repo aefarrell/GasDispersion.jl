@@ -1,3 +1,22 @@
+@testset "Britter-McQuaid plume correlations" begin
+    include("../../src/utils/britter_mcquaid_correls.jl")
+
+    @test _bm_pl_c(-0.75)[2] ≈ [1.75, 1.92, 2.08, 2.25, 2.4, 2.6]
+    @test _bm_pl_c(-0.40)[2] ≈ [1.7839999999999998, 2.016, 2.21, 2.3939999999999997, 2.564, 2.714]
+    @test _bm_pl_c(-0.20)[2] ≈ [1.8319999999999999, 2.06, 2.25, 2.45, 2.63, 2.77]
+    @test _bm_pl_c(0.0)[2] ≈ [1.78, 1.96, 2.16, 2.35, 2.56, 2.71]
+
+    # test domain warning
+    @test_logs (:warn, "α= 1.1 is out of range") _bm_pl_c_1(1.1)
+    @test_logs (:warn, "α= 1.1 is out of range") _bm_pl_c_05(1.1)
+    @test_logs (:warn, "α= 1.1 is out of range") _bm_pl_c_02(1.1)
+    @test_logs (:warn, "α= 1.1 is out of range") _bm_pl_c_01(1.1)
+    @test_logs (:warn, "α= 1.1 is out of range") _bm_pl_c_005(1.1)
+    @test_logs (:warn, "α= 1.1 is out of range") _bm_pl_c_002(1.1)
+
+
+end
+
 @testset "Britter-McQuaid plume tests" begin
     # Britter-McQuaid example, *Guidelines for Consequence Analysis of Chemical
     # Releases* CCPS, 1999, pg 122
@@ -30,7 +49,7 @@
     # far field
     x₃, c₃ = 1200.0, 0.008660197082795383
 
-    # test type inheritance
+    # test overall solution
     pl = plume(scn, BritterMcQuaidPlume)
     @test isa(pl, GasDispersion.BritterMcQuaidPlumeSolution)
     @test isa(pl, Plume)
@@ -49,7 +68,7 @@
     @test pl(0 - 2*eps(Float64), Lh0 + 2*eps(Float64), 0) == 0.0
     @test pl(0 - 2*eps(Float64), Lh0 - 2*eps(Float64), 0) ≈ c₀
 
-    Lv = pl.D^2/Lh0
+    Lv = pl.D^2/(2*Lh0)
     @test pl(0, 0, -1) == 0.0
     @test pl(0, 0, Lv + 2*eps(Float64)) == 0.0
     @test pl(0, 0, Lv - 2*eps(Float64)) ≈ c₀
