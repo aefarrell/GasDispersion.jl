@@ -1,44 +1,34 @@
+include("../utils/britter_mcquaid_correls.jl")
+
 struct BritterMcQuaidPlume <: PlumeModel end
 
 struct BritterMcQuaidPlumeSolution <: Plume
     scenario::Scenario
     model::Symbol
-    jet_density::Number
-    temperature_correction::Number
-    critical_distance::Number
-    interpolation::Extrapolation
+    c₀::Number # initial concentration, kg/m³
+    T′::Number # temperature correction
+    D::Number  # critical length
+    lb::Number # plume dimension parameter, m
+    itp::Interpolations.GriddedInterpolation
+    xnf::Number # near field distance
+    xff::Number # far field distance
+    A::Number  # far field constant
 end
 
-Britter_McQuaid_correlations = Dict(
-    0.010 => ( αs=[-1.0, -0.7, -0.29, -0.2, 1.0],
-               βs=[2.25, 2.25, 2.45, 2.45, 1.83]),
-    0.005 => ( αs=[-1.0, -0.67, -0.28, -0.15, 1.0],
-               βs=[2.4, 2.4, 2.63, 2.63, 2.07]),
-    0.020 => ( αs=[-1.0, -0.69, -0.31, -0.16, 1.0],
-               βs=[2.08, 2.08, 2.25, 2.25, 1.62]),
-    0.002 => ( αs=[-1.0, -0.69, -0.25, -0.13, 1.0],
-               βs=[2.6, 2.6, 2.77, 2.77, 2.21]),
-    0.100 => ( αs=[-1.0, -0.55, -0.14, 1.0],
-               βs=[1.75, 1.75, 1.85, 1.28]),
-    0.050 => ( αs=[-1.0, -0.68, -0.29, -0.18, 1.0],
-               βs=[1.92, 1.92, 2.06, 2.06, 1.4]),
-)
-
-
 """
-    plume(scenario::Scenario, BritterMcQuaidPlume)
+    plume(::Scenario, BritterMcQuaidPlume)
 
 Returns the solution to a Britter-McQuaid dispersion model for the given
 scenario.
 
-Currently only implements the max concentration at a downwind distance x, the
-other coordinates are ignored.
+# References
++ Britter, R.E. and J. McQuaid, *Workbook on the Dispersion of Dense Gases* HSE Contract Research Report No. 17/1988, 1988
 
 """
 function plume(scenario::Scenario, ::Type{BritterMcQuaidPlume})
 
-    Q = _mass_rate(scenario)
-    h = _release_height(scenario)
+    Q = _release_flowrate(scenario)
+    ṁ = _mass_rate(scenario)
     ρⱼ = _release_density(scenario)
     Tᵣ = _release_temperature(scenario)
 
@@ -46,66 +36,116 @@ function plume(scenario::Scenario, ::Type{BritterMcQuaidPlume})
     ρₐ = _atmosphere_density(scenario)
     Tₐ = _atmosphere_temperature(scenario)
 
-    # Setting up the Britter-McQuaid curves
-    britter_interps = [ ]
-    concs = sort(collect(keys(Britter_McQuaid_correlations)), rev=true)
-
-    for conc in concs
-        αs, βs = Britter_McQuaid_correlations[conc]
-        f = LinearInterpolation(αs, βs, extrapolation_bc=Line())
-        push!(britter_interps, (c=conc, it=f))
-    end
+    # initial concentration
+    c₀ = ṁ/Q
 
     # relative density
     g = 9.80616  # gravity, m/s^2
     gₒ = g * ((ρⱼ - ρₐ)/ ρₐ)
 
     # critical distance
-    Vr = Q/ρⱼ # volumetric release rate
-    D = √(Vr/u₁₀)
+    D = √(Q/u₁₀)
 
     # temperature correction
-    T′ = Tₐ/Tᵣ
+    T′ = Tᵣ/Tₐ
 
     # correlation parameter
-    α = 0.2*log10( gₒ^2 * Vr * u₁₀^-5 )
+    α = 0.2*log10( gₒ^2 * Q * u₁₀^-5 )
 
     # setting up correlation for constant α
     # calculates the points for the linear interpolation
-    concs = [ elem.c for elem in britter_interps ]
-    βs = [ elem.it(α) for elem in britter_interps ]
+    concs, βs = _bm_pl_c(α)
 
-    # linear interpolation between the short distance correlation
-    # and the main correlation
-    βs = [ log10(30); βs]
-    concs = [ 306*30^-2 / (1+ 306*30^-2); concs ]
+    # near-field location
+    xnf = 30
+    xmin = 10^(minimum(βs))
+    if xnf < xmin
+        # linear interpolation between the near-field correlation
+        # and the main correlation
+        βnf = log10(xnf)
+        cnf = 306*xnf^-2 / (1+ 306*xnf^-2)
+        βs = [ βnf; βs]
+        concs = [ cnf; concs ]
+    else
+        # for α > 0.605 the near-field overlaps with the correlation
+        # stop the near-field correlation early
+        # (this can lead to discontinuities)
+        xnf = xmin
+    end
 
-    # linear interpolation, extrapolates past the end with a straight line
-    interpolation = LinearInterpolation(βs, concs, extrapolation_bc=Line())
+    # linear interpolation
+    itp = interpolate((βs,), concs, Gridded(Linear()))
+
+    # far field correlation
+    # starts at last interpolation point and decays like x′^-2
+    xff = 10^(maximum(βs))
+    A = minimum(concs)*xff^2
+
+    # plume dimension parameters
+    lb  = Q*gₒ/(u₁₀^3)
 
     return BritterMcQuaidPlumeSolution(
         scenario, #scenario::Scenario
         :brittermcquaid, #model::Symbol
-        ρⱼ,    #jet_density::Number
-        T′,    #temperature_correction::Number
-        D,     #D::Number
-        interpolation #interpolation::Extrapolation
+        c₀,    # initial concentration, kg/m³
+        T′,    # temperature_correction
+        D,     # critical length, m
+        lb,    # length parameter, m
+        itp,   # interpolation::Extrapolation
+        xnf,   # near-field distance
+        xff,   # far-field distance
+        A      # far-field constant
     )
 end
 
-function (b::BritterMcQuaidPlumeSolution)(x, y=0, z=0)
-    ρⱼ = b.jet_density
-    T′ = b.temperature_correction
-    D  = b.critical_distance
-    x′ = x/D
-    if x′ < 30
-        # use short distance correlation
-        c′ = x′ > 0 ? 306*x′^-2 / (1+ 306*x′^-2) : 1.0
+function (b::BritterMcQuaidPlumeSolution)(x, y, z)
+
+    # plume dimension parameters
+    Lu  = 0.5*b.D + 2*b.lb
+    Lh0 = b.D + 8*b.lb
+
+    # domain check
+    if (x < -Lu) || (z < 0)
+        return 0.0
+    end
+
+    # plume dimensions
+    if x < 0
+        # Britter-McQuaid model does not give a profile for x<0
+        # assuming crosswind length is Lh0
+        Lh = Lh0
     else
+        Lh = Lh0 + 2.5*cbrt(b.lb*x^2)
+    end
+
+    # within the crosswind extent of the plume
+    if (y < -Lh) || (y > Lh)
+        return 0.0
+    end
+
+    x′ = x/b.D
+    if x′ ≤ b.xnf
+        # use near-field correlation
+        c′ = x′ > 0 ? 306*x′^-2 / (1+ 306*x′^-2) : 1.0
+    elseif b.xnf < x′ < b.xff
         # use linear interpolation
         β = log10(x′)
-        c′ = b.interpolation(β)
+        c′ = b.itp(β)
+    else
+        # use far-field correlation
+        # where A is a function of α
+        c′ = b.A/(x′^2)
     end
-    c = ( ρⱼ*c′*T′) / (1 - c′ + c′*T′)
-    return c
+
+    # non-isothermal correction
+    c′ = c′ / (c′ + (1 - c′)*b.T′)
+    c = b.c₀*c′
+
+    # vertical extent, from continuity
+    Lv = (b.D^2)/(2*Lh*c′)
+    if z ≤ Lv
+        return c
+    else
+        return 0.0
+    end
 end

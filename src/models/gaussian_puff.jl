@@ -12,12 +12,9 @@ struct GaussianPuffSolution{S<:StabilityClass} <: Puff
 end
 
 @doc doc"""
-    puff(scenario::Scenario, GaussianPuff)
+    puff(::Scenario, GaussianPuff)
 
 Returns the solution to a Gaussian puff dispersion model for the given scenario.
-
-The Gaussian puff model is per *Guidelines for Consequence Analysis of Chemical
-Release*, CCPS, New York (1999)
 
 ```math
 c\left(x,y,z,t\right) = \dot{m} \Delta t
@@ -26,6 +23,9 @@ c\left(x,y,z,t\right) = \dot{m} \Delta t
 \times { { \exp \left( -\frac{1}{2} \left( {z - h} \over \sigma_z \right)^2 \right)
 + \exp \left( -\frac{1}{2} \left( {z + h} \over \sigma_z \right)^2 \right) } \over { \sqrt{2\pi} \sigma_z } }
 ```
+
+# References
++ CCPS, *Guidelines for Consequence Analysis of Chemical Releases*, American Institute of Chemical Engineers, New York (1999)
 
 """
 function puff(scenario::Scenario, ::Type{GaussianPuff})
