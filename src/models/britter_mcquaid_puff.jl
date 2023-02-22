@@ -92,7 +92,7 @@ function (pf::BritterMcQuaidPuffSolution)(x,y,z,t)
     r² = (x-xc)^2 + y^2
 
     #domain check
-    if r² > R²
+    if r² > R² || z < 0
         return 0.0
     end
 
