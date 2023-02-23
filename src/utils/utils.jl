@@ -79,3 +79,6 @@ include("pasquill_gifford.jl")
 
 # Briggs' model for plume rise
 include("plume_rise.jl")
+
+# model correlations
+include("britter_mcquaid_correls.jl")

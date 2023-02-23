@@ -1,4 +1,4 @@
-
+# plume correlations
 function _bm_pl_c_1(α)
     # corresponds to (Cm/C0) = 0.10
     if α ≤ -0.55
@@ -96,10 +96,10 @@ end
 """
     _bm_pl_c(α)
 
-Britter-McQuaid plume correlations as digtized in TSCREEN
+Britter-McQuaid plume correlations
 
 # References
-+ EPA, *User's Guide to TSCREEN* U.S. Environmental Protection Agency EPA-454/B-94-023 (1994)
++ CCPS, *Guidelines for Consequence Analysis of Chemical Releases*, American Institute of Chemical Engineers, New York (1999)
 
 """
 function _bm_pl_c(α)
@@ -111,6 +111,133 @@ function _bm_pl_c(α)
             _bm_pl_c_01(α),  # (C_m/C_0) = 0.01
             _bm_pl_c_005(α), # (C_m/C_0) = 0.005
             _bm_pl_c_002(α)  # (C_m/C_0) = 0.002
+    ]
+    return concs, βs
+end
+
+
+###############################################################################
+# puff correlations
+
+function _bm_pf_c_1(α)
+    # corresponds to (Cm/C0) = 0.10
+    if α ≤ -0.44
+        return 0.70
+    elseif -0.44 < α ≤ 0.43
+        return 0.26*α + 0.81
+    elseif 0.43 < α ≤ 1.0
+        return 0.93
+    else
+        @warn "α= $α is out of range"
+        return 0.93
+    end
+end
+
+function _bm_pf_c_05(α)
+    # corresponds to (Cm/C0) = 0.05
+    if α ≤ -0.56
+        return 0.85
+    elseif -0.56 < α ≤ 0.31
+        return 0.26*α + 1.00
+    elseif 0.31 < α ≤ 1.0
+        return -0.12*α + 1.12
+    else
+        @warn "α= $α is out of range"
+        α = min(α,10.0)
+        return -0.12*α + 1.12
+    end
+end
+
+function _bm_pf_c_02(α)
+    # corresponds to (Cm/C0) = 0.02
+    if α ≤ -0.66
+        return 0.95
+    elseif -0.66 < α ≤ 0.32
+        return 0.36*α + 1.19
+    elseif 0.32 < α ≤ 1.0
+        return -0.26*α + 1.38
+    else
+        @warn "α= $α is out of range"
+        α = min(α,10.0)
+        return -0.26*α + 1.38
+    end
+end
+
+function _bm_pf_c_01(α)
+    # corresponds to (Cm/C0) = 0.01
+    if α ≤ -0.71
+        return 1.15
+    elseif -0.71 < α ≤ 0.37
+        return 0.34*α + 1.39
+    elseif 0.37 < α ≤ 1.0
+        return -0.38*α + 1.66
+    else
+        @warn "α= $α is out of range"
+        α = min(α,10.0)
+        return -0.38*α + 1.66
+    end
+end
+
+function _bm_pf_c_005(α)
+    # corresponds to (Cm/C0) = 0.005
+    if α ≤ -0.52
+        return 1.48
+    elseif -0.52 < α ≤ 0.24
+        return 0.26*α + 1.62
+    elseif 0.24 < α ≤ 1.0
+        return -0.30*α + 1.75
+    else
+        @warn "α= $α is out of range"
+        α = min(α,10.0)
+        return -0.30*α + 1.75
+    end
+end
+
+function _bm_pf_c_002(α)
+    # corresponds to (Cm/C0) = 0.002
+    if α ≤ 0.27
+        return 1.83
+    elseif 0.27 < α ≤ 1.0
+        return -0.32*α + 1.92
+    else
+        @warn "α= $α is out of range"
+        α = min(α,10.0)
+        return -0.32*α + 1.92
+    end
+end
+
+function _bm_pf_c_001(α)
+    # corresponds to (Cm/C0) = 0.001
+    if α ≤ -0.10
+        return 2.075
+    elseif -0.10 < α ≤ 1.0
+        return -0.27*α + 2.05
+    else
+        @warn "α= $α is out of range"
+        α = min(α,10.0)
+        return -0.27*α + 2.05
+    end
+end
+
+"""
+    _bm_pf_c(α)
+
+Britter-McQuaid puff correlations
+
+# References
++ CCPS, *Guidelines for Consequence Analysis of Chemical Releases*, American Institute of Chemical Engineers, New York (1999)
+
+"""
+function _bm_pf_c(α)
+    concs = [0.10, 0.05, 0.02, 0.01, 0.005, 0.002, 0.001]
+    βs = [
+            _bm_pf_c_1(α),   # (C_m/C_0) = 0.1
+            _bm_pf_c_05(α),  # (C_m/C_0) = 0.05
+            _bm_pf_c_02(α),  # (C_m/C_0) = 0.02
+            _bm_pf_c_01(α),  # (C_m/C_0) = 0.01
+            _bm_pf_c_005(α), # (C_m/C_0) = 0.005
+            _bm_pf_c_002(α), # (C_m/C_0) = 0.002
+            _bm_pf_c_001(α)  # (C_m/C_0) = 0.001
     ]
     return concs, βs
 end

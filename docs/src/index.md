@@ -167,3 +167,14 @@ default behaviour is to take the limit $n \to \infty$.
 ```@docs
 puff(::Scenario, ::Type{IntPuff})
 ```
+
+### Britter-McQuaid Model
+
+The Britter-McQuaid model is an empirical correlation for dense cloud
+dispersion. The model generates an interpolation function for the average cloud
+concentration and the cloud is rendered as a cylinder.
+
+
+```@docs
+puff(::Scenario, ::Type{BritterMcQuaidPuff})
+```

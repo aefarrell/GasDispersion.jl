@@ -1,5 +1,3 @@
-include("../utils/britter_mcquaid_correls.jl")
-
 struct BritterMcQuaidPlume <: PlumeModel end
 
 struct BritterMcQuaidPlumeSolution <: Plume
@@ -18,11 +16,12 @@ end
 """
     plume(::Scenario, BritterMcQuaidPlume)
 
-Returns the solution to a Britter-McQuaid dispersion model for the given
-scenario.
+Returns the solution to the Britter-McQuaid continuous ground level release
+model for the given scenario.
 
 # References
 + Britter, R.E. and J. McQuaid, *Workbook on the Dispersion of Dense Gases* HSE Contract Research Report No. 17/1988, 1988
++ CCPS, *Guidelines for Consequence Analysis of Chemical Releases*, American Institute of Chemical Engineers, New York (1999)
 
 """
 function plume(scenario::Scenario, ::Type{BritterMcQuaidPlume})
@@ -63,7 +62,7 @@ function plume(scenario::Scenario, ::Type{BritterMcQuaidPlume})
         # linear interpolation between the near-field correlation
         # and the main correlation
         βnf = log10(xnf)
-        cnf = 306*xnf^-2 / (1+ 306*xnf^-2)
+        cnf = 306 / (xnf^2 + 306)
         βs = [ βnf; βs]
         concs = [ cnf; concs ]
     else
@@ -91,7 +90,7 @@ function plume(scenario::Scenario, ::Type{BritterMcQuaidPlume})
         T′,    # temperature_correction
         D,     # critical length, m
         lb,    # length parameter, m
-        itp,   # interpolation::Extrapolation
+        itp,   # interpolation
         xnf,   # near-field distance
         xff,   # far-field distance
         A      # far-field constant
@@ -126,7 +125,7 @@ function (b::BritterMcQuaidPlumeSolution)(x, y, z)
     x′ = x/b.D
     if x′ ≤ b.xnf
         # use near-field correlation
-        c′ = x′ > 0 ? 306*x′^-2 / (1+ 306*x′^-2) : 1.0
+        c′ = x′ > 0 ? 306 / ( 306 + x′^2 ) : 1.0
     elseif b.xnf < x′ < b.xff
         # use linear interpolation
         β = log10(x′)
