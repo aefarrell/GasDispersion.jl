@@ -18,7 +18,7 @@ Julia session, enter the package manager mode by hitting `]`, then run the
 command
 
 ```julia
-pkg> add https://github.com/aefarrell/GasDispersion.jl
+pkg> add GasDispersion
 ```
 
 
