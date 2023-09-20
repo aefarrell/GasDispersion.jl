@@ -1,5 +1,5 @@
 # units for the show function
-const units = Dict{Symbol,String}([
+units = Dict{Symbol,String}([
     :ṁ => "kg/s",
     :Δt => "s",
     :d => "m",
