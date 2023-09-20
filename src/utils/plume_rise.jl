@@ -40,7 +40,7 @@ plume rise.
 """
 function plume_rise(Dⱼ,uⱼ,Tᵣ,u,Tₐ, stab::Union{Type{ClassA},Type{ClassB},Type{ClassC},Type{ClassD}})
     # physics parameters
-    g = 9.80616 #m/s^2
+    const g = 9.80616 #m/s^2
 
     # buoyancy flux
     Fb = g * uⱼ * Dⱼ^2 * (Tᵣ - Tₐ) / (4Tᵣ)
@@ -74,9 +74,9 @@ end
 
 function plume_rise(Dⱼ,uⱼ,Tᵣ,u,Tₐ, ::Type{ClassE})
     # physics parameters
-    g = 9.80616 #m/s^2
+    const g = 9.80616 #m/s^2
 
-    Γ = 0.020 # default lapse rate K/m
+    const Γ = 0.020 # default lapse rate K/m
     s = (g/Tₐ)*Γ # stability
     Fb = g * uⱼ * Dⱼ^2 * (Tᵣ - Tₐ) / (4Tᵣ) # buoyancy flux
     ΔTc = 0.019582*Tᵣ*uⱼ*√(s) # temperature cross
@@ -102,9 +102,9 @@ end
 
 function plume_rise(Dⱼ,uⱼ,Tᵣ,u,Tₐ, ::Type{ClassF})
     # physics parameters
-    g = 9.80616 #m/s^2
+    const g = 9.80616 #m/s^2
 
-    Γ = 0.035 # default lapse rate K/m
+    const Γ = 0.035 # default lapse rate K/m
     s = (g/Tₐ)*Γ # stability
     Fb = g * uⱼ * Dⱼ^2 * (Tᵣ - Tₐ) / (4Tᵣ) # buoyancy flux
     ΔTc = 0.019582*Tᵣ*uⱼ*√(s) # temperature cross

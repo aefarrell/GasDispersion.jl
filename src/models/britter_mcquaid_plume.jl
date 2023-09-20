@@ -39,7 +39,7 @@ function plume(scenario::Scenario, ::Type{BritterMcQuaidPlume})
     c₀ = ṁ/Q
 
     # relative density
-    g = 9.80616  # gravity, m/s^2
+    const g = 9.80616  # gravity, m/s^2
     gₒ = g * ((ρⱼ - ρₐ)/ ρₐ)
 
     # critical distance
