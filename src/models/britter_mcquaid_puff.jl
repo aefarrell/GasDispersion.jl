@@ -15,17 +15,21 @@ struct BritterMcQuaidPuffSolution <: Puff
 end
 
 """
-    puff(scenario::Scenario, BritterMcQuaidPuff)
+    puff(scenario::Scenario, BritterMcQuaidPuff[, equationset::EquationSet])
 
 Returns the solution to the Britter-McQuaid instantaneous ground level release
 model for the given scenario.
+
+The `equationset` is used to calculate the windspeed at 10m, all other 
+correlations are as per the Britter-McQuaid model. Unless otherwise specified
+a default power-law wind profile is used.
 
 # References
 + Britter, R.E. and J. McQuaid, *Workbook on the Dispersion of Dense Gases* HSE Contract Research Report No. 17/1988, 1988
 + CCPS, *Guidelines for Consequence Analysis of Chemical Releases*, American Institute of Chemical Engineers, New York (1999)
 
 """
-function puff(scenario::Scenario, ::Type{BritterMcQuaidPuff})
+function puff(scenario::Scenario, ::Type{BritterMcQuaidPuff}, eqs::EquationSet=DefaultSet())
 
     Q = _release_flowrate(scenario)
     ṁ = _mass_rate(scenario)
@@ -33,7 +37,7 @@ function puff(scenario::Scenario, ::Type{BritterMcQuaidPuff})
     ρⱼ = _release_density(scenario)
     Tᵣ = _release_temperature(scenario)
 
-    u₁₀ = _windspeed(scenario, 10.0)
+    u₁₀ = _windspeed(scenario, 10.0, eqs)
     ρₐ = _atmosphere_density(scenario)
     Tₐ = _atmosphere_temperature(scenario)
 

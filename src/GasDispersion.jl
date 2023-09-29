@@ -22,6 +22,8 @@ export GaussianPlume, SimpleJet, BritterMcQuaidPlume
 export PuffModel, Puff, puff
 export GaussianPuff, IntPuff, BritterMcQuaidPuff
 
+# equation sets
+export EquationSet, DefaultSet
 
 # abstract types
 abstract type Atmosphere end
@@ -31,6 +33,7 @@ abstract type PlumeModel end
 abstract type Plume end
 abstract type PuffModel end
 abstract type Puff end
+abstract type EquationSet end
 
 # basic type definitions and such
 include("base/base_types.jl")
@@ -41,7 +44,7 @@ include("utils/utils.jl")
 
 
 """
-    plume(scenario::Scenario, model::PlumeModel)
+    plume(scenario::Scenario, model::PlumeModel[, equationset::EquationSet])
 
 Runs the plume dispersion model on the given scenario and returns the solution
 which is callable to give the concentration
@@ -49,6 +52,9 @@ which is callable to give the concentration
 
 The concentration is in kg/m³, if `model` is unspecified, defaults to a simple
 gaussian plume model.
+
+`equationset`s are used to specify that an alternative set of correlations 
+should be used for model parameters, if alternatives exist.
 
 All model parameters are assumed to be in SI base units (i.e.
 distances in m, velocities in m/s, mass in kg, etc.)
@@ -65,7 +71,7 @@ include("models/britter_mcquaid_plume.jl")
 
 
 """
-    puff(scenario::Scenario, model::PuffModel)
+    puff(scenario::Scenario, model::PuffModel[, equationset::EquationSet])
 
 Runs the puff dispersion model on the given scenario and returns the solution
 which is callable to give the concentration
@@ -73,6 +79,9 @@ which is callable to give the concentration
 
 The concentration is in kg/m³, if `model` is unspecified, defaults to a
 simple gaussian puff.
+
+`equationset`s are used to specify that an alternative set of correlations 
+should be used for model parameters, if alternatives exist.
 
 All model parameters are assumed to be in SI base units (i.e.
 distances in m, velocities in m/s, mass in kg, etc.)

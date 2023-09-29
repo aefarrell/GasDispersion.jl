@@ -9,10 +9,11 @@ struct GaussianPuffSolution{S<:StabilityClass} <: Puff
     height::Number
     windspeed::Number
     stability::Type{S}
+    equationset::EquationSet
 end
 
 @doc doc"""
-    puff(::Scenario, GaussianPuff)
+    puff(::Scenario, GaussianPuff[, ::EquationSet])
 
 Returns the solution to a Gaussian puff dispersion model for the given scenario.
 
@@ -24,11 +25,13 @@ c\left(x,y,z,t\right) = \dot{m} \Delta t
 + \exp \left( -\frac{1}{2} \left( {z + h} \over \sigma_z \right)^2 \right) } \over { \sqrt{2\pi} \sigma_z } }
 ```
 
+where the σs are dispersion parameters correlated with the distance x. The `EquationSet` defines the set of correlations used to calculate the dispersion parameters.
+
 # References
 + CCPS, *Guidelines for Consequence Analysis of Chemical Releases*, American Institute of Chemical Engineers, New York (1999)
 
 """
-function puff(scenario::Scenario, ::Type{GaussianPuff})
+function puff(scenario::Scenario, ::Type{GaussianPuff}, eqs::EquationSet=DefaultSet())
 
     stab = _stability(scenario)
     m = _release_mass(scenario)
@@ -38,10 +41,11 @@ function puff(scenario::Scenario, ::Type{GaussianPuff})
     return GaussianPuffSolution(
         scenario,  #scenario::Scenario
         :gaussian, #model::Symbol
-        m,  #mass
-        h,  #release height
-        u,  #windspeed
-        stab # stability class
+        m,    # mass
+        h,    # release height
+        u,    # windspeed
+        stab, # stability class
+        eqs   # equation set
     )
 
 end
@@ -58,10 +62,11 @@ function (g::GaussianPuffSolution)(x,y,z,t)
     h = g.height
     u = g.windspeed
     stab = g.stability
+    eqs = g.equationset
     xc = abs(u*t) # location of center of cloud
-    σx = downwind_dispersion(xc, Puff, stab)
-    σy = crosswind_dispersion(xc, Puff, stab)
-    σz = vertical_dispersion(xc, Puff, stab)
+    σx = downwind_dispersion(xc, Puff, stab, eqs)
+    σy = crosswind_dispersion(xc, Puff, stab, eqs)
+    σz = vertical_dispersion(xc, Puff, stab, eqs)
 
     c = ( G/((2*π)^(1.5)*σx*σy*σz)
         * exp(-0.5*((x-u*t)/σx)^2)

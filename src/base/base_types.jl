@@ -121,3 +121,6 @@ function Base.show(io::IO, mime::MIME"text/plain", s::Scenario)
  show(io,mime,s.release)
  show(io,mime,s.atmosphere)
 end
+
+# Default equation set
+struct DefaultSet <: EquationSet end
