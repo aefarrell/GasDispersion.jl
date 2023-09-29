@@ -39,7 +39,6 @@ stability class, `z` is assumed to be in meters and `u` is in m/s
 - `λ`  Monin-Obukhov length
 - `stability_class` Pasquill stability class (A, B, C, D, E, F)
 - `k`  von Karman's constant, 0.35
-
 """
 function _windspeed(z::Number, u::Number, zR::Number, λ::Number, ::Union{Type{ClassA},Type{ClassB},Type{ClassC}}; k=0.35)
     a = (1-15*(z/λ))^0.25

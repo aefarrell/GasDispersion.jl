@@ -13,7 +13,7 @@ GasDispersion.jl can be installed using Julia's built-in package manager. In a
 Julia session, enter the package manager mode by hitting `]`, then run the
 command
 
-```julia
+```
 pkg> add https://github.com/aefarrell/GasDispersion.jl
 ```
 
@@ -178,3 +178,14 @@ concentration and the cloud is rendered as a cylinder.
 ```@docs
 puff(::Scenario, ::Type{BritterMcQuaidPuff})
 ```
+
+## Equation Sets
+
+The models above each depend upon several parameters which are themselves, often, correlations. For any given parameter there are several different 
+correlations in the literature. To make this more transparent, sets of
+correlations from standard texts have been prepared (in addition to the 
+default correlations), allowing the user to *specify* which set to use.
+
+These are:
++ `CCPSRural` - the correlations for windspeed and atmospheric dispersion given in the CCPS *Guidelines for Consequence Analysis of Chemical Releases* corresponding to rural terrain
++ `CCPSUrban` - the correlations for windspeed and atmospheric dispersion given in the CCPS *Guidelines for Consequence Analysis of Chemical Releases* corresponding to urban terrain

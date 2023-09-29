@@ -215,3 +215,9 @@ end
     @test sln ≈ MomentumPlume(Fm,xf,β,s,u,Δhf,ClassF)
 
 end
+
+@testset "Equation Sets" begin
+    
+    include("ccps_tests.jl")
+
+end
