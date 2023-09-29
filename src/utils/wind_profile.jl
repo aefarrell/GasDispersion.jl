@@ -15,13 +15,14 @@ stability class, `z` is assumed to be in meters and `u` is in m/s
 # References
 
 """
-function _windspeed(a::Atmosphere,z::Number,es::EquationSet=DefaultSet())
+function _windspeed(a::Atmosphere,z::Number,es::DefaultSet)
     stab = _stability(a)
     u0 = _windspeed(a)
     z0 = _windspeed_height(a)
     return _windspeed(u0,z0,z,stab,es)
 end
 
+_windspeed(a::Atmosphere,z::Number) = _windspeed(a,z,DefaultSet())
 
 
 """
