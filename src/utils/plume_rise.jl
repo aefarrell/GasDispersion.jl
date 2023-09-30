@@ -128,7 +128,7 @@ function plume_rise(Dⱼ,uⱼ,Tᵣ,u,Tₐ, ::Type{ClassF})
     end
 end
 
-function plume_rise(x, m::BuoyantPlume)
+function plume_rise(x::Number, m::BuoyantPlume)
     if x < m.xf
         return min(1.60*(m.Fb*x^2/m.u^3)^(1/3), m.final_rise)
     else
@@ -136,7 +136,7 @@ function plume_rise(x, m::BuoyantPlume)
     end
 end
 
-function plume_rise(x, m::MomentumPlume{<:Union{ClassA,ClassB,ClassC,ClassD}})
+function plume_rise(x::Number, m::MomentumPlume{<:Union{ClassA,ClassB,ClassC,ClassD}})
     if x < m.xf
         return min((3m.Fm*x/(m.β*m.u)^2)^(1/3), m.final_rise)
     else
@@ -144,7 +144,7 @@ function plume_rise(x, m::MomentumPlume{<:Union{ClassA,ClassB,ClassC,ClassD}})
     end
 end
 
-function plume_rise(x, m::MomentumPlume{<:Union{ClassE,ClassF}})
+function plume_rise(x::Number, m::MomentumPlume{<:Union{ClassE,ClassF}})
     if x < m.xf
         return min((3m.Fm*sin(x*√(m.s)/m.u)/(m.β^2*m.u*√(m.s)))^(1/3), m.final_rise)
     else

@@ -219,5 +219,6 @@ end
 @testset "Equation Sets" begin
     
     include("ccps_tests.jl")
+    include("tno_tests.jl")
 
 end

@@ -29,12 +29,12 @@ Plume crosswind dispersion correlations, for rural terrain
 # References
 + CCPS, *Guidelines for Consequence Analysis of Chemical Releases*, American Institute of Chemical Engineers, New York (1999)
 """
-crosswind_dispersion(x, ::Type{Plume}, ::Type{ClassA}, ::CCPSRural) = 0.22x/√(1+0.0001x)
-crosswind_dispersion(x, ::Type{Plume}, ::Type{ClassB}, ::CCPSRural) = 0.16x/√(1+0.0001x)
-crosswind_dispersion(x, ::Type{Plume}, ::Type{ClassC}, ::CCPSRural) = 0.11x/√(1+0.0001x)
-crosswind_dispersion(x, ::Type{Plume}, ::Type{ClassD}, ::CCPSRural) = 0.08x/√(1+0.0001x)
-crosswind_dispersion(x, ::Type{Plume}, ::Type{ClassE}, ::CCPSRural) = 0.06x/√(1+0.0001x)
-crosswind_dispersion(x, ::Type{Plume}, ::Type{ClassF}, ::CCPSRural) = 0.04x/√(1+0.0001x)
+crosswind_dispersion(x::Number, ::Type{Plume}, ::Type{ClassA}, ::CCPSRural) = 0.22x/√(1+0.0001x)
+crosswind_dispersion(x::Number, ::Type{Plume}, ::Type{ClassB}, ::CCPSRural) = 0.16x/√(1+0.0001x)
+crosswind_dispersion(x::Number, ::Type{Plume}, ::Type{ClassC}, ::CCPSRural) = 0.11x/√(1+0.0001x)
+crosswind_dispersion(x::Number, ::Type{Plume}, ::Type{ClassD}, ::CCPSRural) = 0.08x/√(1+0.0001x)
+crosswind_dispersion(x::Number, ::Type{Plume}, ::Type{ClassE}, ::CCPSRural) = 0.06x/√(1+0.0001x)
+crosswind_dispersion(x::Number, ::Type{Plume}, ::Type{ClassF}, ::CCPSRural) = 0.04x/√(1+0.0001x)
 
 
 """
@@ -45,12 +45,12 @@ Plume vertical dispersion correlations, for rural terrain
 References:
 + CCPS, *Guidelines for Consequence Analysis of Chemical Releases*, American Institute of Chemical Engineers, New York (1999)
 """
-vertical_dispersion(x, ::Type{Plume}, ::Type{ClassA}, ::CCPSRural) = 0.20x
-vertical_dispersion(x, ::Type{Plume}, ::Type{ClassB}, ::CCPSRural) = 0.12x
-vertical_dispersion(x, ::Type{Plume}, ::Type{ClassC}, ::CCPSRural) = 0.08x/√(1+0.0002x)
-vertical_dispersion(x, ::Type{Plume}, ::Type{ClassD}, ::CCPSRural) = 0.06x/√(1+0.0015x)
-vertical_dispersion(x, ::Type{Plume}, ::Type{ClassE}, ::CCPSRural) = 0.03x/(1+0.0003x)
-vertical_dispersion(x, ::Type{Plume}, ::Type{ClassF}, ::CCPSRural) = 0.016x/(1+0.0003x)
+vertical_dispersion(x::Number, ::Type{Plume}, ::Type{ClassA}, ::CCPSRural) = 0.20x
+vertical_dispersion(x::Number, ::Type{Plume}, ::Type{ClassB}, ::CCPSRural) = 0.12x
+vertical_dispersion(x::Number, ::Type{Plume}, ::Type{ClassC}, ::CCPSRural) = 0.08x/√(1+0.0002x)
+vertical_dispersion(x::Number, ::Type{Plume}, ::Type{ClassD}, ::CCPSRural) = 0.06x/√(1+0.0015x)
+vertical_dispersion(x::Number, ::Type{Plume}, ::Type{ClassE}, ::CCPSRural) = 0.03x/(1+0.0003x)
+vertical_dispersion(x::Number, ::Type{Plume}, ::Type{ClassF}, ::CCPSRural) = 0.016x/(1+0.0003x)
 
 
 # Correlations for urban terrain
@@ -81,10 +81,10 @@ Plume crosswind dispersion correlations, for urban terrain
 # References
 + CCPS, *Guidelines for Consequence Analysis of Chemical Releases*, American Institute of Chemical Engineers, New York (1999)
 """
-crosswind_dispersion(x, ::Type{Plume}, ::Union{Type{ClassA},Type{ClassB}}, ::CCPSUrban) = 0.32x/√(1+0.0004x)
-crosswind_dispersion(x, ::Type{Plume}, ::Type{ClassC}, ::CCPSUrban) = 0.22x/√(1+0.0004x)
-crosswind_dispersion(x, ::Type{Plume}, ::Type{ClassD}, ::CCPSUrban) = 0.16x/√(1+0.0004x)
-crosswind_dispersion(x, ::Type{Plume}, ::Union{Type{ClassE},Type{ClassF}}, ::CCPSUrban) = 0.11x/√(1+0.0004x)
+crosswind_dispersion(x::Number, ::Type{Plume}, ::Union{Type{ClassA},Type{ClassB}}, ::CCPSUrban) = 0.32x/√(1+0.0004x)
+crosswind_dispersion(x::Number, ::Type{Plume}, ::Type{ClassC}, ::CCPSUrban) = 0.22x/√(1+0.0004x)
+crosswind_dispersion(x::Number, ::Type{Plume}, ::Type{ClassD}, ::CCPSUrban) = 0.16x/√(1+0.0004x)
+crosswind_dispersion(x::Number, ::Type{Plume}, ::Union{Type{ClassE},Type{ClassF}}, ::CCPSUrban) = 0.11x/√(1+0.0004x)
 
 
 """
@@ -95,10 +95,10 @@ Plume vertical dispersion correlations, for urban terrain
 References:
 + CCPS, *Guidelines for Consequence Analysis of Chemical Releases*, American Institute of Chemical Engineers, New York (1999)
 """
-vertical_dispersion(x, ::Type{Plume}, ::Union{Type{ClassA},Type{ClassB}}, ::CCPSUrban) = 0.24x/√(1+0.001x)
-vertical_dispersion(x, ::Type{Plume}, ::Type{ClassC}, ::CCPSUrban) = 0.20x
-vertical_dispersion(x, ::Type{Plume}, ::Type{ClassD}, ::CCPSUrban) = 0.14x/√(1+0.003x)
-vertical_dispersion(x, ::Type{Plume}, ::Union{Type{ClassE},Type{ClassF}}, ::CCPSUrban) = 0.08x/√(1+0.0015x)
+vertical_dispersion(x::Number, ::Type{Plume}, ::Union{Type{ClassA},Type{ClassB}}, ::CCPSUrban) = 0.24x/√(1+0.001x)
+vertical_dispersion(x::Number, ::Type{Plume}, ::Type{ClassC}, ::CCPSUrban) = 0.20x
+vertical_dispersion(x::Number, ::Type{Plume}, ::Type{ClassD}, ::CCPSUrban) = 0.14x/√(1+0.003x)
+vertical_dispersion(x::Number, ::Type{Plume}, ::Union{Type{ClassE},Type{ClassF}}, ::CCPSUrban) = 0.08x/√(1+0.0015x)
 
 
 # Correlations for both
@@ -131,12 +131,12 @@ Puff crosswind dispersion correlations
 References:
 + CCPS, *Guidelines for Consequence Analysis of Chemical Releases*, American Institute of Chemical Engineers, New York (1999)
 """
-crosswind_dispersion(x, ::Type{Puff}, ::Type{ClassA}, ::Union{CCPSUrban,CCPSRural}) = 0.18*x^0.92
-crosswind_dispersion(x, ::Type{Puff}, ::Type{ClassB}, ::Union{CCPSUrban,CCPSRural}) = 0.14*x^0.92
-crosswind_dispersion(x, ::Type{Puff}, ::Type{ClassC}, ::Union{CCPSUrban,CCPSRural}) = 0.10*x^0.92
-crosswind_dispersion(x, ::Type{Puff}, ::Type{ClassD}, ::Union{CCPSUrban,CCPSRural}) = 0.06*x^0.92
-crosswind_dispersion(x, ::Type{Puff}, ::Type{ClassE}, ::Union{CCPSUrban,CCPSRural}) = 0.04*x^0.92
-crosswind_dispersion(x, ::Type{Puff}, ::Type{ClassF}, ::Union{CCPSUrban,CCPSRural}) = 0.02*x^0.89
+crosswind_dispersion(x::Number, ::Type{Puff}, ::Type{ClassA}, ::Union{CCPSUrban,CCPSRural}) = 0.18*x^0.92
+crosswind_dispersion(x::Number, ::Type{Puff}, ::Type{ClassB}, ::Union{CCPSUrban,CCPSRural}) = 0.14*x^0.92
+crosswind_dispersion(x::Number, ::Type{Puff}, ::Type{ClassC}, ::Union{CCPSUrban,CCPSRural}) = 0.10*x^0.92
+crosswind_dispersion(x::Number, ::Type{Puff}, ::Type{ClassD}, ::Union{CCPSUrban,CCPSRural}) = 0.06*x^0.92
+crosswind_dispersion(x::Number, ::Type{Puff}, ::Type{ClassE}, ::Union{CCPSUrban,CCPSRural}) = 0.04*x^0.92
+crosswind_dispersion(x::Number, ::Type{Puff}, ::Type{ClassF}, ::Union{CCPSUrban,CCPSRural}) = 0.02*x^0.89
 
 
 """
@@ -147,7 +147,7 @@ Puff downwind dispersion correlations
 References:
 + CCPS, *Guidelines for Consequence Analysis of Chemical Releases*, American Institute of Chemical Engineers, New York (1999)
 """
-downwind_dispersion(x, ::Type{Puff}, 
+downwind_dispersion(x::Number, ::Type{Puff}, 
     stab::Union{Type{ClassA},Type{ClassB},Type{ClassC},Type{ClassD},Type{ClassE},Type{ClassF}}, 
     es::Union{CCPSUrban,CCPSRural}) =crosswind_dispersion(x, Puff, stab, es)
 
@@ -160,9 +160,9 @@ Puff vertical dispersion correlations
 References:
 + CCPS, *Guidelines for Consequence Analysis of Chemical Releases*, American Institute of Chemical Engineers, New York (1999)
 """
-vertical_dispersion(x, ::Type{Puff}, ::Type{ClassA}, ::Union{CCPSUrban,CCPSRural}) = 0.60*x^0.75
-vertical_dispersion(x, ::Type{Puff}, ::Type{ClassB}, ::Union{CCPSUrban,CCPSRural}) = 0.53*x^0.73
-vertical_dispersion(x, ::Type{Puff}, ::Type{ClassC}, ::Union{CCPSUrban,CCPSRural}) = 0.34*x^0.71
-vertical_dispersion(x, ::Type{Puff}, ::Type{ClassD}, ::Union{CCPSUrban,CCPSRural}) = 0.15*x^0.70
-vertical_dispersion(x, ::Type{Puff}, ::Type{ClassE}, ::Union{CCPSUrban,CCPSRural}) = 0.10*x^0.65
-vertical_dispersion(x, ::Type{Puff}, ::Type{ClassF}, ::Union{CCPSUrban,CCPSRural}) = 0.05*x^0.61
+vertical_dispersion(x::Number, ::Type{Puff}, ::Type{ClassA}, ::Union{CCPSUrban,CCPSRural}) = 0.60*x^0.75
+vertical_dispersion(x::Number, ::Type{Puff}, ::Type{ClassB}, ::Union{CCPSUrban,CCPSRural}) = 0.53*x^0.73
+vertical_dispersion(x::Number, ::Type{Puff}, ::Type{ClassC}, ::Union{CCPSUrban,CCPSRural}) = 0.34*x^0.71
+vertical_dispersion(x::Number, ::Type{Puff}, ::Type{ClassD}, ::Union{CCPSUrban,CCPSRural}) = 0.15*x^0.70
+vertical_dispersion(x::Number, ::Type{Puff}, ::Type{ClassE}, ::Union{CCPSUrban,CCPSRural}) = 0.10*x^0.65
+vertical_dispersion(x::Number, ::Type{Puff}, ::Type{ClassF}, ::Union{CCPSUrban,CCPSRural}) = 0.05*x^0.61

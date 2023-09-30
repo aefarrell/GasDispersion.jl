@@ -189,3 +189,5 @@ default correlations), allowing the user to *specify* which set to use.
 These are:
 + `CCPSRural` - the correlations for windspeed and atmospheric dispersion given in the CCPS *Guidelines for Consequence Analysis of Chemical Releases* corresponding to rural terrain
 + `CCPSUrban` - the correlations for windspeed and atmospheric dispersion given in the CCPS *Guidelines for Consequence Analysis of Chemical Releases* corresponding to urban terrain
++ `TNO` - the simple correlations for atmospheric dispersion given in the
+TNO *Yellow Book* for continuous and instantaneous passive releases

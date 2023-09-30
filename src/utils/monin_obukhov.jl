@@ -7,9 +7,9 @@ and surface roughness (in meters)
 + Pasquill, F., *Atmospheric Diffusion, 2nd Ed.*, Halstead Press, New York (1974)
 
 """
-_monin_obukhov(zR, ::Type{ClassA}) = -11.4*zR^0.10
-_monin_obukhov(zR, ::Type{ClassB}) = -26.0*zR^0.17
-_monin_obukhov(zR, ::Type{ClassC}) = -123.0*zR^0.30
-_monin_obukhov(zR, ::Type{ClassD}) = Inf
-_monin_obukhov(zR, ::Type{ClassE}) = 123.0*zR^0.30
-_monin_obukhov(zR, ::Type{ClassF}) = 26.0*zR^0.17
+_monin_obukhov(zR::Number, ::Type{ClassA}) = -11.4*zR^0.10
+_monin_obukhov(zR::Number, ::Type{ClassB}) = -26.0*zR^0.17
+_monin_obukhov(zR::Number, ::Type{ClassC}) = -123.0*zR^0.30
+_monin_obukhov(zR::Number, ::Type{ClassD}) = Inf
+_monin_obukhov(zR::Number, ::Type{ClassE}) = 123.0*zR^0.30
+_monin_obukhov(zR::Number, ::Type{ClassF}) = 26.0*zR^0.17

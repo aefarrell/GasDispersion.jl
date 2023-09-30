@@ -24,7 +24,7 @@ export GaussianPuff, IntPuff, BritterMcQuaidPuff
 
 # equation sets
 export EquationSet, DefaultSet
-export CCPSRural, CCPSUrban
+export CCPSRural, CCPSUrban, TNO
 
 # abstract types
 abstract type Atmosphere end

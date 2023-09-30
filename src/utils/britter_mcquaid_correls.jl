@@ -1,5 +1,5 @@
 # plume correlations
-function _bm_pl_c_1(α)
+function _bm_pl_c_1(α::Number)
     # corresponds to (Cm/C0) = 0.10
     if α ≤ -0.55
         return 1.75
@@ -13,7 +13,7 @@ function _bm_pl_c_1(α)
     end
 end
 
-function _bm_pl_c_05(α)
+function _bm_pl_c_05(α::Number)
     # corresponds to (Cm/C0) = 0.05
     if α ≤ -0.68
         return 1.92
@@ -29,7 +29,7 @@ function _bm_pl_c_05(α)
     end
 end
 
-function _bm_pl_c_02(α)
+function _bm_pl_c_02(α::Number)
     # corresponds to (Cm/C0) = 0.02
     if α ≤ -0.69
         return 2.08
@@ -45,7 +45,7 @@ function _bm_pl_c_02(α)
     end
 end
 
-function _bm_pl_c_01(α)
+function _bm_pl_c_01(α::Number)
     # corresponds to (Cm/C0) = 0.01
     if α ≤ -0.70
         return 2.25
@@ -61,7 +61,7 @@ function _bm_pl_c_01(α)
     end
 end
 
-function _bm_pl_c_005(α)
+function _bm_pl_c_005(α::Number)
     # corresponds to (Cm/C0) = 0.005
     if α ≤ -0.67
         return 2.40
@@ -77,7 +77,7 @@ function _bm_pl_c_005(α)
     end
 end
 
-function _bm_pl_c_002(α)
+function _bm_pl_c_002(α::Number)
     # corresponds to (Cm/C0) = 0.002
     if α ≤ -0.69
         return 2.60
@@ -102,7 +102,7 @@ Britter-McQuaid plume correlations
 + CCPS, *Guidelines for Consequence Analysis of Chemical Releases*, American Institute of Chemical Engineers, New York (1999)
 
 """
-function _bm_pl_c(α)
+function _bm_pl_c(α::Number)
     concs = [0.10, 0.05, 0.02, 0.01, 0.005, 0.002]
     βs = [
             _bm_pl_c_1(α),   # (C_m/C_0) = 0.1
@@ -119,7 +119,7 @@ end
 ###############################################################################
 # puff correlations
 
-function _bm_pf_c_1(α)
+function _bm_pf_c_1(α::Number)
     # corresponds to (Cm/C0) = 0.10
     if α ≤ -0.44
         return 0.70
@@ -133,7 +133,7 @@ function _bm_pf_c_1(α)
     end
 end
 
-function _bm_pf_c_05(α)
+function _bm_pf_c_05(α::Number)
     # corresponds to (Cm/C0) = 0.05
     if α ≤ -0.56
         return 0.85
@@ -148,7 +148,7 @@ function _bm_pf_c_05(α)
     end
 end
 
-function _bm_pf_c_02(α)
+function _bm_pf_c_02(α::Number)
     # corresponds to (Cm/C0) = 0.02
     if α ≤ -0.66
         return 0.95
@@ -163,7 +163,7 @@ function _bm_pf_c_02(α)
     end
 end
 
-function _bm_pf_c_01(α)
+function _bm_pf_c_01(α::Number)
     # corresponds to (Cm/C0) = 0.01
     if α ≤ -0.71
         return 1.15
@@ -178,7 +178,7 @@ function _bm_pf_c_01(α)
     end
 end
 
-function _bm_pf_c_005(α)
+function _bm_pf_c_005(α::Number)
     # corresponds to (Cm/C0) = 0.005
     if α ≤ -0.52
         return 1.48
@@ -193,7 +193,7 @@ function _bm_pf_c_005(α)
     end
 end
 
-function _bm_pf_c_002(α)
+function _bm_pf_c_002(α::Number)
     # corresponds to (Cm/C0) = 0.002
     if α ≤ 0.27
         return 1.83
@@ -206,7 +206,7 @@ function _bm_pf_c_002(α)
     end
 end
 
-function _bm_pf_c_001(α)
+function _bm_pf_c_001(α::Number)
     # corresponds to (Cm/C0) = 0.001
     if α ≤ -0.10
         return 2.075
@@ -228,7 +228,7 @@ Britter-McQuaid puff correlations
 + CCPS, *Guidelines for Consequence Analysis of Chemical Releases*, American Institute of Chemical Engineers, New York (1999)
 
 """
-function _bm_pf_c(α)
+function _bm_pf_c(α::Number)
     concs = [0.10, 0.05, 0.02, 0.01, 0.005, 0.002, 0.001]
     βs = [
             _bm_pf_c_1(α),   # (C_m/C_0) = 0.1

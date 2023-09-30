@@ -9,7 +9,7 @@
                  (ClassD, 0.19195393658216728, 0.16769841403825084),
                  (ClassE, 0.13196833140024, 0.09591371646531512),
                  (ClassF, 0.13196833140024, 0.09591371646531512)]
-        @testset "Urban terrain, stability class $class" for (class,cwind,vert) in urban
+        @testset "Plume dispersion, urban terrain, stability class $class" for (class,cwind,vert) in urban
             @test crosswind_dispersion(1.2, Plume, class, CCPSUrban()) ≈ cwind
             @test vertical_dispersion(1.2, Plume, class, CCPSUrban()) ≈ vert
         end
@@ -20,7 +20,7 @@
                  (ClassD, 0.09599424051834818, 0.07193528734898633),
                  (ClassE, 0.07199568038876113, 0.03598704466392099),
                  (ClassF, 0.04799712025917409, 0.019193090487424527)]
-        @testset "Rural terrain, stability class $class" for (class,cwind,vert) in rural
+        @testset "Plume dispersion, rural terrain, stability class $class" for (class,cwind,vert) in rural
             @test crosswind_dispersion(1.2, Plume, class, CCPSRural()) ≈ cwind
             @test vertical_dispersion(1.2, Plume, class, CCPSRural()) ≈ vert
         end
@@ -32,7 +32,7 @@
                 (ClassD, 0.07095744949303479, 0.17041904657983328),
                 (ClassE, 0.047304966328689864, 0.11258170198247626),
                 (ClassF, 0.023523465599668385, 0.05588182287353654)]
-        @testset "Stability class $class" for (class,cwind,vert) in knowns
+        @testset "Puff dispersion, stability class $class" for (class,cwind,vert) in knowns
             @test crosswind_dispersion(1.2, Puff, class, CCPSUrban()) ≈ cwind
             @test downwind_dispersion(1.2, Puff, class, CCPSUrban()) ≈ cwind
             @test vertical_dispersion(1.2, Puff, class, CCPSUrban()) ≈ vert
@@ -52,7 +52,7 @@
                  (ClassD, 5.334838230116768),
                  (ClassE, 7.53565929452874),
                  (ClassF, 11.943215116604916)]
-        @testset "Urban terrain, stability class $class" for (class, ans) in urban
+        @testset "Windspeed, urban terrain, stability class $class" for (class, ans) in urban
             @test  _windspeed(u0,z0,10,class,CCPSUrban()) ≈ ans
         end
 
@@ -62,7 +62,7 @@
                  (ClassD, 4.237612633868263),
                  (ClassE, 6.716163415705019),
                  (ClassF, 10.644401677007265)]
-        @testset "Rural terrain, stability class $class" for (class, ans) in rural
+        @testset "Windspeed, rural terrain, stability class $class" for (class, ans) in rural
             @test  _windspeed(u0,z0,10,class,CCPSRural()) ≈ ans
         end
 
