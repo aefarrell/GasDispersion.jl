@@ -34,8 +34,8 @@ Implements the Briggs plume rise equations for buoyancy and momentum driven
 plume rise.
 
 # References
-+ Briggs, G.A. *Plume Rise* U.S. Atomic Energy Commission, Oak Ridge (1969)
-+ EPA, *User's Guide for the Industrial Source Complex (ISC3) Dispersion Models, vol 2*, U.S. Environmental Protection Agency EPA-454/B-95-003b (1995)
++ Briggs, Gary A. 1969. *Plume Rise* Oak Ridge: U.S. Atomic Energy Commission
++ EPA. 1995. *User's Guide for the Industrial Source Complex (ISC3) Dispersion Models, vol 2*. United States Environmental Protection Agency EPA-454/B-95-003b
 
 """
 function plume_rise(Dⱼ,uⱼ,Tᵣ,u,Tₐ, stab::Union{Type{ClassA},Type{ClassB},Type{ClassC},Type{ClassD}})
@@ -128,7 +128,7 @@ function plume_rise(Dⱼ,uⱼ,Tᵣ,u,Tₐ, ::Type{ClassF})
     end
 end
 
-function plume_rise(x, m::BuoyantPlume)
+function plume_rise(x::Number, m::BuoyantPlume)
     if x < m.xf
         return min(1.60*(m.Fb*x^2/m.u^3)^(1/3), m.final_rise)
     else
@@ -136,7 +136,7 @@ function plume_rise(x, m::BuoyantPlume)
     end
 end
 
-function plume_rise(x, m::MomentumPlume{<:Union{ClassA,ClassB,ClassC,ClassD}})
+function plume_rise(x::Number, m::MomentumPlume{<:Union{ClassA,ClassB,ClassC,ClassD}})
     if x < m.xf
         return min((3m.Fm*x/(m.β*m.u)^2)^(1/3), m.final_rise)
     else
@@ -144,7 +144,7 @@ function plume_rise(x, m::MomentumPlume{<:Union{ClassA,ClassB,ClassC,ClassD}})
     end
 end
 
-function plume_rise(x, m::MomentumPlume{<:Union{ClassE,ClassF}})
+function plume_rise(x::Number, m::MomentumPlume{<:Union{ClassE,ClassF}})
     if x < m.xf
         return min((3m.Fm*sin(x*√(m.s)/m.u)/(m.β^2*m.u*√(m.s)))^(1/3), m.final_rise)
     else

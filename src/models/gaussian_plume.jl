@@ -11,10 +11,11 @@ struct GaussianPlumeSolution{P<:PlumeRise, S<:StabilityClass} <: Plume
     effective_stack_height::Number
     plumerise::P
     stability::Type{S}
+    equationset::EquationSet
 end
 
 @doc doc"""
-    plume(::Scenario, GaussianPlume; kwargs...)
+    plume(::Scenario, GaussianPlume[, ::EquationSet]; kwargs...)
 
 Returns the solution to a Gaussian plume dispersion model for the given scenario.
 
@@ -27,15 +28,17 @@ c\left(x,y,z\right) = { \dot{m} \over { 2 \pi \sigma_{y} \sigma_{z} u } }
 
 where the σs are dispersion parameters correlated with the distance x
 
+The `EquationSet` defines the set of correlations used to calculate the dispersion parameters.
+
 # References
-+ CCPS, *Guidelines for Consequence Analysis of Chemical Releases*, American Institute of Chemical Engineers, New York (1999)
++ AIChE/CCPS. 1999. *Guidelines for Consequence Analysis of Chemical Releases*. New York: American Institute of Chemical Engineers
 
 # Arguments
 - `downwash::Bool=false`: when true, includes stack-downwash effects
 - `plumerise::Bool=false`: when true, includes plume-rise effects using Briggs' model
 
 """
-function plume(scenario::Scenario, ::Type{GaussianPlume}; downwash::Bool=false, plumerise::Bool=false)
+function plume(scenario::Scenario, ::Type{GaussianPlume}, eqs::EquationSet=DefaultSet(); downwash::Bool=false, plumerise::Bool=false)
     # parameters of the jet
     ṁ  = _mass_rate(scenario)
     Dⱼ = _release_diameter(scenario)
@@ -76,7 +79,8 @@ function plume(scenario::Scenario, ::Type{GaussianPlume}; downwash::Bool=false, 
     u,     #windspeed
     hᵣ,    #effective_stack_height::Number
     plume, #plume rise model
-    stab   #stability class
+    stab,  #stability class
+    eqs    #equation set 
     )
 
 end
@@ -92,8 +96,9 @@ function (g::GaussianPlumeSolution{NoPlumeRise, <:StabilityClass})(x, y, z, t=0)
         G = g.mass_rate
         u = g.windspeed
         stab = g.stability
-        σy = crosswind_dispersion(x,Plume,stab)
-        σz = vertical_dispersion(x,Plume,stab)
+        eqs = g.equationset
+        σy = crosswind_dispersion(x,Plume,stab,eqs)
+        σz = vertical_dispersion(x,Plume,stab,eqs)
 
         c = ( G/(2*π*u*σy*σz)
             * exp(-0.5*(y/σy)^2)
@@ -115,10 +120,11 @@ function (g::GaussianPlumeSolution{<:BriggsModel, <:StabilityClass})(x, y, z, t=
         u = g.windspeed
         h = g.effective_stack_height
         stab = g.stability
+        eqs = g.equationset
         m = g.plumerise
         Δh = plume_rise(x, m)
-        σy = crosswind_dispersion(x,Plume,stab)
-        σz = vertical_dispersion(x,Plume,stab)
+        σy = crosswind_dispersion(x,Plume,stab,eqs)
+        σz = vertical_dispersion(x,Plume,stab,eqs)
         hₑ  = h + Δh
         σyₑ = √( (Δh/3.5)^2 + σy^2 )
         σzₑ = √( (Δh/3.5)^2 + σz^2 )

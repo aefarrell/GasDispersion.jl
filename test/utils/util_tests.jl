@@ -72,8 +72,8 @@ end
               (ClassE, 0.12018860465437811, 0.028796954615478678),
               (ClassF, 0.0794187446441675, 0.014462956106986533)]
     @testset "Stability class $class" for (class,cwind,vert) in knowns
-        @test crosswind_dispersion(1.2, Plume, class) ≈ cwind
-        @test vertical_dispersion(1.2, Plume, class) ≈ vert
+        @test crosswind_dispersion(1.2, Plume, class, DefaultSet()) ≈ cwind
+        @test vertical_dispersion(1.2, Plume, class, DefaultSet()) ≈ vert
     end
 
     # Puff dispersion
@@ -84,9 +84,9 @@ end
               (ClassE, 0.047304966328689864, 0.11258170198247626),
               (ClassF, 0.023523465599668385, 0.05588182287353654)]
     @testset "Stability class $class" for (class,cwind,vert) in knowns
-        @test crosswind_dispersion(1.2, Puff, class) ≈ cwind
-        @test downwind_dispersion(1.2, Puff, class) ≈ cwind
-        @test vertical_dispersion(1.2, Puff, class) ≈ vert
+        @test crosswind_dispersion(1.2, Puff, class, DefaultSet()) ≈ cwind
+        @test downwind_dispersion(1.2, Puff, class, DefaultSet()) ≈ cwind
+        @test vertical_dispersion(1.2, Puff, class, DefaultSet()) ≈ vert
     end
 end
 
@@ -96,7 +96,7 @@ end
     a = DryAir(windspeed=u0, windspeed_height=z0, stability=ClassA)
     s = Scenario(Substance(:null,0,0,0,0,0,0,0,0),Release(0,0,0,0,1.0,0,0,0),a)
     @test _windspeed(s) == _windspeed(a) ≈ u0
-    @test _windspeed(s,10) == _windspeed(a,10) == _windspeed(u0,z0,10,ClassA)
+    @test _windspeed(s,10) == _windspeed(a,10) == _windspeed(u0,z0,10,ClassA,DefaultSet())
 
     knowns = [(ClassA, 3.846991747968065),
               (ClassB, 3.882587524349958),
@@ -106,7 +106,7 @@ end
               (ClassF, 5.371817562105883)]
 
     @testset "Stability class $class" for (class, ans) in knowns
-        @test  _windspeed(u0,z0,10,class) ≈ ans
+        @test  _windspeed(u0,z0,10,class,DefaultSet()) ≈ ans
     end
 
 end
@@ -213,5 +213,14 @@ end
     sln = plume_rise(1.0,uⱼ,Tᵣ,u,Tₐ,ClassF)
     @test isa(sln,MomentumPlume)
     @test sln ≈ MomentumPlume(Fm,xf,β,s,u,Δhf,ClassF)
+
+end
+
+@testset "Equation Sets" begin
+    
+    include("ccps_tests.jl")
+    include("tno_tests.jl")
+    include("turner_tests.jl")
+    include("isc3_tests.jl")
 
 end

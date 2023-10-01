@@ -8,7 +8,7 @@ jet can either be a liquid or a gas (in which case it is assumed to be an ideal
 gas and the jet is isentropic).
 
 # References
-+ CCPS, *Guidelines for Consequence Analysis of Chemical Releases*, American Institute of Chemical Engineers, New York (1999)
++ AIChE/CCPS. 1999. *Guidelines for Consequence Analysis of Chemical Releases*. New York: American Institute of Chemical Engineers
 
 # Arguments
 - `phase=:liquid`: the phase, either :liquid or :gas

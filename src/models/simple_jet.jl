@@ -29,7 +29,7 @@ with diameter equal to the jet diameter. Ground-reflection is included by method
 of images.
 
 # References
-+ Long, V.D., "Estimation of the Extent of Hazard Areas Around a Vent" *Chem. Process Hazard*, II:6 (1963)
++ Long, V.D. 1963. "Estimation of the Extent of Hazard Areas Round a Vent." *Chem. Process Hazard*. II:6
 
 # Arguments
 - `release_angle::Number=0`: the angle at which the jet is released, in radians
@@ -37,7 +37,7 @@ of images.
 - `k3::Number=5` parameter of the model, default value is recommended by Long
 
 """
-function plume(scenario::Scenario, ::Type{SimpleJet}; release_angle::Number=0.0, k2::Number=6.0, k3::Number=5.0)
+function plume(scenario::Scenario, ::Type{SimpleJet}, eqs::EquationSet=DefaultSet(); release_angle::Number=0.0, k2::Number=6.0, k3::Number=5.0)
     # Density correction
     ρj = _release_density(scenario)
     ρa = _atmosphere_density(scenario)

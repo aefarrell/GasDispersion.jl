@@ -40,7 +40,7 @@ _release_liquid_fraction(s::Scenario) = _liquid_fraction(s.release)
 
 _windspeed(a::Atmosphere) = a.u
 _windspeed(s::Scenario) = _windspeed(s.atmosphere)
-_windspeed(s::Scenario, z) = _windspeed(s.atmosphere, z)
+_windspeed(s::Scenario, z::Number, es::EquationSet=DefaultSet()) = _windspeed(s.atmosphere, z, es)
 _windspeed_height(a::Atmosphere) = a.h
 _windspeed_height(s::Scenario) = _windspeed_height(s.atmosphere)
 _stability(a::Atmosphere) = a.stability
@@ -82,3 +82,10 @@ include("plume_rise.jl")
 
 # model correlations
 include("britter_mcquaid_correls.jl")
+
+## Equation Sets
+# includes for defined sets of correlations go here
+include("equation_sets/ccps.jl")
+include("equation_sets/tno.jl")
+include("equation_sets/turner.jl")
+include("equation_sets/isc3.jl")
