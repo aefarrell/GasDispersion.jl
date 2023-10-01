@@ -221,5 +221,6 @@ end
     include("ccps_tests.jl")
     include("tno_tests.jl")
     include("turner_tests.jl")
+    include("isc3_tests.jl")
 
 end
