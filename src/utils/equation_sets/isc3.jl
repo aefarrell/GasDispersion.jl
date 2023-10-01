@@ -255,5 +255,7 @@ function _windspeed(a::Atmosphere,z::Number,es::Union{ISC3Rural,ISC3Urban})
     return _windspeed(u0,z0,z,stab,es)
 end
 
-
-
+# no puff correlations used, just passes to default
+crosswind_dispersion(x::Number,::Type{Puff},s::Union{Type{ClassA},Type{ClassB},Type{ClassC},Type{ClassD},Type{ClassE},Type{ClassF}},::Turner) = crosswind_dispersion(x,Puff,s,DefaultSet())
+vertical_dispersion(x::Number,::Type{Puff},s::Union{Type{ClassA},Type{ClassB},Type{ClassC},Type{ClassD},Type{ClassE},Type{ClassF}},::Turner) = vertical_dispersion(x,Puff,s,DefaultSet())
+downwind_dispersion(x::Number,::Type{Puff},s::Union{Type{ClassA},Type{ClassB},Type{ClassC},Type{ClassD},Type{ClassE},Type{ClassF}},::Turner) = downwind_dispersion(x,Puff,s,DefaultSet())
