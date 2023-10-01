@@ -3,10 +3,10 @@
     @testset "Pasquill-Gifford dispersion tests" begin
 
         # Plume dispersion
-        urban = [(ClassA, 0.38390787316433456, 0.2878273553646431),
-                 (ClassB, 0.38390787316433456, 0.2878273553646431),
+        urban = [(ClassA, 0.38390787316433456, 0.2881727481910807),
+                 (ClassB, 0.38390787316433456, 0.2881727481910807),
                  (ClassC, 0.26393666280048, 0.24),
-                 (ClassD, 0.19195393658216728, 0.16769841403825084),
+                 (ClassD, 0.19195393658216728, 0.16796976816235135),
                  (ClassE, 0.13196833140024, 0.09591371646531512),
                  (ClassF, 0.13196833140024, 0.09591371646531512)]
         @testset "Plume dispersion, urban terrain, stability class $class" for (class,cwind,vert) in urban
@@ -41,7 +41,7 @@
 
     @testset "Windspeed by powerlaw" begin
 
-        u0, z0, p = 3.0, 1.0, 0.108
+        u0, z0 = 3.0, 1.0
         a = DryAir(windspeed=u0, windspeed_height=z0, stability=ClassA)
         s = Scenario(Substance(:null,0,0,0,0,0,0,0,0),Release(0,0,0,0,1.0,0,0,0),a)
         @test _windspeed(s,10,CCPSRural()) == _windspeed(a,10,CCPSRural()) == _windspeed(u0,z0,10,ClassA,CCPSRural())

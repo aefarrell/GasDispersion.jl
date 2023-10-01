@@ -30,7 +30,7 @@
 
     @testset "Windspeed (default)" begin
 
-        u0, z0, p = 3.0, 1.0, 0.108
+        u0, z0 = 3.0, 1.0
         a = DryAir(windspeed=u0, windspeed_height=z0, stability=ClassA)
         s = Scenario(Substance(:null,0,0,0,0,0,0,0,0),Release(0,0,0,0,1.0,0,0,0),a)
         @test _windspeed(s,10,TNO()) == _windspeed(a,10,TNO()) == _windspeed(u0,z0,10,ClassA,TNO())

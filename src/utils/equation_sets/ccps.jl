@@ -103,9 +103,9 @@ References:
 + Briggs, Gary A. 1973. *Diffusion Estimation for Small Emissions. Preliminary Report*. United States. https://doi.org/10.2172/5118833
 + Griffiths, R. F. 1994. "Errors in the use of the Briggs parameterization for atmospheric dispersion coefficients." *Atmospheric Environment* 28(17):2861-2865 https://doi.org/10.1016/1352-2310(94)90086-8
 """
-vertical_dispersion(x::Number, ::Type{Plume}, ::Union{Type{ClassA},Type{ClassB}}, ::CCPSUrban) = 0.24x/√(1+0.001x)
+vertical_dispersion(x::Number, ::Type{Plume}, ::Union{Type{ClassA},Type{ClassB}}, ::CCPSUrban) = 0.24x*√(1+0.001x)
 vertical_dispersion(x::Number, ::Type{Plume}, ::Type{ClassC}, ::CCPSUrban) = 0.20x
-vertical_dispersion(x::Number, ::Type{Plume}, ::Type{ClassD}, ::CCPSUrban) = 0.14x/√(1+0.003x)
+vertical_dispersion(x::Number, ::Type{Plume}, ::Type{ClassD}, ::CCPSUrban) = 0.14x/√(1+0.0003x)
 vertical_dispersion(x::Number, ::Type{Plume}, ::Union{Type{ClassE},Type{ClassF}}, ::CCPSUrban) = 0.08x/√(1+0.0015x)
 
 
