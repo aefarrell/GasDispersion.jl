@@ -1,5 +1,19 @@
 @testset "Turner 1970 Equation Sets" begin
 
+    @testset "Default behaviour" begin
+        # The Turner 1970 equation set is only for plume dispersion parameters
+        # everything else just passes to the Default
+        u0, z0, p = 3.0, 1.0, 0.108
+        a = DryAir(windspeed=u0, windspeed_height=z0, stability=ClassA)
+        s = Scenario(Substance(:null,0,0,0,0,0,0,0,0),Release(0,0,0,0,1.0,0,0,0),a)
+        @test _windspeed(s,10,Turner()) == _windspeed(a,10,Turner()) == _windspeed(u0,z0,10,ClassA,DefaultSet())
+
+        @test crosswind_dispersion(1.2, Puff, ClassA, Turner()) == crosswind_dispersion(1.2, Puff, ClassA, DefaultSet())
+        @test vertical_dispersion(1.2, Puff, ClassA, Turner()) == vertical_dispersion(1.2, Puff, ClassA, DefaultSet())
+        @test downwind_dispersion(1.2, Puff, ClassA, Turner()) == downwind_dispersion(1.2, Puff, ClassA, DefaultSet())
+
+    end
+
     @testset "Pasquill-Gifford dispersion tests" begin
 
         # Plume dispersion
