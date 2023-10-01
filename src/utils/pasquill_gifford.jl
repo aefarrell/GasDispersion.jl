@@ -4,7 +4,7 @@
 Plume crosswind dispersion correlations
 
 # References
-+ Spicer, T. O. and J. A. Havens, "Development of Vapor Dispersion Models for Non-Neutrally Buoyant Gas Mixtures--Analysis of TFI/NH3 Test Data" USAF Engineering and Services Laboratory, Final Report (1988)
++ Spicer, Thomas O. and Jerry A. Havens. 1988. *Development of Vapor Dispersion Models for Non-Neutrally Buoyant Gas Mixtures--Analysis of TFI/NH3 Test Data*. United States.
 
 """
 function crosswind_dispersion(x::Number, ::Type{Plume}, ::Type{ClassA}, ::DefaultSet; avg_time=600.0)
@@ -50,8 +50,7 @@ end
 Plume vertical dispersion correlations
 
 References:
-+ Seinfeld, J. H. *Atmospheric Chemistry and Physics of Air Pollution*, John Wiley and Sons, New York (1986)
-
++ Seinfeld, John H. 1986. *Atmospheric Chemistry and Physics of Air Pollution*. New York: John Wiley and Sons
 """
 function vertical_dispersion(x::Number, ::Type{Plume}, ::Type{ClassA}, ::DefaultSet)
     δ = 107.7
@@ -101,8 +100,7 @@ end
 Puff crosswind dispersion correlations
 
 References:
-+ CCPS, *Guidelines for Consequence Analysis of Chemical Releases*, American Institute of Chemical Engineers, New York (1999)
-
++ AIChE/CCPS. 1999. *Guidelines for Consequence Analysis of Chemical Releases*. New York: American Institute of Chemical Engineers
 """
 crosswind_dispersion(x::Number, ::Type{Puff}, ::Type{ClassA}, ::DefaultSet) = 0.18*x^0.92
 crosswind_dispersion(x::Number, ::Type{Puff}, ::Type{ClassB}, ::DefaultSet) = 0.14*x^0.92
@@ -118,8 +116,7 @@ crosswind_dispersion(x::Number, ::Type{Puff}, ::Type{ClassF}, ::DefaultSet) = 0.
 Puff downwind dispersion correlations
 
 References:
-+ CCPS, *Guidelines for Consequence Analysis of Chemical Releases*, American Institute of Chemical Engineers, New York (1999)
-
++ AIChE/CCPS. 1999. *Guidelines for Consequence Analysis of Chemical Releases*. New York: American Institute of Chemical Engineers
 """
 function downwind_dispersion(x::Number, ::Type{Puff}, stab::Union{Type{ClassA},Type{ClassB},Type{ClassC},Type{ClassD},Type{ClassE},Type{ClassF}}, ::DefaultSet)
     return crosswind_dispersion(x, Puff, stab, DefaultSet())
@@ -132,8 +129,7 @@ end
 Puff vertical dispersion correlations
 
 References:
-+ CCPS, *Guidelines for Consequence Analysis of Chemical Releases*, American Institute of Chemical Engineers, New York (1999)
-
++ AIChE/CCPS. 1999. *Guidelines for Consequence Analysis of Chemical Releases*. New York: American Institute of Chemical Engineers
 """
 vertical_dispersion(x::Number, ::Type{Puff}, ::Type{ClassA}, ::DefaultSet) = 0.60*x^0.75
 vertical_dispersion(x::Number, ::Type{Puff}, ::Type{ClassB}, ::DefaultSet) = 0.53*x^0.73

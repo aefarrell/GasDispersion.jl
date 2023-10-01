@@ -12,7 +12,7 @@ stability class, `z` is assumed to be in meters and `u` is in m/s
 Assumes rural terrain.
 
 # References
-+ CCPS, *Guidelines for Consequence Analysis of Chemical Releases*, American Institute of Chemical Engineers, New York (1999)
++ AIChE/CCPS. 1999. *Guidelines for Consequence Analysis of Chemical Releases*. New York: American Institute of Chemical Engineers
 """
 _windspeed(u0::Number,z0::Number,z::Number,::Union{Type{ClassA},Type{ClassB}},::CCPSRural) = u0*(z/z0)^0.07
 _windspeed(u0::Number,z0::Number,z::Number,::Type{ClassC},::CCPSRural) = u0*(z/z0)^0.10
@@ -27,7 +27,9 @@ _windspeed(u0::Number,z0::Number,z::Number,::Type{ClassF},::CCPSRural) = u0*(z/z
 Plume crosswind dispersion correlations, for rural terrain
 
 # References
-+ CCPS, *Guidelines for Consequence Analysis of Chemical Releases*, American Institute of Chemical Engineers, New York (1999)
++ AIChE/CCPS. 1999. *Guidelines for Consequence Analysis of Chemical Releases*. New York: American Institute of Chemical Engineers
++ Briggs, Gary A. 1973. *Diffusion Estimation for Small Emissions. Preliminary Report*. United States. https://doi.org/10.2172/5118833
++ Griffiths, R. F. 1994. "Errors in the use of the Briggs parameterization for atmospheric dispersion coefficients." *Atmospheric Environment* 28(17):2861-2865 https://doi.org/10.1016/1352-2310(94)90086-8
 """
 crosswind_dispersion(x::Number, ::Type{Plume}, ::Type{ClassA}, ::CCPSRural) = 0.22x/√(1+0.0001x)
 crosswind_dispersion(x::Number, ::Type{Plume}, ::Type{ClassB}, ::CCPSRural) = 0.16x/√(1+0.0001x)
@@ -43,7 +45,9 @@ crosswind_dispersion(x::Number, ::Type{Plume}, ::Type{ClassF}, ::CCPSRural) = 0.
 Plume vertical dispersion correlations, for rural terrain
 
 References:
-+ CCPS, *Guidelines for Consequence Analysis of Chemical Releases*, American Institute of Chemical Engineers, New York (1999)
++ AIChE/CCPS. 1999. *Guidelines for Consequence Analysis of Chemical Releases*. New York: American Institute of Chemical Engineers
++ Briggs, Gary A. 1973. *Diffusion Estimation for Small Emissions. Preliminary Report*. United States. https://doi.org/10.2172/5118833
++ Griffiths, R. F. 1994. "Errors in the use of the Briggs parameterization for atmospheric dispersion coefficients." *Atmospheric Environment* 28(17):2861-2865 https://doi.org/10.1016/1352-2310(94)90086-8
 """
 vertical_dispersion(x::Number, ::Type{Plume}, ::Type{ClassA}, ::CCPSRural) = 0.20x
 vertical_dispersion(x::Number, ::Type{Plume}, ::Type{ClassB}, ::CCPSRural) = 0.12x
@@ -64,7 +68,7 @@ stability class, `z` is assumed to be in meters and `u` is in m/s
 Assumes urban terrain.
 
 # References
-+ CCPS, *Guidelines for Consequence Analysis of Chemical Releases*, American Institute of Chemical Engineers, New York (1999)
++ AIChE/CCPS. 1999. *Guidelines for Consequence Analysis of Chemical Releases*. New York: American Institute of Chemical Engineers
 """
 _windspeed(u0::Number,z0::Number,z::Number,::Union{Type{ClassA},Type{ClassB}},::CCPSUrban) = u0*(z/z0)^0.15
 _windspeed(u0::Number,z0::Number,z::Number,::Type{ClassC},::CCPSUrban) = u0*(z/z0)^0.20
@@ -79,7 +83,9 @@ _windspeed(u0::Number,z0::Number,z::Number,::Type{ClassF},::CCPSUrban) = u0*(z/z
 Plume crosswind dispersion correlations, for urban terrain
 
 # References
-+ CCPS, *Guidelines for Consequence Analysis of Chemical Releases*, American Institute of Chemical Engineers, New York (1999)
++ AIChE/CCPS. 1999. *Guidelines for Consequence Analysis of Chemical Releases*. New York: American Institute of Chemical Engineers
++ Briggs, Gary A. 1973. *Diffusion Estimation for Small Emissions. Preliminary Report*. United States. https://doi.org/10.2172/5118833
++ Griffiths, R. F. 1994. "Errors in the use of the Briggs parameterization for atmospheric dispersion coefficients." *Atmospheric Environment* 28(17):2861-2865 https://doi.org/10.1016/1352-2310(94)90086-8
 """
 crosswind_dispersion(x::Number, ::Type{Plume}, ::Union{Type{ClassA},Type{ClassB}}, ::CCPSUrban) = 0.32x/√(1+0.0004x)
 crosswind_dispersion(x::Number, ::Type{Plume}, ::Type{ClassC}, ::CCPSUrban) = 0.22x/√(1+0.0004x)
@@ -93,7 +99,9 @@ crosswind_dispersion(x::Number, ::Type{Plume}, ::Union{Type{ClassE},Type{ClassF}
 Plume vertical dispersion correlations, for urban terrain
 
 References:
-+ CCPS, *Guidelines for Consequence Analysis of Chemical Releases*, American Institute of Chemical Engineers, New York (1999)
++ AIChE/CCPS. 1999. *Guidelines for Consequence Analysis of Chemical Releases*. New York: American Institute of Chemical Engineers
++ Briggs, Gary A. 1973. *Diffusion Estimation for Small Emissions. Preliminary Report*. United States. https://doi.org/10.2172/5118833
++ Griffiths, R. F. 1994. "Errors in the use of the Briggs parameterization for atmospheric dispersion coefficients." *Atmospheric Environment* 28(17):2861-2865 https://doi.org/10.1016/1352-2310(94)90086-8
 """
 vertical_dispersion(x::Number, ::Type{Plume}, ::Union{Type{ClassA},Type{ClassB}}, ::CCPSUrban) = 0.24x/√(1+0.001x)
 vertical_dispersion(x::Number, ::Type{Plume}, ::Type{ClassC}, ::CCPSUrban) = 0.20x
@@ -113,7 +121,7 @@ u = u₀ (z/z₀)ᵖ
 Where *p* is a function of the atmospheric stability class and the terrain (urban or rural)
 
 # References
-+ CCPS, *Guidelines for Consequence Analysis of Chemical Releases*, American Institute of Chemical Engineers, New York (1999)
++ AIChE/CCPS. 1999. *Guidelines for Consequence Analysis of Chemical Releases*. New York: American Institute of Chemical Engineers
 """
 function _windspeed(a::Atmosphere,z::Number,es::Union{CCPSUrban, CCPSRural})
     stab = _stability(a)
@@ -129,7 +137,7 @@ end
 Puff crosswind dispersion correlations
 
 References:
-+ CCPS, *Guidelines for Consequence Analysis of Chemical Releases*, American Institute of Chemical Engineers, New York (1999)
++ AIChE/CCPS. 1999. *Guidelines for Consequence Analysis of Chemical Releases*. New York: American Institute of Chemical Engineers
 """
 crosswind_dispersion(x::Number, ::Type{Puff}, ::Type{ClassA}, ::Union{CCPSUrban,CCPSRural}) = 0.18*x^0.92
 crosswind_dispersion(x::Number, ::Type{Puff}, ::Type{ClassB}, ::Union{CCPSUrban,CCPSRural}) = 0.14*x^0.92
@@ -145,7 +153,7 @@ crosswind_dispersion(x::Number, ::Type{Puff}, ::Type{ClassF}, ::Union{CCPSUrban,
 Puff downwind dispersion correlations
 
 References:
-+ CCPS, *Guidelines for Consequence Analysis of Chemical Releases*, American Institute of Chemical Engineers, New York (1999)
++ AIChE/CCPS. 1999. *Guidelines for Consequence Analysis of Chemical Releases*. New York: American Institute of Chemical Engineers
 """
 downwind_dispersion(x::Number, ::Type{Puff}, 
     stab::Union{Type{ClassA},Type{ClassB},Type{ClassC},Type{ClassD},Type{ClassE},Type{ClassF}}, 
@@ -158,7 +166,7 @@ downwind_dispersion(x::Number, ::Type{Puff},
 Puff vertical dispersion correlations
 
 References:
-+ CCPS, *Guidelines for Consequence Analysis of Chemical Releases*, American Institute of Chemical Engineers, New York (1999)
++ AIChE/CCPS. 1999. *Guidelines for Consequence Analysis of Chemical Releases*. New York: American Institute of Chemical Engineers
 """
 vertical_dispersion(x::Number, ::Type{Puff}, ::Type{ClassA}, ::Union{CCPSUrban,CCPSRural}) = 0.60*x^0.75
 vertical_dispersion(x::Number, ::Type{Puff}, ::Type{ClassB}, ::Union{CCPSUrban,CCPSRural}) = 0.53*x^0.73

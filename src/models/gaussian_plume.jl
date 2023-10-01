@@ -31,7 +31,7 @@ where the σs are dispersion parameters correlated with the distance x
 The `EquationSet` defines the set of correlations used to calculate the dispersion parameters.
 
 # References
-+ CCPS, *Guidelines for Consequence Analysis of Chemical Releases*, American Institute of Chemical Engineers, New York (1999)
++ AIChE/CCPS. 1999. *Guidelines for Consequence Analysis of Chemical Releases*. New York: American Institute of Chemical Engineers
 
 # Arguments
 - `downwash::Bool=false`: when true, includes stack-downwash effects

@@ -13,7 +13,7 @@ _windspeed(u0::Number,z0::Number,z::Number,s::Union{Type{ClassA},Type{ClassB},Ty
 Plume crosswind dispersion correlations
 
 # References
-+ TNO Yellow Book, section 4.5.3.4 (1)
++ Bakkum, E.A. and N.J. Duijm. 2005. "Chapter 4 - Vapour Cloud Dispersion" in *Methods for the Calculation of Physical Effects, CPR 14E* (TNO Yellow Book) Edited by C.J.H. van den Bosch and R.A.P.M. Weterings. The Netherlands.
 """
 crosswind_dispersion(x::Number, ::Type{Plume}, ::Type{ClassA}, ::TNO) = 0.527x^0.865
 crosswind_dispersion(x::Number, ::Type{Plume}, ::Type{ClassB}, ::TNO) = 0.371x^0.866
@@ -28,7 +28,7 @@ crosswind_dispersion(x::Number, ::Type{Plume}, ::Type{ClassF}, ::TNO) = 0.065x^0
 Puff crosswind dispersion correlations
 
 # References
-+ TNO Yellow Book, section 4.5.3.4 (4)
++ Bakkum, E.A. and N.J. Duijm. 2005. "Chapter 4 - Vapour Cloud Dispersion" in *Methods for the Calculation of Physical Effects, CPR 14E* (TNO Yellow Book) Edited by C.J.H. van den Bosch and R.A.P.M. Weterings. The Netherlands.
 """
 crosswind_dispersion(x::Number, ::Type{Puff}, s::Union{Type{ClassA},Type{ClassB},Type{ClassC},Type{ClassD},Type{ClassE},Type{ClassF}}, eq::TNO) = 0.5*crosswind_dispersion(x, Plume, s, eq)
 
@@ -39,7 +39,7 @@ crosswind_dispersion(x::Number, ::Type{Puff}, s::Union{Type{ClassA},Type{ClassB}
 Plume vertical dispersion correlations
 
 References:
-+ TNO Yellow Book, section 4.5.3.4 (1)
++ Bakkum, E.A. and N.J. Duijm. 2005. "Chapter 4 - Vapour Cloud Dispersion" in *Methods for the Calculation of Physical Effects, CPR 14E* (TNO Yellow Book) Edited by C.J.H. van den Bosch and R.A.P.M. Weterings. The Netherlands.
 """
 vertical_dispersion(x::Number, ::Type{Plume}, ::Type{ClassA}, ::TNO) = 0.28x^0.90
 vertical_dispersion(x::Number, ::Type{Plume}, ::Type{ClassB}, ::TNO) = 0.23x^0.85
@@ -54,7 +54,7 @@ vertical_dispersion(x::Number, ::Type{Plume}, ::Type{ClassF}, ::TNO) = 0.12x^0.6
 Puff vertical dispersion correlations
 
 References:
-+ TNO Yellow Book, section 4.5.3.4 (1)
++ Bakkum, E.A. and N.J. Duijm. 2005. "Chapter 4 - Vapour Cloud Dispersion" in *Methods for the Calculation of Physical Effects, CPR 14E* (TNO Yellow Book) Edited by C.J.H. van den Bosch and R.A.P.M. Weterings. The Netherlands.
 """
 vertical_dispersion(x::Number, ::Type{Puff}, ::Type{ClassA}, ::TNO) = 0.28x
 vertical_dispersion(x::Number, ::Type{Puff}, ::Type{ClassB}, ::TNO) = 0.23x
@@ -69,6 +69,6 @@ vertical_dispersion(x::Number, ::Type{Puff}, ::Type{ClassF}, ::TNO) = 0.12x
 Puff downwind dispersion correlations
 
 References:
-+ TNO Yellow Book, section 4.5.3.4 (1)
++ Bakkum, E.A. and N.J. Duijm. 2005. "Chapter 4 - Vapour Cloud Dispersion" in *Methods for the Calculation of Physical Effects, CPR 14E* (TNO Yellow Book) Edited by C.J.H. van den Bosch and R.A.P.M. Weterings. The Netherlands.
 """
 downwind_dispersion(x::Number, ::Type{Puff}, ::Union{Type{ClassA},Type{ClassB},Type{ClassC},Type{ClassD},Type{ClassE},Type{ClassF}}, ::TNO) = 0.13x

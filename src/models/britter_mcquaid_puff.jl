@@ -25,9 +25,8 @@ correlations are as per the Britter-McQuaid model. Unless otherwise specified
 a default power-law wind profile is used.
 
 # References
-+ Britter, R.E. and J. McQuaid, *Workbook on the Dispersion of Dense Gases* HSE Contract Research Report No. 17/1988, 1988
-+ CCPS, *Guidelines for Consequence Analysis of Chemical Releases*, American Institute of Chemical Engineers, New York (1999)
-
++ Britter, Rex E. and J. McQuaid. 1988. *Workbook on the Dispersion of Dense Gases. HSE Contract Research Report No. 17/1988*
++ AIChE/CCPS. 1999. *Guidelines for Consequence Analysis of Chemical Releases*. New York: American Institute of Chemical Engineers
 """
 function puff(scenario::Scenario, ::Type{BritterMcQuaidPuff}, eqs::EquationSet=DefaultSet())
 

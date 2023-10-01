@@ -34,8 +34,8 @@ Implements the Briggs plume rise equations for buoyancy and momentum driven
 plume rise.
 
 # References
-+ Briggs, G.A. *Plume Rise* U.S. Atomic Energy Commission, Oak Ridge (1969)
-+ EPA, *User's Guide for the Industrial Source Complex (ISC3) Dispersion Models, vol 2*, U.S. Environmental Protection Agency EPA-454/B-95-003b (1995)
++ Briggs, Gary A. 1969. *Plume Rise* Oak Ridge: U.S. Atomic Energy Commission
++ EPA. 1995. *User's Guide for the Industrial Source Complex (ISC3) Dispersion Models, vol 2*. United States Environmental Protection Agency EPA-454/B-95-003b
 
 """
 function plume_rise(Dⱼ,uⱼ,Tᵣ,u,Tₐ, stab::Union{Type{ClassA},Type{ClassB},Type{ClassC},Type{ClassD}})

@@ -99,7 +99,7 @@ end
 Britter-McQuaid plume correlations
 
 # References
-+ CCPS, *Guidelines for Consequence Analysis of Chemical Releases*, American Institute of Chemical Engineers, New York (1999)
++ AIChE/CCPS. 1999. *Guidelines for Consequence Analysis of Chemical Releases*. New York: American Institute of Chemical Engineers
 
 """
 function _bm_pl_c(α::Number)
@@ -225,7 +225,7 @@ end
 Britter-McQuaid puff correlations
 
 # References
-+ CCPS, *Guidelines for Consequence Analysis of Chemical Releases*, American Institute of Chemical Engineers, New York (1999)
++ AIChE/CCPS. 1999. *Guidelines for Consequence Analysis of Chemical Releases*. New York: American Institute of Chemical Engineers
 
 """
 function _bm_pf_c(α::Number)

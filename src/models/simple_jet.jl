@@ -29,7 +29,7 @@ with diameter equal to the jet diameter. Ground-reflection is included by method
 of images.
 
 # References
-+ Long, V.D., "Estimation of the Extent of Hazard Areas Around a Vent" *Chem. Process Hazard*, II:6 (1963)
++ Long, V.D. 1963. "Estimation of the Extent of Hazard Areas Round a Vent." *Chem. Process Hazard*. II:6
 
 # Arguments
 - `release_angle::Number=0`: the angle at which the jet is released, in radians

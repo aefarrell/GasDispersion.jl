@@ -87,3 +87,4 @@ include("britter_mcquaid_correls.jl")
 # includes for defined sets of correlations go here
 include("equation_sets/ccps.jl")
 include("equation_sets/tno.jl")
+include("equation_sets/turner.jl")
