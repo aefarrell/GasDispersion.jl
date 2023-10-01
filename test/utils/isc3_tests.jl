@@ -18,7 +18,7 @@
                  (ClassB, 0.3288132138806368, [(100, 10.604690180980183), (300, 30.144226325216724), (500, 51.092852947678885)]),
                  (ClassC, 0.20096244824229573, [(100, 7.44187785547111)]),
                  (ClassD, 0.1309207626723034, [(100, 4.651174892531855), (500, 18.29689264165363), (2000, 50.15135417398994), (5000, 88.69020460936578), (15000, 169.67281358959912), (35000, 271.77785930262854)]),
-                 (ClassE, 0.09742134712173195, [(50, 1.979015073784176), (100, 3.534197346966356), (500, 12.80138815568348), (1500, 27.931190340632067), (3000, 42.22135548587303), (7500, 68.37414410048738), (15000, 95.55830909365176), (30000, 127.31152395989899), (50000, 151.5410717370677)]),
+                 (ClassE, 0.09742134712173195, [(50, 1.979015073784176), (200, 6.23857638464594), (500, 12.80138815568348), (1500, 27.931190340632067), (3000, 42.22135548587303), (7500, 68.37414410048738), (15000, 95.55830909365176), (30000, 127.31152395989899), (50000, 151.5410717370677)]),
                  (ClassF, 0.0645858766834503, [(100, 2.3255231110829815), (500, 8.395558503802999), (800, 11.976175562087187), (1500, 18.030377292486545), (2500, 24.42448141869856), (5000, 34.207199596890135), (10000, 46.38392157098271), (20000, 60.29440210746138), (45000, 76.93568233551231), (75000, 87.38876819912205)])]
         @testset "Plume dispersion, rural terrain, stability class $class" for (class,cwind,verts) in rural
             @test crosswind_dispersion(1.2, Plume, class, ISC3Rural()) ≈ cwind
@@ -29,9 +29,9 @@
 
         # Puff dispersion
         # just default behaviour
-        @test crosswind_dispersion(1.2, Puff, ClassA, Turner()) == crosswind_dispersion(1.2, Puff, ClassA, DefaultSet())
-        @test vertical_dispersion(1.2, Puff, ClassA, Turner()) == vertical_dispersion(1.2, Puff, ClassA, DefaultSet())
-        @test downwind_dispersion(1.2, Puff, ClassA, Turner()) == downwind_dispersion(1.2, Puff, ClassA, DefaultSet())
+        @test crosswind_dispersion(1.2, Puff, ClassA, ISC3Rural()) == crosswind_dispersion(1.2, Puff, ClassA, DefaultSet())
+        @test vertical_dispersion(1.2, Puff, ClassA, ISC3Rural()) == vertical_dispersion(1.2, Puff, ClassA, DefaultSet())
+        @test downwind_dispersion(1.2, Puff, ClassA, ISC3Rural()) == downwind_dispersion(1.2, Puff, ClassA, DefaultSet())
 
     end
 
