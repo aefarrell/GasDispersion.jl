@@ -191,3 +191,4 @@ These are:
 + `CCPSUrban` - the correlations for windspeed and atmospheric dispersion given in the CCPS *Guidelines for Consequence Analysis of Chemical Releases* corresponding to urban terrain
 + `TNO` - the simple correlations for atmospheric dispersion given in the
 TNO *Yellow Book* for continuous and instantaneous passive releases
++ `Turner` - fitted equations for the dispersion parameter charts of D.B Turner (1970)
