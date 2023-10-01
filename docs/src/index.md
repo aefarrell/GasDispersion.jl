@@ -189,6 +189,7 @@ default correlations), allowing the user to *specify* which set to use.
 These are:
 + `CCPSRural` - the correlations for windspeed and atmospheric dispersion given in the CCPS *Guidelines for Consequence Analysis of Chemical Releases* corresponding to rural terrain
 + `CCPSUrban` - the correlations for windspeed and atmospheric dispersion given in the CCPS *Guidelines for Consequence Analysis of Chemical Releases* corresponding to urban terrain
-+ `TNO` - the simple correlations for atmospheric dispersion given in the
-TNO *Yellow Book* for continuous and instantaneous passive releases
++ `ISC3Rural` - the correlations for windspeed and plume dispersion used by the ISC3 model for rural terrain.
++ `ISC3Urban` - the correlations for windspeed and plume dispersion used by the ISC3 model for urban terrain.
++ `TNO` - the simple correlations for atmospheric dispersion given in the TNO *Yellow Book* for continuous and instantaneous passive releases
 + `Turner` - fitted equations for the dispersion parameter charts of D.B Turner (1970)
