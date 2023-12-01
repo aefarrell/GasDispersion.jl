@@ -1,16 +1,15 @@
 function _slab_sub_thermo(p::SLAB_Params,idpf,xn,timn,rmi,t0,cmev0,cm0,cmw0,cmwv0,cp0,
-                          r,r0,sft)
+                          r,r0,sft,bse)
     # unpacking parameters
     qs = p.spl.qs
     tsd = p.spl.tsd
-    bse = p.ocs.bse
     wmae = p.met.wmae
     wms = p.rgp.wms
     dhe = p.rgp.dhe
     tbp = p.rgp.tbp
     cpsl = p.rgp.cpsl
     cps = p.rgp.cps
-    cmwa = p.ocs.cmwa
+    cmwa = p.met.cmwa
     ta = p.met.ta
     ts = p.rgp.ts
     cpaa = p.met.cpaa

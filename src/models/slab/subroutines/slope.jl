@@ -1,6 +1,5 @@
-function _slab_sub_slope!(f,p::SLAB_Params,rho,x,h,v,w,b,bb,vg,u,wc,cm,ft,fu,fv,fw)
+function _slab_sub_slope!(f,p::SLAB_Params,rho,x,h,v,w,b,bb,vg,u,wc,cm,ft,fu,fv,fw,bse)
     # unpacking parameters
-    bse  = p.ocs.bse
     qs   = p.spl.qs
     rhoa = p.met.rhoa
   

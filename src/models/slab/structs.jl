@@ -66,6 +66,7 @@ struct SLAB_Field_Params{F <: Number, A <: AbstractVector{F}}
     tav::F
     hmx::F
     xffm::F
+    tffm::F
     zp::A
 end
 
@@ -82,6 +83,11 @@ struct SLAB_Ambient_Met_Props{F <: Number}
     stab::F
     ala::F
     z0::F
+    stb::F
+    phimi::F
+    phgam::F
+    cmwa::F
+    cmdaa::F
 end
 
 struct SLAB_Additional_Params{I <: Integer, F <: Number}
@@ -104,16 +110,64 @@ end
 
 # for other constants that are initialized
 # prior to the loops and never changed
-struct SLAB_Other_Consts{F <: Number}
+struct SLAB_Loop_Init{I <: Integer, F <: Number}
+    nxi::I
+    msfm::I
+    mnfm::I
+    mffm::I
     tgon::F
     bse::F
     urf::F
+    cf0::F
     rcf::F
     afa::F
-    stb::F
-    phimi::F
-    phgam::F
-    cmwa::F
+    ft::F
+    fu::F
+    fv::F
+    fw::F
+    bbv0::F
+    bv0::F
+    r0::F
+    cp0::F
+    alfg::F
+    sru0::F
+    htp0::F
+    ubs20::F
+    xcc0::F
+    bxs0::F
+end
+
+struct SLAB_Transient_Loop_Init{I <: Integer, F <: Number}
+    nxi::I
+    msfm::I
+    mnfm::I
+    mffm::I
+    tgon::F
+    bse::F
+    urf::F
+    cf0::F
+    rcf::F
+    afa::F
+    ft::F
+    fu::F
+    fv::F
+    fw::F
+    fug::F
+    bbv0::F
+    bv0::F
+    r0::F
+    cp0::F
+    alfg::F
+    sru0::F
+    htp0::F
+    ubs20::F
+    dt::F
+    rmi::F
+    bx::F
+    bbx::F
+    bbvx0::F
+    bvx0::F
+    gam::F
 end
 
 struct SLAB_Params{I <:Integer, F <: Number, A <: AbstractVector{F}}
@@ -123,12 +177,10 @@ struct SLAB_Params{I <:Integer, F <: Number, A <: AbstractVector{F}}
     met::SLAB_Ambient_Met_Props{F}
     xtra::SLAB_Additional_Params{I,F}
     wps::SLAB_Wind_Profile{F}
-    ocs::SLAB_Other_Consts{F}
 end
 
-# Instantaneously Spatially Averaged Cloud Parameters
-# (plus some extra internal state vectors)
-struct SLAB_Inst_Cloud{F <: Number, A <: AbstractVector{F}}
+# SLAB state vectors
+struct SLAB_Vecs{F <: Number, A <: AbstractVector{F}}
     x::A
     zc::A
     h::A
@@ -156,9 +208,11 @@ struct SLAB_Inst_Cloud{F <: Number, A <: AbstractVector{F}}
     beta::A
     qint::A
     betax::A
+    xccp::A
+    tccp::A
 end
 
-SLAB_Inst_Cloud(t::Type,n::Integer) = SLAB_Inst_Cloud(
+SLAB_Vecs(t::Type,n::Integer) = SLAB_Vecs(
     zeros(t,n),#x
     zeros(t,n),#zc
     zeros(t,n),#h
@@ -185,16 +239,12 @@ SLAB_Inst_Cloud(t::Type,n::Integer) = SLAB_Inst_Cloud(
     zeros(t,n),#tim
     zeros(t,n),#beta
     zeros(t,n),#qint
-    zeros(t,n)#betax
+    zeros(t,n),#betax
+    zeros(t,n),#xccp
+    zeros(t,n)#tccp
 )
-
-struct SLAB_Time_Avg_Cloud{F <: Number, A <: AbstractVector{F}}
-    tcld::A  # cloud duration
-    bbc::A   # effective half width with meander
-    betac::A # effective beta with meander
-end
 
 struct SLAB_Output{I <: Integer, F <: Number, A <: AbstractVector{F}}
     p::SLAB_Params{I,F,A}
-    ic::SLAB_Inst_Cloud{F,A}
+    v::SLAB_Vecs{F,A}
 end

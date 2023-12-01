@@ -1,12 +1,4 @@
-# c
-# c  *******  *     *  *     *   *****   *******  ***   *****   *     *   ******
-# c  *        *     *  **    *  *     *     *      *   *     *  **    *  *
-# c  *        *     *  * *   *  *           *      *   *     *  * *   *  *
-# c  ****     *     *  *  *  *  *           *      *   *     *  *  *  *   *****
-# c  *        *     *  *   * *  *           *      *   *     *  *   * *        *
-# c  *        *     *  *    **  *     *     *      *   *     *  *    **        *
-# c  *         *****   *     *   *****      *     ***   *****   *     *  ******
-# c
+# original SLAB wind profile function
 function _slab_uafn(z,z0,ala0,zl,hmx,zt,cu1,cu2)
     #c  calculates the normalized ambient wind speed at height z
 

@@ -1,11 +1,10 @@
 function _slab_sub_eval(p::SLAB_Params,xn,alfg,sru0,zc,h0,u0,uab0,b0,bb0,r,r0,bv,
                          bv0,bbv,bbv0,rho,rho0,vg0,wc0,cm,htp0,b,htp,uab,beta,vg,
-                         wc,h,u,bb,sfu,sfz,sfy,g,gw)
+                         wc,h,u,bb,sfu,sfz,sfy,g,gw,bse)
     # unpacking parameters
     uastr = p.met.uastr
     rhoa = p.met.rhoa
     hmx = p.wps.hmx
-    bse = p.ocs.bse
 
     #subroutine eval
     #c  calculates the steady state plume velocities and height

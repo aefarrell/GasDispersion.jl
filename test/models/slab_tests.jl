@@ -1,6 +1,7 @@
 include("../../src/models/slab/slab.jl")
 
 using .slab
+using DelimitedFiles: readdlm
 
 # this is incredibly verbose to start, I want to make sure it is reproducing the 
 # SLAB output file entirely later I can probably pare this back to just ensure 
@@ -35,7 +36,7 @@ using .slab
                      stab  =  0.00,
                      ala   =  0.0221)
     res = slab_main(inp)
-
+    out = readdlm("test_data/slab_inpr2_out.txt", Float64; header=false);
     # These test whether or not the parameters calculated
     # from SLAB.for up to line 567 (call editin)
     # are doing what they are supposed to be doing
@@ -101,29 +102,30 @@ using .slab
 
     end
 
-    # the following checks the horizontal jet source
-    # initialization (label 400)
+    # the following checks the state vectors
     @testset "horizontal jet initialization" begin
-        @test res.ic.x[1]    ≈ 1
-        @test res.ic.vg[1]   ≈ 0
-        @test res.ic.wc[1]   ≈ 0
-        @test res.ic.ug[1]   ≈ 0
-        @test res.ic.bb[1]   ≈ 0.482182533 
-        @test res.ic.b[1]    ≈ 0.433964282 
-        @test res.ic.rho[1]  ≈ 4.532027501773091
-        @test res.ic.h[1]    ≈ 0.964365065
-        @test res.ic.uab[1]   ≈ 3.4753698069472003
-        @test res.ic.u[1]    ≈ 25.59323553673247
-        @test res.ic.w[1]    ≈ 0.6154294519602936
-        @test res.ic.v[1]    ≈ 0.49637768050087083
-        @test res.ic.vx[1]   ≈ 0
+        @test res.v.x ≈ out[:, 1];
+        @test res.v.zc ≈ out[:, 2];
+        @test res.v.h ≈ out[:, 3];
+        @test res.v.bb ≈ out[:, 4];
+        @test res.v.b ≈ out[:, 5];
+        @test res.v.bbx ≈ out[:, 6];
+        @test res.v.bx ≈ out[:, 7];
+        @test res.v.cv ≈ out[:, 8];
+        @test res.v.rho ≈ out[:, 9];
+        @test res.v.t ≈ out[:, 10];
+        @test res.v.u ≈ out[:, 11];
+        @test res.v.uab ≈ out[:, 12];
+        @test res.v.cm ≈ out[:, 13];
+        @test res.v.cmev ≈ out[:, 14];
+        @test res.v.cmda ≈ out[:, 15];
+        @test res.v.cmw ≈ out[:, 16];
+        @test res.v.cmwv ≈ out[:, 17];
+        @test res.v.wc ≈ out[:, 18];
+        @test res.v.vg ≈ out[:, 19];
+        @test res.v.ug ≈ out[:, 20];
+        @test res.v.w ≈ out[:, 21];
+        @test res.v.v ≈ out[:, 22];
+        @test res.v.vx ≈ out[:, 23];
     end
-
-    # the following checks the near field region 
-    # calculation (label 600)
-    @testset "steady state plume dispersion, near field calculation" begin
-        @test res.ic.x[54]  ≈ 848.5204149435892
-        @test res.ic.cm[54] ≈ 0.0037592610280749433
-    end
-
 end

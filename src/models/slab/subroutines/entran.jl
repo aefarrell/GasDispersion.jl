@@ -1,7 +1,7 @@
 function _slab_sub_entran(p::SLAB_Params,idpf,xn,timn,wss,xstr,ubs20,u,ug,vg,uab,rho,
-                          zc,t,h,htp,bb,bbx,wc,_cp)
+                          zc,t,h,htp,bb,bbx,wc,_cp,tgon,bse,urf,rcf,afa)
     # unpacking parameters
-    idspl = p.spl.idspl
+    #idspl = p.spl.idspl
     rhoa = p.met.rhoa
     uastr = p.met.uastr
     ta = p.met.ta
@@ -10,22 +10,17 @@ function _slab_sub_entran(p::SLAB_Params,idpf,xn,timn,wss,xstr,ubs20,u,ug,vg,uab
     ala0 = p.wps.ala0
     zl = p.wps.zl
     hmx = p.wps.hmx
-    tgon = p.ocs.tgon
-    bse = p.ocs.bse
-    urf = p.ocs.urf
-    rcf = p.ocs.rcf
-    afa = p.ocs.afa
-    stb = p.ocs.stb
-    phimi = p.ocs.phimi
-    phgam = p.ocs.phgam
+    stb = p.met.stb
+    phimi = p.met.phimi
+    phgam = p.met.phgam
 
     #subroutine entran
 
     #c  vertical entrainment
     
-    ubar = .5*ug
+    ubar = 0.5*ug
     urho = ubar*rhoa/rho
-    vbar = .5*vg
+    vbar = 0.5*vg
     vrho = vbar*rhoa/rho
     delu = (uab - u) * (rhoa / rho)
     cf = uastr/uab
@@ -42,20 +37,22 @@ function _slab_sub_entran(p::SLAB_Params,idpf,xn,timn,wss,xstr,ubs20,u,ug,vg,uab
     end
 
     ubs2 = ubsi2
-    if idspl == 1
-        if xn > bse
-            ubs2 = ubsi2 + (ubs20-ubsi2)*exp((bse-xn)/xstr)
-        end
-    end
+    # evaporating pool release
+    # if idspl == 1
+    #     if xn > bse
+    #         ubs2 = ubsi2 + (ubs20-ubsi2)*exp((bse-xn)/xstr)
+    #     end
+    # end
 
-    if idspl == 4
-        qs = p.spl.qs
-        qtcs = p.spl.qtcs
-        tsd = p.spl.tsd
-        if (qs*timn) > qtcs
-            ubs2 = ubsi2 + (ubs20-ubsi2)*exp((tsd-timn)*u/xstr)
-        end
-    end
+    # instantaneous release
+    # if idspl == 4
+    #     qs = p.spl.qs
+    #     qtcs = p.spl.qtcs
+    #     tsd = p.spl.tsd
+    #     if (qs*timn) > qtcs
+    #         ubs2 = ubsi2 + (ubs20-ubsi2)*exp((tsd-timn)*u/xstr)
+    #     end
+    # end
 
     ubs = sqrt(ubs2)
     

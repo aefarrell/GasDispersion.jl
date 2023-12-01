@@ -1,4 +1,4 @@
-function _slab_sub_store!(vecs::SLAB_Inst_Cloud,nx::Integer,x,bb,b,vg,cm,t,rho,u,h,cv,
+function _slab_sub_store!(vecs::SLAB_Vecs,nx::Integer,x,bb,b,vg,cm,t,rho,u,h,cv,
                           beta,w,v,cmdaa,cmw,cmwv,cmev,uab,wc,zc,qint,tim,bbx,bx,betax,
                           ug,vx)
     #subroutine store
@@ -31,6 +31,7 @@ function _slab_sub_store!(vecs::SLAB_Inst_Cloud,nx::Integer,x,bb,b,vg,cm,t,rho,u
     vecs.betax[nx] = betax
     vecs.ug[nx] = ug
     vecs.vx[nx] = vx
+    vecs.xccp[nx] = x
     
     #end store
 end
