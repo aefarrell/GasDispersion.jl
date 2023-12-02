@@ -10,20 +10,20 @@ function _slab_sub_slopepf!(f,p::SLAB_Params,rqs,atau,x,u,ug,v,vg,vx,w,wc,b,bx,
 
     #c  mass and downwind cloud center equations
 
-    vhwb = sr3*((vx*bb+v*bbx)*h + w*bb*bbx)
+    vhwb = √(3)*((vx*bb+v*bbx)*h + w*bb*bbx)
     f[1] = rhoa*vhwb + rqs
     f[2] = u - atau*x
 
     #c  half-width equation
 
-    f[3] = sr3*(rhoa/rho)*v + vg
+    f[3] = √(3)*(rhoa/rho)*v + vg
 
     #c  b parameter equation
 
     f[4] = (vg*b)/bb
 
     #c  half-length equation
-    f[5] = sr3*(rhoa/rho)*vx + ug
+    f[5] = √(3)*(rhoa/rho)*vx + ug
 
     #c  bx parameter equation
 

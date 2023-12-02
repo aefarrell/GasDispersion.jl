@@ -71,22 +71,22 @@ function _slab_sub_eval(p::SLAB_Params,xn,alfg,sru0,zc,h0,u0,uab0,b0,bb0,r,r0,bv
             #go to 1040
         else
             #1015 
-            utm3 = f227 * ut0 * ut0 * ut0
+            utm3 = (2/27)*ut0^3
             utc3 = utg3 - utm3
 
             if utc3 > utm3
-                ut2 = (ut0+ut0)/3
+                ut2 = (2/3)*ut0
                 ut2 = min(ut2,u0)
                 #go to 1040
             else
                 #1020 
                 angl = acos(-utc3/utm3)
-                ut2 = third*(ut0 + 2*ut0*cos(third*angl))
+                ut2 = (ut0 + 2*ut0*cos(angl/3))/3
             end
         end
 
         #1040
-        ut2 = (u*ut2*ut2)^.333333
+        ut2 = (u*ut2^2)^.333333
         dluk = abs(u-ut2)/sqrt(u*ut2)
         u = ut2
         h = r/(rho*u*bb)
@@ -143,7 +143,7 @@ function _slab_sub_eval(p::SLAB_Params,xn,alfg,sru0,zc,h0,u0,uab0,b0,bb0,r,r0,bv
         end
     end
 
-    beta = sqrt(bb*bb-b*b)/sr3
+    beta = sqrt(bb*bb-b*b)/√(3)
 
     #c  calculate crosswind velocities
 

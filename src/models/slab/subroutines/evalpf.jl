@@ -22,8 +22,8 @@ function _slab_sub_evalpf(p::SLAB_Params,sru0,zc,h0,rho,rho0,bb0,b0,bbx0,bx0,r,r
     bbx = (bbx0+bbvx-bbvx0)*rex
     bx = (bx0+bvx-bvx0)*rex
 
-    beta = sqrt(bb*bb-b*b)/sr3
-    betax = sqrt(bbx*bbx-bx*bx)/sr3
+    beta = sqrt(bb*bb-b*b)/√(3)
+    betax = sqrt(bbx*bbx-bx*bx)/√(3)
 
     h = r/(rho*bbx*bb)
     if h > hmx

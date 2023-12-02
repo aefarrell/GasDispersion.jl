@@ -216,7 +216,7 @@ function _slab_int_steady_state!(vecs::SLAB_Vecs{F,A},vars::SLAB_Loop_Init{I,F},
             vecs.bx[nx] = bbx
             bvx = bbx
             bvx0 = bbx
-            vecs.betax[nx] = sqrt(bbx*bbx-bbx*bbx)/sr3
+            vecs.betax[nx] = sqrt(bbx*bbx-bbx*bbx)/√(3)
             sru0 = r*(u - (1 - cm)*uab)
             fv = bbx*fv
             fu = bbx*fu
@@ -266,7 +266,7 @@ function _slab_int_steady_state!(vecs::SLAB_Vecs{F,A},vars::SLAB_Loop_Init{I,F},
             vecs.tim[i] = tsd*(vecs.x[i]+txt)/txb
             vecs.bbx[i] = bxs0 + bxr*(vecs.xccp[i]-xcc0)
             vecs.bx[i] = .9999*vecs.bbx[i]
-            vecs.betax[i] = sqrt(vecs.bbx[i]*vecs.bbx[i]-vecs.bx[i]*vecs.bx[i])/sr3
+            vecs.betax[i] = sqrt(vecs.bbx[i]*vecs.bbx[i]-vecs.bx[i]*vecs.bx[i])/√(3)
         end
     end
 

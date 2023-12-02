@@ -15,11 +15,11 @@ function _slab_sub_slope!(f,p::SLAB_Params,rho,x,h,v,w,b,bb,vg,u,wc,cm,ft,fu,fv,
         rqs = 0.25*qs/bse
     end
 
-    vhwb = sr3*(v*h + w*bb)
+    vhwb = √(3)*(v*h + w*bb)
     f[1] = rhoa*vhwb + rqs
 
     #c  half-width equation
-    f[2] = (sr3*(rhoa/rho)*v + vg)/u
+    f[2] = (√(3)*(rhoa/rho)*v + vg)/u
 
     #c  b parameter equation
     f[3] = (vg*b)/(u*bb)

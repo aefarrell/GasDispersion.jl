@@ -64,7 +64,7 @@ function _slab_sub_entran(p::SLAB_Params,idpf,xn,timn,wss,xstr,ubs20,u,ug,vg,uab
     else
         if tg > t
             tgt = 0.5*(tg + t)
-            uts2 = ((cth*grav*(tg-t)*vh*h/tgt)^tutrd)
+            uts2 = ((cth*grav*(tg-t)*vh*h/tgt)^(2/3))
         else
             uts2 = 0.0
         end
@@ -119,14 +119,14 @@ function _slab_sub_entran(p::SLAB_Params,idpf,xn,timn,wss,xstr,ubs20,u,ug,vg,uab
 
     atot = afa*stby
     rab = 0.5*sigb/atot
-    va = atot*uab/(1 + rab*bb/sr3)
+    va = atot*uab/(1 + rab*bb/√(3))
     vjp = aa*xk*delu
     v = sqrt(va*va + cf1*vjp*vjp)
     
     if zc > (0.5*h)
-        sig = 0.5*h/sr3
+        sig = 0.5*h/√(3)
     else
-        sig = (h-zc)/sr3
+        sig = (h-zc)/√(3)
     end
 
     zrf = zc + 0.5*sig
@@ -140,7 +140,7 @@ function _slab_sub_entran(p::SLAB_Params,idpf,xn,timn,wss,xstr,ubs20,u,ug,vg,uab
     end
     
     vxs = 0.6*uastr*frzr*phmr*fgr/xk
-    vax = atot*uab/(1 + rab*bbx/sr3)
+    vax = atot*uab/(1 + rab*bbx/√(3))
     vx = sqrt(vax*vax+vxs*vxs)
     
     #c  velocity and temperature fluxes

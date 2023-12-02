@@ -123,7 +123,7 @@ b = 0.9*bb
 vecs.b[1] = b
 bv0 = b
 
-beta = sqrt(bb*bb-b*b)/sr3
+beta = sqrt(bb*bb-b*b)/√(3)
 vecs.beta[1] = beta
 vecs.rho[1] = rho
 
@@ -176,7 +176,7 @@ end
 
 atot = afa*stby
 rab = 0.5*sigb/atot
-va = atot*uab/(1.0 + rab*bb/sr3)
+va = atot*uab/(1.0 + rab*bb/√(3))
 vjp = aa*xk*delu
 v = sqrt(va*va + cf1*vjp*vjp)
 vecs.v[1] = v
