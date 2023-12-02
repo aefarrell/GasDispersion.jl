@@ -248,10 +248,10 @@ function _slab_int_steady_state!(vecs::SLAB_Vecs{F,A},vars::SLAB_Loop_Init{I,F},
 
     #c   steady state calc of timp
 
-    if nxtr > 61
-        xptr = (0.5*params.spl.qtcs/qint)*(vecs.x[61]-vecs.x[1]) + vecs.x[1]
+    if nxtr > length(vecs.x)
+        xptr = (0.5*params.spl.qtcs/qint)*(vecs.x[end]-vecs.x[1]) + vecs.x[1]
         bxtr = bxs0 + xptr - xcc0
-        itr = 61
+        itr = length(vecs.x)
     else
         xptr = vecs.x[nxtr]
         bxtr = vecs.bbx[nxtr]

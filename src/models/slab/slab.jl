@@ -33,12 +33,7 @@ slab_main(inp::SLAB_Input) = slab_main(inp.idspl,inp.ncalc,inp.wms,inp.cps,inp.t
 function slab_main(idspl::I,ncalc::I,wms::F,cps::F,tbp::F,cmed0::F,dhe::F,cpsl::F,rhosl::F,
                    spb::F,spc::F,ts::F,qs::F,as::F,tsd::F,qtis::F,hs::F,tav::F,xffm::F,
                    zp::AbstractVector{F},z0::F,za::F,ua::F,ta::F,rh::F,stab::F,
-                   ala::F) where {I <: Integer, F <: AbstractFloat}
-
-    # some program constants
-    msfm = 11
-    mnfm = 50
-    mffm = 61
+                   ala::F;msfm::I=11,mnfm::I=50,mffm::I=61) where {I <: Integer, F <: AbstractFloat}
 
     #c  number of zp values
     nzpm = 1
