@@ -1,5 +1,5 @@
-function _slab_int_transient!(vecs::SLAB_Vecs{F,A},vars::SLAB_Transient_Loop_Init{I,F},
-                              params::SLAB_Params{I,F,A},idpf::I,nxtr::I) where {
+function _slab_int_transient!(vecs::SLAB_Vecs{F,A},vars::SLAB_Loop_Init{I,F},
+                              params::SLAB_Params{I,F,A},idpf::I,nxtr::I,dt::F) where {
                               I <: Integer, F <: AbstractFloat, A <: AbstractVector{F}}
 # fucking SLAB_Output
     # unpack parameters
@@ -7,15 +7,15 @@ function _slab_int_transient!(vecs::SLAB_Vecs{F,A},vars::SLAB_Transient_Loop_Ini
     qs = params.spl.qs
     tsd = params.spl.tsd
     ws = params.spl.ws
+    tgon = params.othr.tgon
+    bse = params.othr.bse
+    urf = params.othr.urf
+    cf0 = params.othr.cf0
+    rcf = params.othr.rcf
+    afa = params.othr.afa
 
     # unpack intial loop variables
     wss = zero(F)
-    tgon = vars.tgon
-    bse = vars.bse
-    urf = vars.urf
-    cf0 = vars.cf0
-    rcf = vars.rcf
-    afa = vars.afa
     ft = vars.ft
     fu = vars.fu
     fv = vars.fv
@@ -47,7 +47,6 @@ function _slab_int_transient!(vecs::SLAB_Vecs{F,A},vars::SLAB_Transient_Loop_Ini
     mffm = vars.mffm
     nssm = params.xtra.nssm
     gam = vars.gam
-    dt = vars.dt
 
     # initialize state variables
     x = vecs.x[nxtr]

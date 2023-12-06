@@ -9,19 +9,20 @@ function _slab_int_steady_state!(vecs::SLAB_Vecs{F,A},vars::SLAB_Loop_Init{I,F},
     rhoa = params.met.rhoa
     tsd = params.spl.tsd
     qtcs = params.spl.qtcs
+    tgon = params.othr.tgon
+    bse = params.othr.bse
+    urf = params.othr.urf
+    cf0 = params.othr.cf0
+    rcf = params.othr.rcf
+    afa = params.othr.afa
 
     # unpack intial loop variables
     wss = zero(F)
-    tgon = vars.tgon
-    bse = vars.bse
-    urf = vars.urf
-    cf0 = vars.cf0
-    rcf = vars.rcf
-    afa = vars.afa
     ft = vars.ft
     fu = vars.fu
     fv = vars.fv
     fw = vars.fw
+    fug = vars.fug
     bbv = bbv0 = vars.bbv0
     bv = bv0 = vars.bv0
     r0 = vars.r0
@@ -30,30 +31,28 @@ function _slab_int_steady_state!(vecs::SLAB_Vecs{F,A},vars::SLAB_Loop_Init{I,F},
     sru0 = vars.sru0
     htp = htp0 = vars.htp0
     ubs2 = ubs20 = vars.ubs20
+    rmi = vars.rmi
+    bx = bx0 = vars.bx
+    bbx = bbx0 = vars.bbx
+    bvx = bvx0 = vars.bvx0
+    bbvx = bbvx0 = vars.bbvx0
     bxs0 = vars.bxs0
     xcc0 = vars.xcc0
 
     # initialize other loop variables to zero
-    xn = rmi = timn = xstr = zero(F)
-    r = g = gw = sft = sfu = sfy = sfz = fug = zero(F)
-    betax = bx = bx0 = bbx = bbx0 = bvx = bvx0 = bbvx = bbvx0 = zero(F)
+    xn = timn = xstr = zero(F)
+    r = g = gw = sft = sfu = sfy = sfz = zero(F)
+    betax = zero(F)
 
     # intialize boundaries and step size
     msfm = vars.msfm
     mnfm = vars.mnfm
     mffm = vars.mffm
     nxi = vars.nxi
+    gam = vars.gam
     nssm = params.xtra.nssm
     xffm = params.fld.xffm
-    
-    if xffm < 2*vecs.x[msfm]
-        xffm = 2*vecs.x[msfm]
-    end
-
-    angam = log10((xffm/vecs.x[msfm]) - 1) + 1
     nstp = nssm*mnfm
-    anstp = nstp
-    gam = 10^(angam/anstp)
     dx = (gam - 1) * (xffm - vecs.x[msfm])/((gam^nstp) - 1)
     
     # initialize state variables
@@ -235,13 +234,12 @@ function _slab_int_steady_state!(vecs::SLAB_Vecs{F,A},vars::SLAB_Loop_Init{I,F},
             cp0 = _cp
             t0 = t
 
-            tvars = SLAB_Transient_Loop_Init(nxi,msfm,mnfm,mffm,tgon,bse,urf,cf0,rcf,
-                                             afa,ft,fu,fv,fw,fug,bbv0,bv0,r0,cp0,alfg,
-                                             sru0,htp0,ubs20,dt,rmi,bx,bbx,bbvx0,bvx0,gam)
+            tvars = SLAB_Loop_Init(nxi,msfm,mnfm,mffm,gam,ft,fu,fv,fw,fug,bbv0,bv0,r0,
+                                   cp0,alfg,sru0,htp0,ubs20,rmi,bx,bbx,bbvx0,bvx0,xcc0,bxs0)
 
             #c  go to transient puff dispersion mode
             #go to 730
-            _slab_int_transient!(vecs,tvars,params,idpf,nxtr)
+            _slab_int_transient!(vecs,tvars,params,idpf,nxtr,dt)
             break
         end
     end

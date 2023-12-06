@@ -102,30 +102,45 @@ using DelimitedFiles: readdlm
 
     end
 
-    # the following checks the state vectors
-    @testset "horizontal jet initialization" begin
-        @test res.v.x ≈ out[:, 1];
-        @test res.v.zc ≈ out[:, 2];
-        @test res.v.h ≈ out[:, 3];
-        @test res.v.bb ≈ out[:, 4];
-        @test res.v.b ≈ out[:, 5];
-        @test res.v.bbx ≈ out[:, 6];
-        @test res.v.bx ≈ out[:, 7];
-        @test res.v.cv ≈ out[:, 8];
-        @test res.v.rho ≈ out[:, 9];
-        @test res.v.t ≈ out[:, 10];
-        @test res.v.u ≈ out[:, 11];
-        @test res.v.uab ≈ out[:, 12];
-        @test res.v.cm ≈ out[:, 13];
-        @test res.v.cmev ≈ out[:, 14];
-        @test res.v.cmda ≈ out[:, 15];
-        @test res.v.cmw ≈ out[:, 16];
-        @test res.v.cmwv ≈ out[:, 17];
-        @test res.v.wc ≈ out[:, 18];
-        @test res.v.vg ≈ out[:, 19];
-        @test res.v.ug ≈ out[:, 20];
-        @test res.v.w ≈ out[:, 21];
-        @test res.v.v ≈ out[:, 22];
-        @test res.v.vx ≈ out[:, 23];
+    @testset "instantaneous spatially averaged cloud parameters" begin
+        @test res.s.x ≈ out[:, 1];
+        @test res.s.zc ≈ out[:, 2];
+        @test res.s.h ≈ out[:, 3];
+        @test res.s.bb ≈ out[:, 4];
+        @test res.s.b ≈ out[:, 5];
+        @test res.s.bbx ≈ out[:, 6];
+        @test res.s.bx ≈ out[:, 7];
+        @test res.s.cv ≈ out[:, 8];
+        @test res.s.rho ≈ out[:, 9];
+        @test res.s.t ≈ out[:, 10];
+        @test res.s.u ≈ out[:, 11];
+        @test res.s.uab ≈ out[:, 12];
+        @test res.s.cm ≈ out[:, 13];
+        @test res.s.cmev ≈ out[:, 14];
+        @test res.s.cmda ≈ out[:, 15];
+        @test res.s.cmw ≈ out[:, 16];
+        @test res.s.cmwv ≈ out[:, 17];
+        @test res.s.wc ≈ out[:, 18];
+        @test res.s.vg ≈ out[:, 19];
+        @test res.s.ug ≈ out[:, 20];
+        @test res.s.w ≈ out[:, 21];
+        @test res.s.v ≈ out[:, 22];
+        @test res.s.vx ≈ out[:, 23];
+    end
+
+    @testset "time averaged cloud parameters" begin
+        @test res.cc.x ≈ out[:, 1];
+        @test res.cc.cc ≈ out[:, 24];
+        @test res.cc.b ≈ out[:, 5];
+        @test res.cc.betac ≈ out[:, 25];
+        @test res.cc.zc ≈ out[:, 2];
+        @test res.cc.sig ≈ out[:, 26];
+        @test res.cc.t ≈ out[:, 27];
+        @test res.cc.xc ≈ out[:, 28];
+        @test res.cc.bx ≈ out[:, 7];
+        @test res.cc.betax ≈ out[:, 29];
+        @test res.cc.tim ≈ out[:, 30];
+        @test res.cc.tcld ≈ out[:, 31];
+        @test res.cc.bbc ≈ out[:, 32];
     end
 end

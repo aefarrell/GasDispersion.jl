@@ -38,6 +38,11 @@ end
 uastr = _met.uastr
 uaz2 = (uastr/xk)*_slab_uafn(2.0,_wp)
 tffm = xffm/uaz2
+
+if xffm < 2.0
+    xffm = 2.0
+end
+
 _fld = SLAB_Field_Params(tav,hmx,xffm,tffm,zp)
 
 # initialize additional parameters
@@ -45,6 +50,7 @@ nssm = 3*ncalc
 _aps = SLAB_Additional_Params(ncalc,nssm,grav,rr,xk)
 
 # initialize other constants
+rmi = 0.0
 tgon = 1.0
 bse = 1.0
 hrf = 4.0
@@ -54,6 +60,7 @@ rcf = sqrt(cf0/cf00)
 tau0 = 10.0
 at0 = 0.0
 afa = 0.08*(((at0+tau0*exp(-at0/tau0))/tav0)^0.2)
+_othr = SLAB_Other_Params(tgon,bse,hrf,urf,cf0,rcf,tau0,at0,afa)
 
 # intialize main storage arrays
 vecs = SLAB_Vecs(F,mffm)
@@ -115,6 +122,7 @@ fu = 0.0
 fv = 0.0
 fw = 0.0
 ft = 0.0
+fug = 0.0
 vecs.qint[1] = 0.0
 
 vecs.bb[1] = bb
@@ -122,6 +130,10 @@ bbv0 = bb
 b = 0.9*bb
 vecs.b[1] = b
 bv0 = b
+bx = 0.0
+bbx = 0.0
+bbvx0 = 0.0
+bvx0 = 0.0
 
 beta = sqrt(bb*bb-b*b)/√(3)
 vecs.beta[1] = beta
@@ -187,10 +199,16 @@ msfm = 1
 mnfm = mffm - 1
 nxi = msfm + 1
 
-vars = SLAB_Loop_Init(nxi,msfm,mnfm,mffm,tgon,bse,urf,cf0,rcf,afa,ft,fu,fv,fw,bbv0,
-     bv0,r0,cp0,alfg,sru0,htp0,ubs20,xcc0,bxs0)
+angam = log10((xffm/vecs.x[msfm]) - 1) + 1
+nstp = nssm*mnfm
+anstp = nstp
+gam = 10^(angam/anstp)
 
-params = SLAB_Params(_rgps,_spl,_fld,_met,_aps,_wp)
+
+vars = SLAB_Loop_Init(nxi,msfm,mnfm,mffm,gam,ft,fu,fv,fw,fug,bbv0,bv0,r0,cp0,alfg,sru0,
+                      htp0,ubs20,rmi,bx,bbx,bbvx0,bvx0,xcc0,bxs0)
+
+params = SLAB_Params(_rgps,_spl,_fld,_met,_aps,_wp,_othr)
 
 return vecs,vars,params
 

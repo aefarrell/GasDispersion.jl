@@ -3,7 +3,7 @@ __precompile__()
 module slab
 
 export SLAB_Input, SLAB_Output
-export slab_main
+export slab_main, editcc
 
 # defining structs, how the data is passed into and out of SLAB
 include("structs.jl")
@@ -57,7 +57,9 @@ function slab_main(idspl::I,ncalc::I,wms::F,cps::F,tbp::F,cmed0::F,dhe::F,cpsl::
         
     _slab_int_steady_state!(vecs,vars,params,idpf,nxtr)
 
-    return SLAB_Output(params, vecs)
+    cc_vecs = editcc(vecs,params,mffm)
+
+    return SLAB_Output(params,vecs,cc_vecs)
 
 end
 
