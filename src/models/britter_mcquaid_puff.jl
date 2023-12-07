@@ -8,7 +8,7 @@ struct BritterMcQuaidPuffSolution <: Puff
     V₀::Number    # initial volume, m³
     gₒ::Number    # reduced gravity, m/s²
     u₁₀::Number   # referebce windspeed, m/s
-    itp::Interpolations.GriddedInterpolation
+    itp::LinearInterpolation
     xnf::Number   # near-field distance
     xff::Number   # far-field distance
     A::Number     # far-field constant
@@ -64,7 +64,7 @@ function puff(scenario::Scenario, ::Type{BritterMcQuaidPuff}, eqs::EquationSet=D
     xnf = 10^(minimum(βs))
 
     # linear interpolation
-    itp = interpolate((βs,), concs, Gridded(Linear()))
+    itp = LinearInterpolation(concs, βs)
 
     # far field correlation
     # starts at last interpolation point and decays like x′^-2
@@ -105,7 +105,7 @@ function (pf::BritterMcQuaidPuffSolution)(x,y,z,t)
         c′ = x′ > 0 ? 3.24 / (3.24 + x′^2) : 1.0
 
         # don't drop below the first correlation concentration
-        c′ = max(c′, maximum(pf.itp.coefs))
+        c′ = max(c′, maximum(pf.itp.u))
     elseif pf.xnf < x′ < pf.xff
         # use linear interpolation
         β = log10(x′)

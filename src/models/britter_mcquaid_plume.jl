@@ -7,7 +7,7 @@ struct BritterMcQuaidPlumeSolution <: Plume
     T′::Number # temperature correction
     D::Number  # critical length
     lb::Number # plume dimension parameter, m
-    itp::Interpolations.GriddedInterpolation
+    itp::LinearInterpolation
     xnf::Number # near field distance
     xff::Number # far field distance
     A::Number  # far field constant
@@ -76,7 +76,7 @@ function plume(scenario::Scenario, ::Type{BritterMcQuaidPlume}, eqs::EquationSet
     end
 
     # linear interpolation
-    itp = interpolate((βs,), concs, Gridded(Linear()))
+    itp = LinearInterpolation(concs, βs)
 
     # far field correlation
     # starts at last interpolation point and decays like x′^-2
