@@ -3,7 +3,7 @@ __precompile__()
 module slab
 
 export SLAB_Input, SLAB_Output
-export slab_main, editcc
+export slab_main
 
 # defining structs, how the data is passed into and out of SLAB
 include("structs.jl")
@@ -36,14 +36,14 @@ function slab_main(idspl::I,ncalc::I,wms::F,cps::F,tbp::F,cmed0::F,dhe::F,cpsl::
                    ala::F;msfm::I=11,mnfm::I=50,mffm::I=61) where {I <: Integer, F <: AbstractFloat}
 
     #c  number of zp values
-    nzpm = 1
-    for i in 2:4
-        if zp[i] == zero(F)
-            break
-        else
-            nzpm = i
-        end
-    end
+    # nzpm = 1
+    # for i in 2:4
+    #     if zp[i] == zero(F)
+    #         break
+    #     else
+    #         nzpm = i
+    #     end
+    # end
 
     nxtr = mffm + 1
     idpf = 0

@@ -5,10 +5,87 @@ using .slab
 # defining type for dispatch
 struct SLAB <: PuffModel end
 
-struct SLABSolution{I <: Integer, F <: Number, A <: AbstractVector{F}} <: Puff
-    out::SLAB_Output{I,F,A}
+struct SLABSolution{I <: Integer, F <: Number, V <: AbstractVector{F}, S} <: Puff
+    scenario::Scenario
+    model::Symbol
+    out::SLAB_Output{I,F,V}
+    cc::S
+    b::S
+    betac::S
+    zc::S
+    sig::S
+    xc::S
+    bx::S
+    betax::S
 end
 
-function puff(scenario::Scenario, ::Type{SLAB}, eqs::EquationSet=DefaultSet();)
+# SLAB stability mapping
+_slab_stab(::Type{ClassA}) = 1.0
+_slab_stab(::Type{ClassB}) = 2.0
+_slab_stab(::Type{ClassC}) = 3.0
+_slab_stab(::Type{ClassD}) = 4.0
+_slab_stab(::Type{ClassE}) = 5.0
+_slab_stab(::Type{ClassF}) = 6.0
 
+function puff(scenario::Scenario, ::Type{SLAB}, eqs::EquationSet=DefaultSet(); 
+              t_av=10, xlim=2000)
+    Pᵣ = scenario.substance.P_ref
+    Tᵣ = scenario.substance.T_ref
+    ρⱼ = _gas_density(scenario.substance)
+    R = 8.31446261815324
+    MW = ρⱼ*R*Tᵣ/Pᵣ
+
+    stab = _slab_stab( _stability(scenario) )
+
+    inp = SLAB_Input(;idspl = 2,
+                     ncalc = 1,
+                     wms = MW,
+                     cps = _cp_gas(scenario.substance),
+                     tbp = _boiling_temperature(scenario.substance),
+                     cmed0 = _release_liquid_fraction(scenario),
+                     dhe = _latent_heat(scenario.substance),
+                     cpsl = _cp_liquid(scenario.substance),
+                     rhosl = _liquid_density(scenario.substance),
+                     spb = -1.0,
+                     spc = 0.0,
+                     ts = _release_temperature(scenario),
+                     qs = _release_mass(scenario),
+                     as = _release_area(scenario),
+                     tsd = _duration(scenario),
+                     qtis = 0.00,
+                     hs = _release_height(scenario),
+                     tav = t_av,
+                     xffm = xlim,
+                     zp = [0.0],
+                     z0 = 1.0,
+                     za = _windspeed_height(scenario),
+                     ua = _windspeed(scenario),
+                     ta = _atmosphere_temperature(scenario),
+                     rh = _rel_humidity(scenario.atmosphere),
+                     stab = stab,
+                     ala = 0.0)
+    out = slab_main(inp)
+    return SLABSolution(scenario,:SLAB,out,
+                        CubicSpline(out.cc.cc, out.cc.x),
+                        CubicSpline(out.cc.b, out.cc.x),
+                        CubicSpline(out.cc.betac, out.cc.x),
+                        CubicSpline(out.cc.zc, out.cc.x),
+                        CubicSpline(out.cc.sig, out.cc.x),
+                        CubicSpline(out.cc.xc, out.cc.t),
+                        CubicSpline(out.cc.bx, out.cc.t),
+                        CubicSpline(out.cc.betax, out.cc.t))
+end
+
+function (s::SLABSolution)(x,y,z,t)
+    x = x-1.0 # slab assumes the emission point is x=1
+    cc = s.cc(x)
+    xa = (x - s.xc(t) + s.bx(t))/(√(2)*s.betax(t))
+    xb = (x - s.xc(t) - s.bx(t))/(√(2)*s.betax(t))
+    ya = (y + s.b(x))/(√(2)*s.betac(x))
+    yb = (y - s.b(x))/(√(2)*s.betac(x))
+    za = (z - s.zc(x))/(√(2)*s.sig(x))
+    zb = (z + s.zc(x))/(√(2)*s.sig(x))
+
+    c = cc*erf(xb,xa)*erf(yb,ya)*(exp(-za^2) + exp(-zb^2))
+    return c
 end

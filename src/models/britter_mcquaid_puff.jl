@@ -7,7 +7,7 @@ struct BritterMcQuaidPuffSolution <: Puff
     T′::Number    # temperature_correction
     V₀::Number    # initial volume, m³
     gₒ::Number    # reduced gravity, m/s²
-    u₁₀::Number   # referebce windspeed, m/s
+    u₁₀::Number   # reference windspeed, m/s
     itp::LinearInterpolation
     xnf::Number   # near-field distance
     xff::Number   # far-field distance

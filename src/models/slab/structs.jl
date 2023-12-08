@@ -28,11 +28,17 @@ struct SLAB_Input{I <: Integer, F <: Number, A <: AbstractVector{F}}
     ala::F
 end
 
-SLAB_Input(;idspl,ncalc,wms,cps,tbp,cmed0,dhe,cpsl,
-            rhosl,spb,spc,ts,qs,as,tsd,qtis,hs,tav,
-            xffm,zp,z0,za,ua,ta,rh,stab,ala) = SLAB_Input(idspl,ncalc,wms,cps,tbp,cmed0,dhe,cpsl,
-            rhosl,spb,spc,ts,qs,as,tsd,qtis,hs,tav,
-            xffm,zp,z0,za,ua,ta,rh,stab,ala)
+SLAB_Input(;idspl,ncalc,wms,cps,tbp,cmed0,dhe,cpsl,rhosl,spb,spc,ts,qs,as,tsd,qtis,hs,
+            tav,xffm,zp,z0,za,ua,ta,rh,stab,ala) = SLAB_Input(idspl,ncalc,wms,cps,tbp,
+            cmed0,dhe,cpsl,rhosl,spb,spc,ts,qs,as,tsd,qtis,hs,tav,xffm,zp,z0,za,ua,ta,
+            rh,stab,ala)
+
+function SLAB_Input(idspl,ncalc,wms,cps,tbp,cmed0,dhe,cpsl,rhosl,spb,spc,ts,qs,as,tsd,
+                    qtis,hs,tav,xffm,zp,z0,za,ua,ta,rh,stab,ala)
+
+    return SLAB_Input(idspl,ncalc,promote(wms,cps,tbp,cmed0,dhe,cpsl,rhosl,spb,spc,ts,
+                      qs,as,tsd,qtis,hs,tav,xffm)...,zp,promote(z0,za,ua,ta,rh,stab,ala)...)
+end
 
 struct SLAB_Release_Gas_Props{F <: Number}
     wms::F
