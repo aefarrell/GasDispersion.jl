@@ -168,19 +168,28 @@ end
                 fraction_liquid = 0.0)
     a = DryAir(windspeed=10.9, temperature=298, stability=ClassF)
     scn = Scenario(s,r,a)
-    rls = puff(scn, SLAB)
-    out = readdlm("test_data/slab_burro_out.txt", Float64; header=false);
+    rls = puff(scn, SLAB; )
 
-    @test rls.out.cc.x ≈ out[:, 1];
-    @test rls.out.cc.cc ≈ out[:, 2];
-    @test rls.out.cc.b ≈ out[:, 3];
-    @test rls.out.cc.betac ≈ out[:, 4];
-    @test rls.out.cc.zc ≈ out[:, 5];
-    @test rls.out.cc.sig ≈ out[:, 6];
-    @test rls.out.cc.t ≈ out[:, 7];
-    @test rls.out.cc.xc ≈ out[:, 8];
-    @test rls.out.cc.bx ≈ out[:, 9];
-    @test rls.out.cc.betax ≈ out[:, 10];
+    # basic checks that it returns the expected object
+    @test isa(rls,GasDispersion.SLABSolution)
+    @test isa(rls, Puff)
+
+    # basic domain checks
+    @test rls(0.0,0.0,r.h,1.0) ≈ 1.0
+    @test rls(-1.0,0.0,0.0,1.0) == 0.0
+    @test_throws ErrorException rls(rls.in.xffm + eps(Float64), 0.0, 0.0, 1.0)
+
+    # check against time averaged cloud concentrations
+    burro = readdlm("test_data/slab_burro_z0.txt", Float64; header=false);
+    x = burro[:,1]
+    t = burro[:,2]
+    tcld = burro[:,3]
+    bbc = burro[:,4]
+    cs = burro[1:60,5:end]
+    ms = [0.0,0.5,1.0,1.5,2.0,2.5]
+    ys = bbc*ms'
+    result = hcat([[ rls(x[j],ys[j,i],0.0,t[j]) for j in 1:60 ] for i in 1:6]...)
+    @test result ≈ cs
     
 end
 

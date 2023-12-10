@@ -10,6 +10,7 @@ struct SLABSolution{I <: Integer, F <: Number, V <: AbstractVector{F}, S} <: Puf
     model::Symbol
     in::SLAB_Input{I,F,V}
     out::SLAB_Output{I,F,V}
+    c₀::F
     cc::S
     b::S
     betac::S
@@ -29,12 +30,13 @@ _slab_stab(::Type{ClassE}) = 5.0
 _slab_stab(::Type{ClassF}) = 6.0
 
 function puff(scenario::Scenario, ::Type{SLAB}, eqs::EquationSet=DefaultSet(); 
-              t_av=10, xlim=2000)
+              t_av=10, x_max=2000)
     Pᵣ = scenario.substance.P_ref
     Tᵣ = scenario.substance.T_ref
     ρⱼ = _gas_density(scenario.substance)
     R = 8.31446261815324
     MW = ρⱼ*R*Tᵣ/Pᵣ
+    c_max = 1.0
 
     stab = _slab_stab( _stability(scenario) )
 
@@ -56,7 +58,7 @@ function puff(scenario::Scenario, ::Type{SLAB}, eqs::EquationSet=DefaultSet();
                      qtis = 0.00,
                      hs = _release_height(scenario),
                      tav = t_av,
-                     xffm = xlim,
+                     xffm = x_max,
                      zp = [0.0],
                      z0 = 1.0,
                      za = _windspeed_height(scenario),
@@ -66,7 +68,7 @@ function puff(scenario::Scenario, ::Type{SLAB}, eqs::EquationSet=DefaultSet();
                      stab = stab,
                      ala = 0.0)
     out = slab_main(inp)
-    return SLABSolution(scenario,:SLAB,inp,out,
+    return SLABSolution(scenario,:SLAB,inp,out,c_max,
                         AkimaInterpolation(out.cc.cc, out.cc.x),
                         AkimaInterpolation(out.cc.b, out.cc.x),
                         AkimaInterpolation(out.cc.betac, out.cc.x),
@@ -78,12 +80,16 @@ function puff(scenario::Scenario, ::Type{SLAB}, eqs::EquationSet=DefaultSet();
 end
 
 function (s::SLABSolution)(x,y,z,t)
-    h = s.scenario.release.h
+    h = s.in.hs
+    x_max = s.in.xffm
+    c_max = s.c₀
     # domain check
     if (x==0)&&(y==0)&&(z==h)
+        return c_max
+    elseif (x<0)||(z<0)||(t<0)
         return 0.0
-    elseif (x≤0)||(z<0)||(t<0)
-        return 0.0
+    elseif x ≥ x_max
+        error("Outside the domain of the solution, x ≥ $x_max")
     else
         x = x+1.0 # slab assumes the emission point is x=1
         cc = s.cc(x)
@@ -95,6 +101,6 @@ function (s::SLABSolution)(x,y,z,t)
         zb = (z + s.zc(x))/(√(2)*s.sig(x))
 
         c = cc*erf(xb,xa)*erf(yb,ya)*(exp(-za^2) + exp(-zb^2))
-        return c
+        return min(c,c_max)
     end
 end
