@@ -3,11 +3,10 @@ include("../../src/models/slab/slab.jl")
 using .slab
 using DelimitedFiles: readdlm
 
-# this is incredibly verbose to start, I want to make sure it is reproducing the 
-# SLAB output file entirely later I can probably pare this back to just ensure 
-# every branch is being hit
+@testset "SLAB puff tests" begin
 
-@testset "SLAB Horizontal Jet INPR2" begin
+@testset "INPR2 Horizontal Jet" begin
+# this directly tests the slab.jl submodule against the given test problem 2
     inp = SLAB_Input(idspl =  2,
                      ncalc =  1,
                      wms   =  0.017031,
@@ -143,4 +142,46 @@ using DelimitedFiles: readdlm
         @test res.cc.tcld ≈ out[:, 31];
         @test res.cc.bbc ≈ out[:, 32];
     end
+end
+
+@testset "Burro LNG test" begin
+# this tests the output against an example from the Burro LNG dispersion tests
+# the output of slab.jl was compared to that generated from SLAB (fortran) using
+# the same input file
+
+    s = Substance(name = :BurroLNG,
+                gas_density = 1.76,
+                liquid_density = 425.6,
+                reference_temp=(273.15-162),
+                reference_pressure=101325.0,
+                boiling_temp = 111.66, # K, Methane,
+                latent_heat = 509880.0,  # J/kg, Methane
+                gas_heat_capacity = 2240.0, # J/kg/K, Methane
+                liquid_heat_capacity = 3349.0) # J/kg/K, Methane
+    r = Release( mass_rate = (0.23*425.6),
+                duration = 174,
+                diameter = 1.0,
+                velocity = 70.815,
+                height = 0.0,
+                pressure = 101325.0,
+                temperature = (273.15-162),
+                fraction_liquid = 0.0)
+    a = DryAir(windspeed=10.9, temperature=298, stability=ClassF)
+    scn = Scenario(s,r,a)
+    rls = puff(scn, SLAB)
+    out = readdlm("test_data/slab_burro_out.txt", Float64; header=false);
+
+    @test rls.out.cc.x ≈ out[:, 1];
+    @test rls.out.cc.cc ≈ out[:, 2];
+    @test rls.out.cc.b ≈ out[:, 3];
+    @test rls.out.cc.betac ≈ out[:, 4];
+    @test rls.out.cc.zc ≈ out[:, 5];
+    @test rls.out.cc.sig ≈ out[:, 6];
+    @test rls.out.cc.t ≈ out[:, 7];
+    @test rls.out.cc.xc ≈ out[:, 8];
+    @test rls.out.cc.bx ≈ out[:, 9];
+    @test rls.out.cc.betax ≈ out[:, 10];
+    
+end
+
 end

@@ -8,6 +8,7 @@ struct SLAB <: PuffModel end
 struct SLABSolution{I <: Integer, F <: Number, V <: AbstractVector{F}, S} <: Puff
     scenario::Scenario
     model::Symbol
+    in::SLAB_Input{I,F,V}
     out::SLAB_Output{I,F,V}
     cc::S
     b::S
@@ -49,7 +50,7 @@ function puff(scenario::Scenario, ::Type{SLAB}, eqs::EquationSet=DefaultSet();
                      spb = -1.0,
                      spc = 0.0,
                      ts = _release_temperature(scenario),
-                     qs = _release_mass(scenario),
+                     qs = _mass_rate(scenario),
                      as = _release_area(scenario),
                      tsd = _duration(scenario),
                      qtis = 0.00,
@@ -65,27 +66,35 @@ function puff(scenario::Scenario, ::Type{SLAB}, eqs::EquationSet=DefaultSet();
                      stab = stab,
                      ala = 0.0)
     out = slab_main(inp)
-    return SLABSolution(scenario,:SLAB,out,
-                        CubicSpline(out.cc.cc, out.cc.x),
-                        CubicSpline(out.cc.b, out.cc.x),
-                        CubicSpline(out.cc.betac, out.cc.x),
-                        CubicSpline(out.cc.zc, out.cc.x),
-                        CubicSpline(out.cc.sig, out.cc.x),
-                        CubicSpline(out.cc.xc, out.cc.t),
-                        CubicSpline(out.cc.bx, out.cc.t),
-                        CubicSpline(out.cc.betax, out.cc.t))
+    return SLABSolution(scenario,:SLAB,inp,out,
+                        AkimaInterpolation(out.cc.cc, out.cc.x),
+                        AkimaInterpolation(out.cc.b, out.cc.x),
+                        AkimaInterpolation(out.cc.betac, out.cc.x),
+                        AkimaInterpolation(out.cc.zc, out.cc.x),
+                        AkimaInterpolation(out.cc.sig, out.cc.x),
+                        AkimaInterpolation(out.cc.xc, out.cc.t),
+                        AkimaInterpolation(out.cc.bx, out.cc.t),
+                        AkimaInterpolation(out.cc.betax, out.cc.t))
 end
 
 function (s::SLABSolution)(x,y,z,t)
-    x = x-1.0 # slab assumes the emission point is x=1
-    cc = s.cc(x)
-    xa = (x - s.xc(t) + s.bx(t))/(√(2)*s.betax(t))
-    xb = (x - s.xc(t) - s.bx(t))/(√(2)*s.betax(t))
-    ya = (y + s.b(x))/(√(2)*s.betac(x))
-    yb = (y - s.b(x))/(√(2)*s.betac(x))
-    za = (z - s.zc(x))/(√(2)*s.sig(x))
-    zb = (z + s.zc(x))/(√(2)*s.sig(x))
+    h = s.scenario.release.h
+    # domain check
+    if (x==0)&&(y==0)&&(z==h)
+        return 0.0
+    elseif (x≤0)||(z<0)||(t<0)
+        return 0.0
+    else
+        x = x+1.0 # slab assumes the emission point is x=1
+        cc = s.cc(x)
+        xa = (x - s.xc(t) + s.bx(t))/(√(2)*s.betax(t))
+        xb = (x - s.xc(t) - s.bx(t))/(√(2)*s.betax(t))
+        ya = (y + s.b(x))/(√(2)*s.betac(x))
+        yb = (y - s.b(x))/(√(2)*s.betac(x))
+        za = (z - s.zc(x))/(√(2)*s.sig(x))
+        zb = (z + s.zc(x))/(√(2)*s.sig(x))
 
-    c = cc*erf(xb,xa)*erf(yb,ya)*(exp(-za^2) + exp(-zb^2))
-    return c
+        c = cc*erf(xb,xa)*erf(yb,ya)*(exp(-za^2) + exp(-zb^2))
+        return c
+    end
 end

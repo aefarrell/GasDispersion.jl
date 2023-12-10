@@ -4,7 +4,7 @@ module GasDispersion
 
 # imports
 using Markdown
-using DataInterpolations: LinearInterpolation, CubicSpline
+using DataInterpolations: LinearInterpolation, AkimaInterpolation
 using SpecialFunctions: erf
 using RecipesBase
 
