@@ -5,6 +5,8 @@ using DelimitedFiles: readdlm
 
 @testset "SLAB puff tests" begin
 
+    @test GasDispersion._slab_stab.([ClassA,ClassB,ClassC,ClassD,ClassE,ClassF]) ≈ [1.0,2.0,3.0,4.0,5.0,6.0]
+
 @testset "INPR2 Horizontal Jet" begin
 # this directly tests the slab.jl submodule against the given test problem 2
     inp = SLAB_Input(idspl =  2,
@@ -185,7 +187,7 @@ end
     t = burro[:,2]
     tcld = burro[:,3]
     bbc = burro[:,4]
-    cs = burro[1:60,5:end]
+    cs = burro[:,5:end]
     ms = [0.0,0.5,1.0,1.5,2.0,2.5]
     ys = bbc*ms'
     result = hcat([[ rls(x[j],ys[j,i],0.0,t[j]) for j in 1:60 ] for i in 1:6]...)

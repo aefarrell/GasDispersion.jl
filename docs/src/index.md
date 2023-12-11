@@ -26,7 +26,9 @@ pkg> add https://github.com/aefarrell/GasDispersion.jl
 This scenario is adapted from CCPS *Guidelines for Consequence Analysis of
 Chemical Releases*, CCPS, pg 47.
 
-Suppose we wish to model the dispersion of gaseous propane from a leak from a storage tank, where the leak is from a 10 mm hole that is 3.5 m above the ground and the propane is at 25°C and 4barg. Assume the discharge coefficient $c_{D} = 0.85$
+Suppose we wish to model the dispersion of gaseous propane from a leak from a storage 
+tank, where the leak is from a 10 mm hole that is 3.5 m above the ground and the 
+propane is at 25°C and 4barg. Assume the discharge coefficient $c_{D} = 0.85$
 
 For ambient conditions we assume the atmosphere is dry air at standard conditions
 of 1atm and 25°C, with a windspeed of 1.5m/s and class F stability (a "worst case"
@@ -179,16 +181,37 @@ concentration and the cloud is rendered as a cylinder.
 puff(::Scenario, ::Type{BritterMcQuaidPuff})
 ```
 
+### SLAB Horizontal Jet Model
+
+The SLAB horizontal jet model is derived from the SLAB software package developed
+by Donald L. Ermak at Lawrence Livermore National Laboratory. The model numerically
+integrates a set of conservation equations for the given domain, automatically
+transitioning from a steady-state plume model to a transient-state puff model as
+the release terminates. The result is a set of cloud parameters that are interpolated
+as a function of downwind distance and time to calculate the final concentration.
+
+The SLAB model uses it's own built in models for atmospheric parameters, such as
+windspeed and dispersion.
+
+```@docs
+puff(::Scenario, ::Type{SLAB})
+```
+
+
 ## Equation Sets
 
-The models above each depend upon several parameters which are themselves, often, correlations. For any given parameter there are several different 
-correlations in the literature. To make this more transparent, sets of
-correlations from standard texts have been prepared (in addition to the 
-default correlations), allowing the user to *specify* which set to use.
+The models above each depend upon several parameters which are themselves, often, 
+correlations. For any given parameter there are several different correlations in the 
+literature. To make this more transparent, sets of correlations from standard texts 
+have been prepared (in addition to the default correlations), allowing the user to 
+*specify* which set to use.
 
 ### CCPS
 
-The set of correlations for windspeed and atmospheric dispersion given in the CCPS *Guidelines for Consequence Analysis of Chemical Releases* (AIChE/CCPS 1999) and other CCPS publications for quantitative risk assessment. There are two equation sets given by the CCPS: one for rural terrain and one for urban terrain.
+The set of correlations for windspeed and atmospheric dispersion given in the CCPS 
+*Guidelines for Consequence Analysis of Chemical Releases* (AIChE/CCPS 1999) and other
+CCPS publications for quantitative risk assessment. There are two equation sets given 
+by the CCPS: one for rural terrain and one for urban terrain.
 
 + `CCPSRural`
 + `CCPSUrban`
@@ -199,7 +222,9 @@ The set of correlations for windspeed and atmospheric dispersion given in the CC
 
 ### ISC3
 
-The set of correlations for windspeed and plume dispersion given in the ISC3 model description (EPA 1995). There are two equation sets: one for rural terrain and one for urban terrain.
+The set of correlations for windspeed and plume dispersion given in the ISC3 model 
+description (EPA 1995). There are two equation sets: one for rural terrain and one for 
+urban terrain.
 
 + `ISC3Rural`
 + `ISC3Urban`
@@ -207,7 +232,9 @@ The set of correlations for windspeed and plume dispersion given in the ISC3 mod
 
 ### TNO
 
-The set of correlations for atmospheric dispersion given in the TNO *Yellow Book* (Bakkum and Duijm 2005) for both continuous (plume) and instantaneous (puff) passive releases.
+The set of correlations for atmospheric dispersion given in the TNO *Yellow Book* 
+(Bakkum and Duijm 2005) for both continuous (plume) and instantaneous (puff) passive 
+releases.
 
 + `TNO` 
 
@@ -226,6 +253,7 @@ The standard plume dispersion plots from Turner (1970) as presented in Lees (199
 + Briggs, Gary A. 1969. *Plume Rise* Oak Ridge: U.S. Atomic Energy Commission
 + Briggs, Gary A. 1973. *Diffusion Estimation for Small Emissions. Preliminary Report*. United States. https://doi.org/10.2172/5118833
 + Britter, Rex E. and J. McQuaid. 1988. *Workbook on the Dispersion of Dense Gases. HSE Contract Research Report No. 17/1988*
++ Ermak, Donald L. 1990. *User's Manual for SLAB: An Atmospheric Dispersion Model For Denser-Than-Air Releases* Lawrence Livermore National Laboratory
 + EPA. 1995. *User's Guide for the Industrial Source Complex (ISC3) Dispersion Models, vol 2*. United States Environmental Protection Agency EPA-454/B-95-003b
 + Griffiths, R. F. 1994. "Errors in the use of the Briggs parameterization for atmospheric dispersion coefficients." *Atmospheric Environment* 28(17):2861-2865 https://doi.org/10.1016/1352-2310(94)90086-8
 + Lees, Frank P. 1996. *Loss Prevention in the Process Industries, 2nd ed*. Oxford: Butterworth-Heinemann

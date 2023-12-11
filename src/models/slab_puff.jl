@@ -29,6 +29,20 @@ _slab_stab(::Type{ClassD}) = 4.0
 _slab_stab(::Type{ClassE}) = 5.0
 _slab_stab(::Type{ClassF}) = 6.0
 
+@doc doc"""
+    puff(::Scenario, SLAB; kwargs...)
+
+Returns the solution to the SLAB horizontal jet dispersion model for the given
+scenario.
+
+# References
++ Ermak, Donald L. 1990. *User's Manual for SLAB: An Atmospheric Dispersion Model For Denser-Than-Air Releases* Lawrence Livermore National Laboratory
+
+# Arguments
+- `t_av::Number=10`: averaging time, seconds
+- `x_max::Number=2000`: maximum downwind distance, meters, this defines the problem domain
+
+"""
 function puff(scenario::Scenario, ::Type{SLAB}, eqs::EquationSet=DefaultSet(); 
               t_av=10, x_max=2000)
     Pᵣ = scenario.substance.P_ref
