@@ -29,7 +29,7 @@
     t₁ = 250.0
     σy = 5.047929716825321 # There is a mistake in the ref, it gives this as 6.1
     σz = 2.214836678536473
-    c₁ = 1/(√(2π)*π*σy^2*σz)
+    c₁ = 1/(√(2π)*π*σy^2*σz)/1.2268
 
     # test default behaviour and type inheritance
     @test isa(pf,GasDispersion.GaussianPuffSolution)

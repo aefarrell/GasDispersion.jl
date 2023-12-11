@@ -3,7 +3,7 @@ struct BritterMcQuaidPlume <: PlumeModel end
 struct BritterMcQuaidPlumeSolution <: Plume
     scenario::Scenario
     model::Symbol
-    c₀::Number # initial concentration, kg/m³
+    c₀::Number # initial concentration,
     T′::Number # temperature correction
     D::Number  # critical length
     lb::Number # plume dimension parameter, m
@@ -39,7 +39,8 @@ function plume(scenario::Scenario, ::Type{BritterMcQuaidPlume}, eqs::EquationSet
     Tₐ = _atmosphere_temperature(scenario)
 
     # initial concentration
-    c₀ = ṁ/Q
+    Qi = ṁ/ρⱼ
+    c₀ = min(Qi/Q,1.0)
 
     # relative density
     g = 9.80616  # gravity, m/s^2
@@ -89,7 +90,7 @@ function plume(scenario::Scenario, ::Type{BritterMcQuaidPlume}, eqs::EquationSet
     return BritterMcQuaidPlumeSolution(
         scenario, #scenario::Scenario
         :brittermcquaid, #model::Symbol
-        c₀,    # initial concentration, kg/m³
+        c₀,    # initial concentration, v/v
         T′,    # temperature_correction
         D,     # critical length, m
         lb,    # length parameter, m

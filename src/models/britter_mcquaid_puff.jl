@@ -3,7 +3,7 @@ struct BritterMcQuaidPuff <: PuffModel end
 struct BritterMcQuaidPuffSolution <: Puff
     scenario::Scenario
     model::Symbol
-    c₀::Number    # initial concentration, kg/m³
+    c₀::Number    # initial concentration,
     T′::Number    # temperature_correction
     V₀::Number    # initial volume, m³
     gₒ::Number    # reduced gravity, m/s²
@@ -44,7 +44,8 @@ function puff(scenario::Scenario, ::Type{BritterMcQuaidPuff}, eqs::EquationSet=D
     V₀ = Q*t
 
     # initial concentration
-    c₀ = ṁ/Q
+    Qi = ṁ/ρⱼ
+    c₀ = min(Qi/Q,1.0)
 
     # temperature correction
     T′ = Tᵣ/Tₐ
