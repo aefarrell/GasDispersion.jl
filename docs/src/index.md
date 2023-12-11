@@ -44,9 +44,9 @@ propane = Substance(name = :propane,
                     reference_temp= 298.15, # K
                     reference_pressure= 501325, # Pa
                     boiling_temp = 231.04, # K, NIST Webbook
-                    latent_heat = 16.25/44.0956, # J/kg, NIST Webbook
-                    gas_heat_capacity = 1.6849,    # J/kg/K, NIST Webbook
-                    liquid_heat_capacity = 2.2460) # J/kg/K, NIST Webbook
+                    latent_heat = 425740.0, # J/kg, 
+                    gas_heat_capacity = 1678.0, # J/kg/K, 
+                    liquid_heat_capacity = 2520.0) # J/kg/K, 
 
 scn = scenario_builder(propane, JetSource;
        phase = :gas,
@@ -68,7 +68,7 @@ is a continuous plume, using
 # returns a callable
 pl = plume(scn, GaussianPlume)
 
-pl(x,y,z) # gives the concentration in kg/m^3 at the point x, y, z
+pl(x,y,z) # gives the concentration in vol fraction at the point x, y, z
 ```
 where the coordinate system is such that the release point is at x=0, y=0, z=h
 
@@ -78,7 +78,7 @@ released during 1 second, using a "puff" model
 # returns a function
 pf = puff(scn, GaussianPuff)
 
-p(x,y,z,t) # gives the concentration in kg/m^3 at the point x, y, z and time t
+p(x,y,z,t) # gives the concentration in vol fraction at the point x, y, z and time t
 ```
 
 

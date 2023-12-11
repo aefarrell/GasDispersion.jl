@@ -1,32 +1,33 @@
 @testset "Simple turbulent jet tests" begin
     # example scenario
-    sub = Substance(name="test gas",
-                    gas_density=1.1845208097888285,
-                    liquid_density=1000.,
-                    reference_temp=298.,
-                    reference_pressure=101325.0,
-                    boiling_temp=100.,
-                    latent_heat=1.,
-                    gas_heat_capacity=1.,
-                    liquid_heat_capacity=1.)
-    rel = Release(mass_rate=1.0,
-                  duration=Inf,
-                  diameter=1.0,
-                  velocity=1.0,
-                  height=1.0,
-                  temperature=298.,
-                  pressure=101325.,
-                  fraction_liquid=0.0)
-    atm = DryAir(temperature=298.0,
-                 pressure=101325.0,
-                 windspeed=2.0,
-                 stability=ClassF)
-    scn = Scenario(sub,rel,atm)
+    Patm = 101325 # Pa
+    P1 = 4e5 + Patm # Pa
+    T1 = 25 + 273.15 # K
+    
+    propane = Substance(name = :propane,
+                gas_density = 9.7505, # Propane, NIST Webbook
+                liquid_density = 526.13, # Propane, NIST Webbook
+                reference_temp= T1,
+                reference_pressure= P1,
+                boiling_temp = 231.04, # Propane, NIST Webbook
+                latent_heat = 425740.0, # J/kg, 
+                gas_heat_capacity = 1678.0, # J/kg/K, 
+                liquid_heat_capacity = 2520.0) # J/kg/K
+    
+    scn = scenario_builder(propane, JetSource; 
+           phase = :gas,
+           diameter = 0.01, # m
+           dischargecoef = 0.85,
+           k = 1.15,         # heat capacity ratio, from Crane's
+           temperature = T1, # K
+           pressure = P1,    # Pa
+           height = 3.5)     # m, height of hole above the ground
+    
     # known answers
     a, b = 6.0, 5.0
     ξ² = log(2)/b^2
     x, y, z =  a, √(a^2*ξ²), 1.0
-    c = (2/π)*(1+exp(-25/9))
+    c = 0.00014695820366436948
 
     # horizontal jet
     j = plume(scn, SimpleJet; release_angle=0.0, k2=a, k3=b)

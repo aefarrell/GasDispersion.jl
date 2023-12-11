@@ -5,7 +5,7 @@ struct GaussianPuff <: PuffModel end
 struct GaussianPuffSolution{S<:StabilityClass} <: Puff
     scenario::Scenario
     model::Symbol
-    mass::Number
+    volume::Number
     height::Number
     windspeed::Number
     stability::Type{S}
@@ -18,14 +18,16 @@ end
 Returns the solution to a Gaussian puff dispersion model for the given scenario.
 
 ```math
-c\left(x,y,z,t\right) = \dot{m} \Delta t
+c\left(x,y,z,t\right) = Q_{i,j} \Delta t
 { { \exp \left( -\frac{1}{2} \left( {x - u t } \over \sigma_x \right)^2 \right) } \over { \sqrt{2\pi} \sigma_x } }
 { { \exp \left( -\frac{1}{2} \left( {y} \over \sigma_y \right)^2 \right) } \over { \sqrt{2\pi} \sigma_y } }\\
 \times { { \exp \left( -\frac{1}{2} \left( {z - h} \over \sigma_z \right)^2 \right)
 + \exp \left( -\frac{1}{2} \left( {z + h} \over \sigma_z \right)^2 \right) } \over { \sqrt{2\pi} \sigma_z } }
 ```
 
-where the σs are dispersion parameters correlated with the distance x. The `EquationSet` defines the set of correlations used to calculate the dispersion parameters.
+where the σs are dispersion parameters correlated with the distance x. The 
+`EquationSet` defines the set of correlations used to calculate the dispersion
+ parameters.
 
 # References
 + AIChE/CCPS. 1999. *Guidelines for Consequence Analysis of Chemical Releases*. New York: American Institute of Chemical Engineers
@@ -34,13 +36,15 @@ function puff(scenario::Scenario, ::Type{GaussianPuff}, eqs::EquationSet=Default
 
     stab = _stability(scenario)
     m = _release_mass(scenario)
+    ρ = _release_density(scenario)
+    V = m/ρ
     h = _release_height(scenario)
     u = _windspeed(scenario)
 
     return GaussianPuffSolution(
         scenario,  #scenario::Scenario
         :gaussian, #model::Symbol
-        m,    # mass
+        V,    # volume
         h,    # release height
         u,    # windspeed
         stab, # stability class
@@ -53,11 +57,11 @@ end
 function (g::GaussianPuffSolution)(x,y,z,t)
 
     # domain check
-    if (z<0)||(t<0)
+    if (x<0)||(z<0)||(t<0)
         return 0.0
     end
 
-    G = g.mass
+    G = g.volume
     h = g.height
     u = g.windspeed
     stab = g.stability

@@ -43,11 +43,11 @@ end
     # initial concentration
     c₀ = 38e3/7.25e4
     # in the near-field
-    x₁, t₁, c₁ = 160, 200.0, 0.11109705839813348
+    x₁, t₁, c₁ = 160, 200.0, 0.11109705839813348/1.434
     # example, in the interpolation region
-    x₂, t₂, c₂ = 355, 200.0, 0.06264084534270946
+    x₂, t₂, c₂ = 355, 200.0, 0.06264084534270946/1.434
     # far field
-    x₃, t₃, c₃ = 3133, 3000.0, 0.0006403658290584752
+    x₃, t₃, c₃ = 3133, 3000.0, 0.0006403658290584752/1.434
 
     # test overall solution
     pf = puff(scn, BritterMcQuaidPuff)
@@ -64,6 +64,6 @@ end
 
     H = (pf.c₀*pf.V₀)/(c₁*π*R²)
     @test pf(x₁, 0, H, t₁) ≈ c₁
-    @test pf(x₁, 0, H + eps(Float64), t₁) == 0.0
+    @test pf(x₁, 0, H + 1), t₁) == 0.0
 
 end

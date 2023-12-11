@@ -46,8 +46,9 @@ function plume(scenario::Scenario, ::Type{SimpleJet}, eqs::EquationSet=DefaultSe
     # Initial concentration
     m = _mass_rate(scenario)
     d = _release_diameter(scenario)
-    Q = _release_flowrate(scenario)
-    c0 = m/Q
+    Qt = _release_flowrate(scenario)
+    Qi = m/ρj
+    c0 = min(Qi/Qt,1.0)
 
     return SimpleJetSolution(
     scenario,      #scenario::Scenario

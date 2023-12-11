@@ -29,8 +29,8 @@
     @test isa(pl, GasDispersion.GaussianPlumeSolution)
     @test isa(pl, Plume)
     @test pl(-1,0,0) == 0.0
-    @test pl(0,0,0) ≈ 0.1/(π/4)
-    @test pl(500,0,0) ≈ 0.00010346728324507407
+    @test pl(0,0,0) ≈ 0.1/(π/4)/1.2268
+    @test pl(500,0,0) ≈ 0.00010346728324507407/1.2268
 
     # test stack downwash calculation
     rel = Release(mass_rate=0.1,
@@ -49,7 +49,7 @@
     pl = plume(scn; plumerise=true)
     @test isa(pl.plumerise,GasDispersion.BriggsModel)
     @test pl(-1,0,0) == 0.0
-    @test pl(0,0,10) ≈ 0.1/(π/4)
-    @test pl(500, 0, 10) ≈ 5.297761895423843e-5
+    @test pl(0,0,10) ≈ 0.1/(π/4)/1.2268
+    @test pl(500, 0, 10) ≈ 5.297761895423843e-5/1.2268
 
 end
