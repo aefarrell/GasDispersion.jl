@@ -64,6 +64,6 @@ end
 
     H = (pf.c₀*pf.V₀)/(c₁*π*R²)
     @test pf(x₁, 0, H, t₁) ≈ c₁
-    @test pf(x₁, 0, H + 1), t₁) == 0.0
+    @test pf(x₁, 0, H + 1, t₁) == 0.0
 
 end
