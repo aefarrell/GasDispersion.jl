@@ -4,7 +4,7 @@ module GasDispersion
 
 # imports
 using Markdown
-using Interpolations
+using DataInterpolations: LinearInterpolation, AkimaInterpolation
 using SpecialFunctions: erf
 using RecipesBase
 
@@ -20,7 +20,7 @@ export GaussianPlume, SimpleJet, BritterMcQuaidPlume
 
 # puff models
 export PuffModel, Puff, puff
-export GaussianPuff, IntPuff, BritterMcQuaidPuff
+export GaussianPuff, IntPuff, BritterMcQuaidPuff, SLAB
 
 # equation sets
 export EquationSet, DefaultSet
@@ -96,6 +96,7 @@ puff(s; kwargs...) = puff(s, GaussianPuff; kwargs...)
 include("models/gaussian_puff.jl")
 include("models/intpuff.jl")
 include("models/britter_mcquaid_puff.jl")
+include("models/slab_puff.jl")
 
 
 """
