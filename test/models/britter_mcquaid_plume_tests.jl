@@ -36,7 +36,7 @@ end
                   gas_heat_capacity = 2240.0, # J/kg/K, Methane
                   liquid_heat_capacity = 3349.0) # J/kg/K, Methane
 
-    r = Release( mass_rate = ṁ,
+    r = HorizontalJet( mass_rate = ṁ,
                   duration = ρ,
                   diameter = 1.0,
                   velocity = u,
@@ -44,7 +44,7 @@ end
                   pressure = 101325.0,
                   temperature = (273.15-162),
                   fraction_liquid = 0.0)
-    a = DryAir(windspeed=10.9, temperature=298, stability=ClassF)
+    a = SimpleAtmosphere(windspeed=10.9, temperature=298, stability=ClassF)
     scn = Scenario(s,r,a)
     # known answers
     # initial concentration
@@ -81,7 +81,7 @@ end
     @test pl(0, 0, Lv - 2*eps(Float64)) ≈ c₀
 
     # test large α near-field
-    a = DryAir(windspeed=0.8322, temperature=298, stability=ClassF)
+    a = SimpleAtmosphere(windspeed=0.8322, temperature=298, stability=ClassF)
     scn = Scenario(s,r,a)
     pl_nf = plume(scn, BritterMcQuaidPlume)
     c_nf  = 0.5310668347189341

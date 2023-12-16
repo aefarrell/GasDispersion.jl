@@ -9,27 +9,30 @@ units = Dict{Symbol,String}([
     :P => "Pa",
     :T => "K",
     :Rs => "J/kg/K",
+    :rh => "%",
     :stability => "",
     :f => ""
 ])
 
 # Substance type definition
-struct Substance{D_G,D_L,H,CP_G,CP_L}
-    name::Union{AbstractString,Symbol}
-    ρ_g::D_G      # gas density, kg/m^3
-    ρ_l::D_L      # liquid density, kg/m^3
-    T_ref::Number # reference temperature for densities, K (default 15°C)
-    P_ref::Number # reference pressure for densities, Pa (default 1atm)
-    T_b::Number   # normal boiling point, K
-    Δh_v::H       # specific enthalpy of vapourization, J/kg
-    Cp_g::CP_G    # specific heat capacity, gas, J/kg/K
-    Cp_l::CP_L    # specific heat capacity, liquid, J/kg/K
+struct Substance{N<:Union{AbstractString,Symbol},D_G,D_L,F<:Number,H,CP_G,CP_L}
+    name::N
+    ρ_g::D_G    # gas density, kg/m^3
+    ρ_l::D_L    # liquid density, kg/m^3
+    T_ref::F    # reference temperature for densities, K (default 15°C)
+    P_ref::F    # reference pressure for densities, Pa (default 1atm)
+    T_b::F      # normal boiling point, K
+    Δh_v::H     # specific enthalpy of vapourization, J/kg
+    Cp_g::CP_G  # specific heat capacity, gas, J/kg/K
+    Cp_l::CP_L  # specific heat capacity, liquid, J/kg/K
 end
+Substance(name,ρ_g,ρ_l,T_ref,P_ref,T_b,Δh_v,Cp_g,Cp_l) = Substance(name,ρ_g,ρ_l,
+    promote(T_ref,P_ref,T_b)...,Δh_v,Cp_g,Cp_l) 
 Substance(;name,gas_density,liquid_density,reference_temp=288.15,
-reference_pressure=101325.0,boiling_temp,latent_heat,gas_heat_capacity,
-liquid_heat_capacity) = Substance(name,gas_density,liquid_density,
-reference_temp,reference_pressure,boiling_temp,latent_heat,gas_heat_capacity,
-liquid_heat_capacity)
+           reference_pressure=101325.0,boiling_temp,latent_heat,gas_heat_capacity,
+           liquid_heat_capacity) = Substance(name,gas_density,liquid_density,
+           reference_temp,reference_pressure,boiling_temp,latent_heat,gas_heat_capacity,
+           liquid_heat_capacity)
 
 Base.isapprox(a::Substance, b::Substance) = all([
     getproperty(a,k)≈getproperty(b,k) for k in fieldnames(typeof(a))
@@ -40,18 +43,19 @@ function Base.show(io::IO, mime::MIME"text/plain", s::Substance)
 end
 
 # Release type definition
-struct Release
-    ṁ::Number       # mass emission rate, kg/s
-    Δt::Number        # release duration, s
-    d::Number        # release diameter, m
-    u::Number        # release velocity, m/s
-    h::Number          # release height, m
-    P::Number        # release pressure, Pa
-    T::Number     # release temperature, K
-    f_l::Number #  mass fraction liquid, unitless
+struct HorizontalJet{F <: Number} <: Release
+    ṁ::F   # mass emission rate, kg/s
+    Δt::F  # release duration, s
+    d::F   # release diameter, m
+    u::F   # release velocity, m/s
+    h::F   # release height, m
+    P::F   # release pressure, Pa
+    T::F   # release temperature, K
+    f_l::F #  mass fraction liquid, unitless
 end
-Release(; mass_rate, duration, diameter, velocity, height, pressure,
-    temperature, fraction_liquid) = Release(mass_rate, duration, diameter,
+HorizontalJet(ṁ,Δt,d,u,h,P,T,f_l) = HorizontalJet(promote(ṁ,Δt,d,u,h,P,T,f_l)...)
+HorizontalJet(; mass_rate, duration, diameter, velocity, height, pressure,
+    temperature, fraction_liquid) = HorizontalJet(mass_rate, duration, diameter,
     velocity, height, pressure, temperature, fraction_liquid)
 
 Base.isapprox(a::Release, b::Release) = all([
@@ -77,18 +81,20 @@ struct ClassD <: StabilityClass end
 struct ClassE <: StabilityClass end
 struct ClassF <: StabilityClass end
 
-# DryAir atmosphere type definition
-struct DryAir{T<:StabilityClass} <: Atmosphere
-    P::Number  # atmospheric pressure, Pa
-    T::Number  # atmospheric temperature, K
-    Rs::Number # specific gas constant for dry air, 287.0500676 J/kg/K
-    u::Number  # windspeed at windspeed height, m/s
-    h::Number  # reference height for windspeed, m
-    stability::Type{T} # Pasquill-Gifford stability class
+# SimpleAtmosphere atmosphere type definition
+struct SimpleAtmosphere{F<:Number,S<:StabilityClass} <: Atmosphere
+    P::F  # atmospheric pressure, Pa
+    T::F # atmospheric temperature, K
+    Rs::F # specific gas constant for dry air, 287.0500676 J/kg/K
+    u::F  # windspeed at windspeed height, m/s
+    h::F  # reference height for windspeed, m
+    rh::F      # relative humidity, %
+    stability::Type{S} # Pasquill-Gifford stability class
 end
-DryAir(; pressure=101325,temperature=298.15,gas_constant=287.0500676,
-        windspeed=1.5,windspeed_height=10, stability=ClassF) = DryAir(pressure,
-        temperature,gas_constant,windspeed,windspeed_height,stability)
+SimpleAtmosphere(P,T,Rs,u,h,rh,stability) = SimpleAtmosphere(promote(P,T,Rs,u,h,rh,)...,stability)
+SimpleAtmosphere(; pressure=101325,temperature=298.15,gas_constant=287.0500676,
+        windspeed=1.5,windspeed_height=10,rel_humidity=0.0,stability=ClassF) = SimpleAtmosphere(pressure,
+        temperature,gas_constant,windspeed,windspeed_height,rel_humidity,stability)
 
 Base.isapprox(a::Atmosphere, b::Atmosphere) = all([
     getproperty(a,k)≈getproperty(b,k) for k in fieldnames(typeof(a))
@@ -104,12 +110,12 @@ function Base.show(io::IO, mime::MIME"text/plain", a::Atmosphere)
 end
 
 # Scenario type definition
-struct Scenario
-    substance::Substance
-    release::Release
-    atmosphere::Atmosphere
+struct Scenario{S<:Substance,R<:Release,A<:Atmosphere}
+    substance::S
+    release::R
+    atmosphere::A
 end
-Scenario(;substance, release, atmosphere=DryAir()) = Scenario(substance,
+Scenario(;substance, release, atmosphere=SimpleAtmosphere()) = Scenario(substance,
 release, atmosphere)
 
 Base.isapprox(a::Scenario, b::Scenario) = all( [ a.substance≈b.substance,

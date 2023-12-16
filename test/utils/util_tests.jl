@@ -4,8 +4,8 @@ include("../../src/utils/utils.jl")
 
 @testset "Property getters" begin
     sub = Substance("test",8.90,490.0,298.15,120935.0368,100.,123456., 78910.,4.19)
-    rel = Release(1.0, 10.0, 0.25, 15.67, 2.0, 101325.0, 450., 0.67)
-    atm = DryAir(100e3,273.15,287.05,2.0,5.0,ClassA)
+    rel = HorizontalJet(1.0, 10.0, 0.25, 15.67, 2.0, 101325.0, 450., 0.67)
+    atm = SimpleAtmosphere(100e3,273.15,287.05,2.0,5.0,0.0,ClassA)
     scn = Scenario(sub,rel,atm)
 
     @test _atmosphere_temperature(scn) == _temperature(atm) == 273.15
@@ -32,8 +32,8 @@ end
 @testset "Density functions" begin
     sub1 = Substance("test",8.90,490.0,298.15,120935.0368,100.,123456., 78910.,4.19)
     sub2 = Substance("test",(x,y)->y*x^2,(x,y)->y*x^3,2,3,100.,123456., 78910.,4.19)
-    rel = Release(1.0, 10.0, 0.25, 15.67, 2.0, 101325.0, 450., 0.5)
-    atm = DryAir(100e3,273.15,287.05,2.0,5.0,ClassA)
+    rel = HorizontalJet(1.0, 10.0, 0.25, 15.67, 2.0, 101325.0, 450., 0.5)
+    atm = SimpleAtmosphere(100e3,273.15,287.05,2.0,5.0,0.0,ClassA)
     scn1 = Scenario(sub1,rel,atm)
     scn2 = Scenario(sub2,rel,atm)
 
@@ -93,8 +93,8 @@ end
 @testset "Windspeed by powerlaw" begin
 
     u0, z0, p = 3.0, 1.0, 0.108
-    a = DryAir(windspeed=u0, windspeed_height=z0, stability=ClassA)
-    s = Scenario(Substance(:null,0,0,0,0,0,0,0,0),Release(0,0,0,0,1.0,0,0,0),a)
+    a = SimpleAtmosphere(windspeed=u0, windspeed_height=z0, stability=ClassA)
+    s = Scenario(Substance(:null,0,0,0,0,0,0,0,0),HorizontalJet(0,0,0,0,1.0,0,0,0),a)
     @test _windspeed(s) == _windspeed(a) ≈ u0
     @test _windspeed(s,10) == _windspeed(a,10) == _windspeed(u0,z0,10,ClassA,DefaultSet())
 

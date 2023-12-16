@@ -2,16 +2,6 @@
 
 struct Turner <: EquationSet end
 
-# no power law correlation used, just passes to default
-_windspeed(a::Atmosphere,z::Number,::Turner) = _windspeed(a,z,DefaultSet())
-_windspeed(u0::Number,z0::Number,z::Number,s::Union{Type{ClassA},Type{ClassB},Type{ClassC},Type{ClassD},Type{ClassE},Type{ClassF}},::Turner) = _windspeed(u0,z0,z,s,DefaultSet())
-
-# no puff correlations used, just passes to default
-crosswind_dispersion(x::Number,::Type{Puff},s::Union{Type{ClassA},Type{ClassB},Type{ClassC},Type{ClassD},Type{ClassE},Type{ClassF}},::Turner) = crosswind_dispersion(x,Puff,s,DefaultSet())
-vertical_dispersion(x::Number,::Type{Puff},s::Union{Type{ClassA},Type{ClassB},Type{ClassC},Type{ClassD},Type{ClassE},Type{ClassF}},::Turner) = vertical_dispersion(x,Puff,s,DefaultSet())
-downwind_dispersion(x::Number,::Type{Puff},s::Union{Type{ClassA},Type{ClassB},Type{ClassC},Type{ClassD},Type{ClassE},Type{ClassF}},::Turner) = downwind_dispersion(x,Puff,s,DefaultSet())
-
-
 """
     crosswind_dispersion(x, Plume, StabilityClass, ::Turner)
 

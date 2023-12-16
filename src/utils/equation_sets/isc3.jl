@@ -14,7 +14,8 @@ Assumes rural terrain.
 # References
 + EPA. 1995. *User's Guide for the Industrial Source Complex (ISC3) Dispersion Models, vol 2*. United States Environmental Protection Agency EPA-454/B-95-003b
 """
-_windspeed(u0::Number,z0::Number,z::Number,::Union{Type{ClassA},Type{ClassB}},::ISC3Rural) = u0*(z/z0)^0.07
+_windspeed(u0::Number,z0::Number,z::Number,::Type{ClassA},::ISC3Rural) = u0*(z/z0)^0.07
+_windspeed(u0::Number,z0::Number,z::Number,::Type{ClassB},::ISC3Rural) = u0*(z/z0)^0.07
 _windspeed(u0::Number,z0::Number,z::Number,::Type{ClassC},::ISC3Rural) = u0*(z/z0)^0.10
 _windspeed(u0::Number,z0::Number,z::Number,::Type{ClassD},::ISC3Rural) = u0*(z/z0)^0.15
 _windspeed(u0::Number,z0::Number,z::Number,::Type{ClassE},::ISC3Rural) = u0*(z/z0)^0.35
@@ -201,10 +202,12 @@ Assumes urban terrain.
 # References
 + EPA. 1995. *User's Guide for the Industrial Source Complex (ISC3) Dispersion Models, vol 2*. United States Environmental Protection Agency EPA-454/B-95-003b
 """
-_windspeed(u0::Number,z0::Number,z::Number,::Union{Type{ClassA},Type{ClassB}},::ISC3Urban) = u0*(z/z0)^0.15
+_windspeed(u0::Number,z0::Number,z::Number,::Type{ClassA},::ISC3Urban) = u0*(z/z0)^0.15
+_windspeed(u0::Number,z0::Number,z::Number,::Type{ClassB},::ISC3Urban) = u0*(z/z0)^0.15
 _windspeed(u0::Number,z0::Number,z::Number,::Type{ClassC},::ISC3Urban) = u0*(z/z0)^0.20
 _windspeed(u0::Number,z0::Number,z::Number,::Type{ClassD},::ISC3Urban) = u0*(z/z0)^0.25
-_windspeed(u0::Number,z0::Number,z::Number,::Union{Type{ClassE},Type{ClassF}},::ISC3Urban) = u0*(z/z0)^0.30
+_windspeed(u0::Number,z0::Number,z::Number,::Type{ClassE},::ISC3Urban) = u0*(z/z0)^0.30
+_windspeed(u0::Number,z0::Number,z::Number,::Type{ClassF},::ISC3Urban) = u0*(z/z0)^0.30
 
 
 """
@@ -215,10 +218,12 @@ Plume crosswind dispersion correlations, for urban terrain
 # References
 + EPA. 1995. *User's Guide for the Industrial Source Complex (ISC3) Dispersion Models, vol 2*. United States Environmental Protection Agency EPA-454/B-95-003b
 """
-crosswind_dispersion(x::Number, ::Type{Plume}, ::Union{Type{ClassA},Type{ClassB}}, ::ISC3Urban) = 0.32x/√(1+0.0004x)
+crosswind_dispersion(x::Number, ::Type{Plume}, ::Type{ClassA}, ::ISC3Urban) = 0.32x/√(1+0.0004x)
+crosswind_dispersion(x::Number, ::Type{Plume}, ::Type{ClassB}, ::ISC3Urban) = 0.32x/√(1+0.0004x)
 crosswind_dispersion(x::Number, ::Type{Plume}, ::Type{ClassC}, ::ISC3Urban) = 0.22x/√(1+0.0004x)
 crosswind_dispersion(x::Number, ::Type{Plume}, ::Type{ClassD}, ::ISC3Urban) = 0.16x/√(1+0.0004x)
-crosswind_dispersion(x::Number, ::Type{Plume}, ::Union{Type{ClassE},Type{ClassF}}, ::ISC3Urban) = 0.11x/√(1+0.0004x)
+crosswind_dispersion(x::Number, ::Type{Plume}, ::Type{ClassE}, ::ISC3Urban) = 0.11x/√(1+0.0004x)
+crosswind_dispersion(x::Number, ::Type{Plume}, ::Type{ClassF}, ::ISC3Urban) = 0.11x/√(1+0.0004x)
 
 
 """
@@ -229,33 +234,9 @@ Plume vertical dispersion correlations, for urban terrain
 # References
 + EPA. 1995. *User's Guide for the Industrial Source Complex (ISC3) Dispersion Models, vol 2*. United States Environmental Protection Agency EPA-454/B-95-003b
 """
-vertical_dispersion(x::Number, ::Type{Plume}, ::Union{Type{ClassA},Type{ClassB}}, ::ISC3Urban) = 0.24x*√(1+0.001x)
+vertical_dispersion(x::Number, ::Type{Plume}, ::Type{ClassA}, ::ISC3Urban) = 0.24x*√(1+0.001x)
+vertical_dispersion(x::Number, ::Type{Plume}, ::Type{ClassB}, ::ISC3Urban) = 0.24x*√(1+0.001x)
 vertical_dispersion(x::Number, ::Type{Plume}, ::Type{ClassC}, ::ISC3Urban) = 0.20x
 vertical_dispersion(x::Number, ::Type{Plume}, ::Type{ClassD}, ::ISC3Urban) = 0.14x/√(1+0.0003x)
-vertical_dispersion(x::Number, ::Type{Plume}, ::Union{Type{ClassE},Type{ClassF}}, ::ISC3Urban) = 0.08x/√(1+0.0015x)
-
-# Correlations for both
-
-"""
-    _windspeed(a::Atmosphere, z::Number, ::Union{ISC3Urban, ISC3Rural})
-returns the windspeed at height `z` for a given Pasquill-Gifford
-stability class using a power law correlation.
-
-u = u₀ (z/z₀)ᵖ
-
-Where *p* is a function of the atmospheric stability class and the terrain (urban or rural)
-
-# References
-+ EPA. 1995. *User's Guide for the Industrial Source Complex (ISC3) Dispersion Models, vol 2*. United States Environmental Protection Agency EPA-454/B-95-003b
-"""
-function _windspeed(a::Atmosphere,z::Number,es::Union{ISC3Rural,ISC3Urban})
-    stab = _stability(a)
-    u0 = _windspeed(a)
-    z0 = _windspeed_height(a)
-    return _windspeed(u0,z0,z,stab,es)
-end
-
-# no puff correlations used, just passes to default
-crosswind_dispersion(x::Number,::Type{Puff},s::Union{Type{ClassA},Type{ClassB},Type{ClassC},Type{ClassD},Type{ClassE},Type{ClassF}},::Union{ISC3Rural,ISC3Urban}) = crosswind_dispersion(x,Puff,s,DefaultSet())
-vertical_dispersion(x::Number,::Type{Puff},s::Union{Type{ClassA},Type{ClassB},Type{ClassC},Type{ClassD},Type{ClassE},Type{ClassF}},::Union{ISC3Rural,ISC3Urban}) = vertical_dispersion(x,Puff,s,DefaultSet())
-downwind_dispersion(x::Number,::Type{Puff},s::Union{Type{ClassA},Type{ClassB},Type{ClassC},Type{ClassD},Type{ClassE},Type{ClassF}},::Union{ISC3Rural,ISC3Urban}) = downwind_dispersion(x,Puff,s,DefaultSet())
+vertical_dispersion(x::Number, ::Type{Plume}, ::Type{ClassE}, ::ISC3Urban) = 0.08x/√(1+0.0015x)
+vertical_dispersion(x::Number, ::Type{Plume}, ::Type{ClassF}, ::ISC3Urban) = 0.08x/√(1+0.0015x)

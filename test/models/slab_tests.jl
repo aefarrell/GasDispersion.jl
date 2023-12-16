@@ -160,7 +160,7 @@ end
                 latent_heat = 509880.0,  # J/kg, Methane
                 gas_heat_capacity = 2240.0, # J/kg/K, Methane
                 liquid_heat_capacity = 3349.0) # J/kg/K, Methane
-    r = Release( mass_rate = (0.23*425.6),
+    r = HorizontalJet( mass_rate = (0.23*425.6),
                 duration = 174,
                 diameter = 1.0,
                 velocity = 70.815,
@@ -168,7 +168,7 @@ end
                 pressure = 101325.0,
                 temperature = (273.15-162),
                 fraction_liquid = 0.0)
-    a = DryAir(windspeed=10.9, temperature=298, stability=ClassF)
+    a = SimpleAtmosphere(windspeed=10.9, temperature=298, stability=ClassF)
     scn = Scenario(s,r,a)
     rls = puff(scn, SLAB; )
 

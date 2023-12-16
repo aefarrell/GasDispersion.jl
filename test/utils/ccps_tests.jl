@@ -42,8 +42,8 @@
     @testset "Windspeed by powerlaw" begin
 
         u0, z0 = 3.0, 1.0
-        a = DryAir(windspeed=u0, windspeed_height=z0, stability=ClassA)
-        s = Scenario(Substance(:null,0,0,0,0,0,0,0,0),Release(0,0,0,0,1.0,0,0,0),a)
+        a = SimpleAtmosphere(windspeed=u0, windspeed_height=z0, stability=ClassA)
+        s = Scenario(Substance(:null,0,0,0,0,0,0,0,0),HorizontalJet(0,0,0,0,1.0,0,0,0),a)
         @test _windspeed(s,10,CCPSRural()) == _windspeed(a,10,CCPSRural()) == _windspeed(u0,z0,10,ClassA,CCPSRural())
 
         urban = [(ClassA, 4.237612633868263),

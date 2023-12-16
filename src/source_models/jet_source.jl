@@ -57,13 +57,13 @@ function scenario_builder(substance::Substance, ::Type{JetSource}, atmosphere::A
         error("$phase is not a valid phase, try either :liquid or :gas")
     end
 
-    r = Release(; mass_rate=m,
-                  duration=duration,
-                  diameter=d,
-                  velocity=uⱼ,
-                  height=h,
-                  pressure=Pⱼ,
-                  temperature=Tⱼ,
-                  fraction_liquid=f_l)
+    r = HorizontalJet(; mass_rate=m,
+                        duration=duration,
+                        diameter=d,
+                        velocity=uⱼ,
+                        height=h,
+                        pressure=Pⱼ,
+                        temperature=Tⱼ,
+                        fraction_liquid=f_l)
     return Scenario(substance,r,atmosphere)
 end

@@ -46,21 +46,21 @@ _windspeed_height(s::Scenario) = _windspeed_height(s.atmosphere)
 _stability(a::Atmosphere) = a.stability
 _stability(s::Scenario) = _stability(s.atmosphere)
 
-_cp_gas(s::Substance{<:Any,<:Any,<:Any,<:Number,<:Any}) = s.Cp_g
-_cp_liquid(s::Substance{<:Any,<:Any,<:Any,<:Any,<:Number}) = s.Cp_l
+_cp_gas(s::Substance{<:Any,<:Any,<:Any,<:Any,<:Any,<:Number,<:Any}) = s.Cp_g
+_cp_liquid(s::Substance{<:Any,<:Any,<:Any,<:Any,<:Any,<:Any,<:Number}) = s.Cp_l
 _boiling_temperature(s::Substance) = s.T_b
-_latent_heat(s::Substance{<:Any,<:Any,<:Number,<:Any,<:Any}) = s.Δh_v
+_latent_heat(s::Substance{<:Any,<:Any,<:Any,<:Any,<:Number,<:Any,<:Any}) = s.Δh_v
 
-_rel_humidity(a::DryAir) = 0.0
+_rel_humidity(a::SimpleAtmosphere) = a.rh
 
 # density functions
 _liquid_density(s::Substance) = _liquid_density(s, s.T_ref, s.P_ref)
-_liquid_density(s::Substance{<:Any,<:Number,<:Any,<:Any,<:Any}, T::Number, P::Number) = s.ρ_l
-_liquid_density(s::Substance{<:Any,<:Function,<:Any,<:Any,<:Any}, T::Number, P::Number) = s.ρ_l(T,P)
+_liquid_density(s::Substance{<:Any,<:Any,<:Number,<:Any,<:Any,<:Any,<:Any}, T::Number, P::Number) = s.ρ_l
+_liquid_density(s::Substance{<:Any,<:Any,<:Function,<:Any,<:Any,<:Any,<:Any}, T::Number, P::Number) = s.ρ_l(T,P)
 
 _gas_density(s::Substance) = _gas_density(s, s.T_ref, s.P_ref)
-_gas_density(s::Substance{<:Number,<:Any,<:Any,<:Any,<:Any}, T::Number, P::Number) = s.ρ_g*(s.T_ref/T)*(P/s.P_ref)
-_gas_density(s::Substance{<:Function,<:Any,<:Any,<:Any,<:Any}, T::Number, P::Number) = s.ρ_g(T,P)
+_gas_density(s::Substance{<:Any,<:Number,<:Any,<:Any,<:Any,<:Any,<:Any}, T::Number, P::Number) = s.ρ_g*(s.T_ref/T)*(P/s.P_ref)
+_gas_density(s::Substance{<:Any,<:Function,<:Any,<:Any,<:Any,<:Any,<:Any}, T::Number, P::Number) = s.ρ_g(T,P)
 
 function _density(s::Substance, f_l, T, P)
     f_g = 1 - f_l
@@ -70,7 +70,7 @@ function _density(s::Substance, f_l, T, P)
     return 1/(f_l/ρ_l + f_g/ρ_g)
 end
 
-_density(a::DryAir, T, P) = P/(a.Rs*T)
+_density(a::SimpleAtmosphere, T, P) = P/(a.Rs*T)
 _density(a::Atmosphere) = _density(a, _temperature(a), _pressure(a))
 _atmosphere_density(s::Scenario) = _density(s.atmosphere)
 _release_density(s::Scenario) = _density(s.substance, _release_liquid_fraction(s), _release_temperature(s), _release_pressure(s))

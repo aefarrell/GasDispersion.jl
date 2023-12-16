@@ -10,7 +10,7 @@
                     latent_heat=1.,
                     gas_heat_capacity=1.,
                     liquid_heat_capacity=1.)
-    rel = Release(mass_rate=0.1,
+    rel = HorizontalJet(mass_rate=0.1,
                   duration=10,
                   diameter=1.0,
                   velocity=1.0,
@@ -18,7 +18,7 @@
                   temperature=298.,
                   pressure=101325.,
                   fraction_liquid=0.0)
-    atm = DryAir(temperature=298.0,
+    atm = SimpleAtmosphere(temperature=298.0,
                  pressure=101325.0,
                  windspeed=2.0,
                  stability=ClassF)

@@ -29,7 +29,7 @@ end
                   latent_heat = 8.17/0.0160425,   # Ammonia, NIST Webbook
                   gas_heat_capacity = 1.6151,     # Ammonia, NIST Webbook
                   liquid_heat_capacity = 2.0564)  # Ammonia, NIST Webbook
-    r = Release( mass_rate = 38e3,  # 38 tonnes of Ammonia
+    r = HorizontalJet( mass_rate = 38e3,  # 38 tonnes of Ammonia
                  duration = 1.0,
                  diameter = 1.0,
                  velocity = 7.25e4/(0.25*π),
@@ -37,7 +37,7 @@ end
                  pressure = 101325.0,
                  temperature = (273.15-33.316),   # Ammonia, NIST Webbook
                  fraction_liquid = 0.0)
-    a = DryAir(windspeed=2.0, temperature=293.15, stability=ClassF)
+    a = SimpleAtmosphere(windspeed=2.0, temperature=293.15, stability=ClassF)
     scn = Scenario(s,r,a)
     # known answers
     # initial concentration

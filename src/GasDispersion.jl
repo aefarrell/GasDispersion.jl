@@ -8,10 +8,14 @@ using DataInterpolations: LinearInterpolation, AkimaInterpolation
 using SpecialFunctions: erf
 using RecipesBase
 
-# source models
-export Atmosphere, DryAir
+# releases
+export Atmosphere, SimpleAtmosphere
 export StabilityClass, ClassA, ClassB, ClassC, ClassD, ClassE, ClassF
-export Substance, Release, Scenario, scenario_builder
+export Substance
+export Release, HorizontalJet
+export Scenario, scenario_builder
+
+# source models
 export SourceModel, JetSource
 
 # plume models
@@ -29,6 +33,7 @@ export CCPSRural, CCPSUrban, TNO, Turner, ISC3Rural, ISC3Urban
 # abstract types
 abstract type Atmosphere end
 abstract type StabilityClass end
+abstract type Release end
 abstract type SourceModel end
 abstract type PlumeModel end
 abstract type Plume end
@@ -110,7 +115,7 @@ F stability.
 function scenario_builder end
 
 # default behaviour
-scenario_builder(s,m; kwargs...) = scenario_builder(s,m,DryAir(); kwargs...)
+scenario_builder(s,m; kwargs...) = scenario_builder(s,m,SimpleAtmosphere(); kwargs...)
 
 # source models
 include("source_models/jet_source.jl")
