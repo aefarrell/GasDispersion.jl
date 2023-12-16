@@ -155,19 +155,19 @@ end
                 gas_density = 1.76,
                 liquid_density = 425.6,
                 reference_temp=(273.15-162),
-                reference_pressure=101325.0,
+                reference_pressure=101325,
                 boiling_temp = 111.66, # K, Methane,
-                latent_heat = 509880.0,  # J/kg, Methane
-                gas_heat_capacity = 2240.0, # J/kg/K, Methane
-                liquid_heat_capacity = 3349.0) # J/kg/K, Methane
+                latent_heat = 509880,  # J/kg, Methane
+                gas_heat_capacity = 2240, # J/kg/K, Methane
+                liquid_heat_capacity = 3349) # J/kg/K, Methane
     r = HorizontalJet( mass_rate = (0.23*425.6),
                 duration = 174,
-                diameter = 1.0,
+                diameter = 1,
                 velocity = 70.815,
-                height = 0.0,
-                pressure = 101325.0,
+                height = 0,
+                pressure = 101325,
                 temperature = (273.15-162),
-                fraction_liquid = 0.0)
+                fraction_liquid = 0)
     a = SimpleAtmosphere(windspeed=10.9, temperature=298, stability=ClassF)
     scn = Scenario(s,r,a)
     rls = puff(scn, SLAB; )

@@ -12,22 +12,22 @@
                     liquid_heat_capacity=1.)
     rel = HorizontalJet(mass_rate=0.1,
                   duration=10,
-                  diameter=1.0,
-                  velocity=1.0,
-                  height=0.0,
+                  diameter=1,
+                  velocity=1,
+                  height=0,
                   temperature=298.,
                   pressure=101325.,
-                  fraction_liquid=0.0)
-    atm = SimpleAtmosphere(temperature=298.0,
-                 pressure=101325.0,
-                 windspeed=2.0,
-                 windspeed_height=1.0,
+                  fraction_liquid=0)
+    atm = SimpleAtmosphere(temperature=298,
+                 pressure=101325,
+                 windspeed=2,
+                 windspeed_height=1,
                  stability=ClassF)
     scn = Scenario(sub,rel,atm)
     pf = puff(scn)
     # knowns
-    x₁ = 500.0
-    t₁ = 250.0
+    x₁ = 500
+    t₁ = 250
     σy = 5.047929716825321 # There is a mistake in the ref, it gives this as 6.1
     σz = 2.214836678536473
     c₁ = 1/(√(2π)*π*σy^2*σz)/1.2268

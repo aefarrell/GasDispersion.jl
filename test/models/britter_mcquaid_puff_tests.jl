@@ -24,30 +24,30 @@ end
                 # gas_density = 0.88997,          # Ammonia, NIST Webbook
                   liquid_density = 681.63,        # Ammonia, NIST Webbook
                   reference_temp=(273.15-33.316), # boiling point of Ammonia, NIST Webbook
-                  reference_pressure=101325.0,
+                  reference_pressure=101325,
                   boiling_temp = (273.15-33.316), # Ammonia, NIST Webbook
                   latent_heat = 8.17/0.0160425,   # Ammonia, NIST Webbook
                   gas_heat_capacity = 1.6151,     # Ammonia, NIST Webbook
                   liquid_heat_capacity = 2.0564)  # Ammonia, NIST Webbook
     r = HorizontalJet( mass_rate = 38e3,  # 38 tonnes of Ammonia
-                 duration = 1.0,
-                 diameter = 1.0,
+                 duration = 1,
+                 diameter = 1,
                  velocity = 7.25e4/(0.25*π),
-                 height = 0.0,
-                 pressure = 101325.0,
+                 height = 0,
+                 pressure = 101325,
                  temperature = (273.15-33.316),   # Ammonia, NIST Webbook
-                 fraction_liquid = 0.0)
-    a = SimpleAtmosphere(windspeed=2.0, temperature=293.15, stability=ClassF)
+                 fraction_liquid = 0)
+    a = SimpleAtmosphere(windspeed=2, temperature=293.15, stability=ClassF)
     scn = Scenario(s,r,a)
     # known answers
     # initial concentration
     c₀ = 38e3/7.25e4
     # in the near-field
-    x₁, t₁, c₁ = 160, 200.0, 0.11109705839813348/1.434
+    x₁, t₁, c₁ = 160, 200, 0.11109705839813348/1.434
     # example, in the interpolation region
-    x₂, t₂, c₂ = 355, 200.0, 0.06264084534270946/1.434
+    x₂, t₂, c₂ = 355, 200, 0.06264084534270946/1.434
     # far field
-    x₃, t₃, c₃ = 3133, 3000.0, 0.0006403658290584752/1.434
+    x₃, t₃, c₃ = 3133, 3000, 0.0006403658290584752/1.434
 
     # test overall solution
     pf = puff(scn, BritterMcQuaidPuff)

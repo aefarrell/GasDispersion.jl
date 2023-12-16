@@ -12,16 +12,16 @@
                     liquid_heat_capacity=1.)
     rel = HorizontalJet(mass_rate=0.1,
                   duration=Inf,
-                  diameter=1.0,
-                  velocity=1.0,
-                  height=0.0,
+                  diameter=1,
+                  velocity=1,
+                  height=0,
                   temperature=298.,
                   pressure=101325.,
-                  fraction_liquid=0.0)
-    atm = SimpleAtmosphere(temperature=298.0,
-                 pressure=101325.0,
-                 windspeed=2.0,
-                 windspeed_height=1.0,
+                  fraction_liquid=0)
+    atm = SimpleAtmosphere(temperature=298,
+                 pressure=101325,
+                 windspeed=2,
+                 windspeed_height=1,
                  stability=ClassF)
     scn = Scenario(sub,rel,atm)
     pl = plume(scn)
@@ -36,20 +36,20 @@
     # test stack downwash calculation
     rel = HorizontalJet(mass_rate=0.1,
                   duration=Inf,
-                  diameter=1.0,
-                  velocity=1.0,
-                  height=10.0,
+                  diameter=1,
+                  velocity=1,
+                  height=10,
                   temperature=298.,
                   pressure=101325.,
-                  fraction_liquid=0.0)
-    atm = SimpleAtmosphere(temperature=298.0,
-                  pressure=101325.0,
-                  windspeed=2.0,
-                  windspeed_height=10.0,
+                  fraction_liquid=0)
+    atm = SimpleAtmosphere(temperature=298,
+                  pressure=101325,
+                  windspeed=2,
+                  windspeed_height=10,
                   stability=ClassF)
     scn = Scenario(sub,rel,atm)
     pl = plume(scn; downwash=true)
-    @test pl.effective_stack_height ≈ 8.0
+    @test pl.effective_stack_height ≈ 8
 
     # test with plume rise
     pl = plume(scn; plumerise=true)

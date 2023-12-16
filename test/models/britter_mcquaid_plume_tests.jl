@@ -30,31 +30,31 @@ end
                   gas_density = ρ,
                   liquid_density = 425.6,
                   reference_temp=(273.15-162),
-                  reference_pressure=101325.0,
+                  reference_pressure=101325,
                   boiling_temp = 111.6, # Methane, NIST Webbook
-                  latent_heat = 509880.0,  # J/kg, Methane
-                  gas_heat_capacity = 2240.0, # J/kg/K, Methane
-                  liquid_heat_capacity = 3349.0) # J/kg/K, Methane
+                  latent_heat = 509880,  # J/kg, Methane
+                  gas_heat_capacity = 2240, # J/kg/K, Methane
+                  liquid_heat_capacity = 3349) # J/kg/K, Methane
 
     r = HorizontalJet( mass_rate = ṁ,
                   duration = ρ,
-                  diameter = 1.0,
+                  diameter = 1,
                   velocity = u,
-                  height = 0.0,
-                  pressure = 101325.0,
+                  height = 0,
+                  pressure = 101325,
                   temperature = (273.15-162),
-                  fraction_liquid = 0.0)
+                  fraction_liquid = 0)
     a = SimpleAtmosphere(windspeed=10.9, temperature=298, stability=ClassF)
     scn = Scenario(s,r,a)
     # known answers
     # initial concentration
-    c₀ = 1.0
+    c₀ = 1
     # in the near-field
     x₁, c₁ = 2.26*20, 0.6720234544594696
     # example, in the interpolation region
-    x₂, c₂ = 367.0, 0.05071175952024219
+    x₂, c₂ = 367, 0.05071175952024219
     # far field
-    x₃, c₃ = 1200.0, 0.004920569368181627
+    x₃, c₃ = 1200, 0.004920569368181627
 
     # test overall solution
     pl = plume(scn, BritterMcQuaidPlume)
