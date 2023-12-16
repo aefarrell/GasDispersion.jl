@@ -1,17 +1,18 @@
 struct BritterMcQuaidPlume <: PlumeModel end
 
-struct BritterMcQuaidPlumeSolution <: Plume
+struct BritterMcQuaidPlumeSolution{F<:Number,I} <: Plume
     scenario::Scenario
     model::Symbol
-    c₀::Number # initial concentration,
-    T′::Number # temperature correction
-    D::Number  # critical length
-    lb::Number # plume dimension parameter, m
-    itp::LinearInterpolation
-    xnf::Number # near field distance
-    xff::Number # far field distance
-    A::Number  # far field constant
+    c₀::F # initial concentration,
+    T′::F # temperature correction
+    D::F  # critical length
+    lb::F # plume dimension parameter, m
+    xnf::F # near field distance
+    xff::F # far field distance
+    A::F  # far field constant
+    itp::I
 end
+BritterMcQuaidPlumeSolution(s,m,c0,T,D,lb,xnf,xff,A,itp)=BritterMcQuaidPlumeSolution(s,m,promote(c0,T,D,lb,xnf,xff,A)...,itp)
 
 """
     plume(::Scenario, BritterMcQuaidPlume[, equationset::EquationSet])
@@ -27,7 +28,7 @@ a default power-law wind profile is used.
 + Britter, Rex E. and J. McQuaid. 1988. *Workbook on the Dispersion of Dense Gases. HSE Contract Research Report No. 17/1988*
 + AIChE/CCPS. 1999. *Guidelines for Consequence Analysis of Chemical Releases*. New York: American Institute of Chemical Engineers
 """
-function plume(scenario::Scenario, ::Type{BritterMcQuaidPlume}, eqs::EquationSet=DefaultSet())
+function plume(scenario::Scenario, ::Type{BritterMcQuaidPlume}, eqs=DefaultSet)
 
     Q = _release_flowrate(scenario)
     ṁ = _mass_rate(scenario)
@@ -94,10 +95,10 @@ function plume(scenario::Scenario, ::Type{BritterMcQuaidPlume}, eqs::EquationSet
         T′,    # temperature_correction
         D,     # critical length, m
         lb,    # length parameter, m
-        itp,   # interpolation
         xnf,   # near-field distance
         xff,   # far-field distance
-        A      # far-field constant
+        A,      # far-field constant
+        itp   # interpolation
     )
 end
 

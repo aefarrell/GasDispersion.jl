@@ -3,7 +3,7 @@
 struct Turner <: EquationSet end
 
 """
-    crosswind_dispersion(x, Plume, StabilityClass, ::Turner)
+    crosswind_dispersion(x, Plume, StabilityClass, Turner)
 
 Plume crosswind dispersion correlations
 
@@ -11,15 +11,15 @@ Plume crosswind dispersion correlations
 + Lees, Frank P. 1996. *Loss Prevention in the Process Industries, 2nd ed*. Oxford: Butterworth-Heinemann
 + Turner, D. Bruce. 1970. *Workbook of Atmospheric Dispersion Estimates*. United States Environmental Protection Agency.
 """
-crosswind_dispersion(x::Number, ::Type{Plume}, ::Type{ClassA}, ::Turner) = 0.493x^0.88
-crosswind_dispersion(x::Number, ::Type{Plume}, ::Type{ClassB}, ::Turner) = 0.337x^0.88
-crosswind_dispersion(x::Number, ::Type{Plume}, ::Type{ClassC}, ::Turner) = 0.195x^0.90
-crosswind_dispersion(x::Number, ::Type{Plume}, ::Type{ClassD}, ::Turner) = 0.128x^0.90
-crosswind_dispersion(x::Number, ::Type{Plume}, ::Type{ClassE}, ::Turner) = 0.091x^0.91
-crosswind_dispersion(x::Number, ::Type{Plume}, ::Type{ClassF}, ::Turner) = 0.067x^0.90
+crosswind_dispersion(x::Number, ::Type{Plume}, ::Type{ClassA}, ::Type{Turner}) = 0.493x^0.88
+crosswind_dispersion(x::Number, ::Type{Plume}, ::Type{ClassB}, ::Type{Turner}) = 0.337x^0.88
+crosswind_dispersion(x::Number, ::Type{Plume}, ::Type{ClassC}, ::Type{Turner}) = 0.195x^0.90
+crosswind_dispersion(x::Number, ::Type{Plume}, ::Type{ClassD}, ::Type{Turner}) = 0.128x^0.90
+crosswind_dispersion(x::Number, ::Type{Plume}, ::Type{ClassE}, ::Type{Turner}) = 0.091x^0.91
+crosswind_dispersion(x::Number, ::Type{Plume}, ::Type{ClassF}, ::Type{Turner}) = 0.067x^0.90
 
 """
-    vertical_dispersion(x, Plume, StabilityClass, ::Turner)
+    vertical_dispersion(x, Plume, StabilityClass, Turner)
 
 Plume vertical dispersion correlations
 
@@ -27,7 +27,7 @@ References:
 + Lees, Frank P. 1996. *Loss Prevention in the Process Industries, 2nd ed*. Oxford: Butterworth-Heinemann
 + Turner, D. Bruce. 1970. *Workbook of Atmospheric Dispersion Estimates*. United States Environmental Protection Agency.
 """
-function vertical_dispersion(x::Number, ::Type{Plume}, ::Type{ClassA}, ::Turner)
+function vertical_dispersion(x::Number, ::Type{Plume}, ::Type{ClassA}, ::Type{Turner})
     if x < 100
         @warn "x = $x, outside of the range of the Turner correlation, range is 100 ≤ x ≤ 3000"
         return 0.087x^1.10
@@ -43,7 +43,7 @@ function vertical_dispersion(x::Number, ::Type{Plume}, ::Type{ClassA}, ::Turner)
     end
 end
 
-function vertical_dispersion(x::Number, ::Type{Plume}, ::Type{ClassB}, ::Turner)
+function vertical_dispersion(x::Number, ::Type{Plume}, ::Type{ClassB}, ::Type{Turner})
     if x < 100
         @warn "x = $x, outside of the range of the Turner correlation, range is 100 ≤ x ≤ 20000"
         return 0.135x^0.95
@@ -59,7 +59,7 @@ function vertical_dispersion(x::Number, ::Type{Plume}, ::Type{ClassB}, ::Turner)
     end
 end
 
-function vertical_dispersion(x::Number, ::Type{Plume}, ::Type{ClassC}, ::Turner)
+function vertical_dispersion(x::Number, ::Type{Plume}, ::Type{ClassC}, ::Type{Turner})
     if x < 100
         @warn "x = $x, outside of the range of the Turner correlation, range is 100 ≤ x ≤ 100000"
         return 0.112x^0.91
@@ -71,7 +71,7 @@ function vertical_dispersion(x::Number, ::Type{Plume}, ::Type{ClassC}, ::Turner)
     end
 end
 
-function vertical_dispersion(x::Number, ::Type{Plume}, ::Type{ClassD}, ::Turner)
+function vertical_dispersion(x::Number, ::Type{Plume}, ::Type{ClassD}, ::Type{Turner})
     if x < 100
         @warn "x = $x, outside of the range of the Turner correlation, range is 100 ≤ x ≤ 100000"
         return 0.093x^0.85
@@ -87,7 +87,7 @@ function vertical_dispersion(x::Number, ::Type{Plume}, ::Type{ClassD}, ::Turner)
     end
 end
 
-function vertical_dispersion(x::Number, ::Type{Plume}, ::Type{ClassE}, ::Turner)
+function vertical_dispersion(x::Number, ::Type{Plume}, ::Type{ClassE}, ::Type{Turner})
     if x < 100
         @warn "x = $x, outside of the range of the Turner correlation, range is 100 ≤ x ≤ 100000"
         return 0.082x^0.82
@@ -103,7 +103,7 @@ function vertical_dispersion(x::Number, ::Type{Plume}, ::Type{ClassE}, ::Turner)
     end
 end
 
-function vertical_dispersion(x::Number, ::Type{Plume}, ::Type{ClassF}, ::Turner)
+function vertical_dispersion(x::Number, ::Type{Plume}, ::Type{ClassF}, ::Type{Turner})
     if x < 100
         @warn "x = $x, outside of the range of the Turner correlation, range is 100 ≤ x ≤ 100000"
         return 0.057x^0.80

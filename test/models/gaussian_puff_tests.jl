@@ -21,6 +21,7 @@
     atm = SimpleAtmosphere(temperature=298.0,
                  pressure=101325.0,
                  windspeed=2.0,
+                 windspeed_height=1.0,
                  stability=ClassF)
     scn = Scenario(sub,rel,atm)
     pf = puff(scn)

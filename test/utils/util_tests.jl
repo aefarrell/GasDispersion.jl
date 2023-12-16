@@ -139,7 +139,7 @@ end
     uⱼ = 72.93819699672669 # m/s
     xf = 565.0050541491846 # m
     Δhf = 100.71365158671999 # m
-    sln = plume_rise(1.0,uⱼ,Tᵣ,u,Tₐ,ClassA)
+    sln = plume_rise(1.0,uⱼ,Tᵣ,u,Tₐ,0.0,ClassA)
     @test isa(sln,BuoyantPlume)
     @test sln ≈ BuoyantPlume(50.0,xf,u,Δhf)
     @test plume_rise(x, sln) ≈ 20.0
@@ -149,7 +149,7 @@ end
     uⱼ = 87.52583639607202
     xf = 612.07897481385
     Δhf = 112.8895989623143
-    sln = plume_rise(1.0,uⱼ,Tᵣ,u,Tₐ,ClassA)
+    sln = plume_rise(1.0,uⱼ,Tᵣ,u,Tₐ,0.0,ClassA)
     @test isa(sln,BuoyantPlume)
     @test sln ≈ BuoyantPlume(60.0,xf,u,Δhf)
 
@@ -161,9 +161,9 @@ end
     Fm = 7171.814541070672
     β = (1/3) + (u/uⱼ)
     Δhf = 3*(uⱼ/u) # m
-    sln = plume_rise(1.0,uⱼ,Tᵣ,u,Tₐ,ClassA)
+    sln = plume_rise(1.0,uⱼ,Tᵣ,u,Tₐ,0.0,ClassA)
     @test isa(sln,MomentumPlume)
-    @test sln ≈ MomentumPlume(Fm,xf,β,nothing,u,Δhf,ClassA)
+    @test sln ≈ MomentumPlume(Fm,xf,β,u,0.0,Δhf,ClassA)
     @test plume_rise(x, sln) ≈ 81.01824072514351
     @test plume_rise(2xf, sln) ≈ Δhf
 
@@ -173,7 +173,7 @@ end
     uⱼ = 72.93819699672669 # m/s
     xf = 317.60677324769046 # m
     Δhf = 68.59722859012221 # m
-    sln = plume_rise(1.0,uⱼ,Tᵣ,u,Tₐ,ClassE)
+    sln = plume_rise(1.0,uⱼ,Tᵣ,u,Tₐ,0.02,ClassE)
     @test isa(sln,BuoyantPlume)
     @test sln ≈ BuoyantPlume(50.0,xf,u,Δhf)
 
@@ -182,7 +182,7 @@ end
     uⱼ = 72.93819699672669 # m/s
     xf = 240.0881533494489 # m
     Δhf = 56.92380039947288 # m
-    sln = plume_rise(1.0,uⱼ,Tᵣ,u,Tₐ,ClassF)
+    sln = plume_rise(1.0,uⱼ,Tᵣ,u,Tₐ,0.035,ClassF)
     @test isa(sln,BuoyantPlume)
     @test sln ≈ BuoyantPlume(50.0,xf,u,Δhf)
 
@@ -195,9 +195,9 @@ end
     β = (1/3)+(u/uⱼ)
     s = 0.0006806288391462781
     Δhf = 19.04522445600697 # m
-    sln = plume_rise(1.0,uⱼ,Tᵣ,u,Tₐ,ClassE)
+    sln = plume_rise(1.0,uⱼ,Tᵣ,u,Tₐ,0.02,ClassE)
     @test isa(sln,MomentumPlume)
-    @test sln ≈ MomentumPlume(Fm,xf,β,s,u,Δhf,ClassE)
+    @test sln ≈ MomentumPlume(Fm,xf,β,u,s,Δhf,ClassE)
     @test plume_rise(x, sln) ≈ Δhf
     @test plume_rise(2xf, sln) ≈ Δhf
 
@@ -210,9 +210,9 @@ end
     β = (1/3)+(u/uⱼ)
     s = 0.0011911004685059867
     Δhf = 17.349211998937378 # m
-    sln = plume_rise(1.0,uⱼ,Tᵣ,u,Tₐ,ClassF)
+    sln = plume_rise(1.0,uⱼ,Tᵣ,u,Tₐ,0.035,ClassF)
     @test isa(sln,MomentumPlume)
-    @test sln ≈ MomentumPlume(Fm,xf,β,s,u,Δhf,ClassF)
+    @test sln ≈ MomentumPlume(Fm,xf,β,u,s,Δhf,ClassF)
 
 end
 

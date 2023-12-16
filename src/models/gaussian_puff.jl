@@ -2,15 +2,16 @@
 # gaussian puff model
 struct GaussianPuff <: PuffModel end
 
-struct GaussianPuffSolution{S<:StabilityClass} <: Puff
+struct GaussianPuffSolution{F<:Number,S<:StabilityClass,E<:EquationSet} <: Puff
     scenario::Scenario
     model::Symbol
-    volume::Number
-    height::Number
-    windspeed::Number
+    volume::F
+    height::F
+    windspeed::F
     stability::Type{S}
-    equationset::EquationSet
+    equationset::Type{E}
 end
+GaussianPuffSolution(s,m,Q,h,u,stab,es) = GaussianPuffSolution(s,m,promote(Q,h,u)...,stab,es)
 
 @doc doc"""
     puff(::Scenario, GaussianPuff[, ::EquationSet])
@@ -32,14 +33,14 @@ where the σs are dispersion parameters correlated with the distance x. The
 # References
 + AIChE/CCPS. 1999. *Guidelines for Consequence Analysis of Chemical Releases*. New York: American Institute of Chemical Engineers
 """
-function puff(scenario::Scenario, ::Type{GaussianPuff}, eqs::EquationSet=DefaultSet())
+function puff(scenario::Scenario, ::Type{GaussianPuff}, eqs=DefaultSet; h_min=1.0)
 
     stab = _stability(scenario)
     m = _release_mass(scenario)
     ρ = _release_density(scenario)
     V = m/ρ
     h = _release_height(scenario)
-    u = _windspeed(scenario)
+    u = _windspeed(scenario,max(h,h_min),eqs)
 
     return GaussianPuffSolution(
         scenario,  #scenario::Scenario
@@ -54,7 +55,7 @@ function puff(scenario::Scenario, ::Type{GaussianPuff}, eqs::EquationSet=Default
 end
 
 
-function (g::GaussianPuffSolution)(x,y,z,t)
+function (g::GaussianPuffSolution{<:Number,S,E})(x,y,z,t) where {S<:StabilityClass,E<:EquationSet}
 
     # domain check
     if (x<0)||(z<0)||(t<0)
@@ -64,12 +65,10 @@ function (g::GaussianPuffSolution)(x,y,z,t)
     G = g.volume
     h = g.height
     u = g.windspeed
-    stab = g.stability
-    eqs = g.equationset
     xc = abs(u*t) # location of center of cloud
-    σx = downwind_dispersion(xc, Puff, stab, eqs)
-    σy = crosswind_dispersion(xc, Puff, stab, eqs)
-    σz = vertical_dispersion(xc, Puff, stab, eqs)
+    σx = downwind_dispersion(xc, Puff, S, E)
+    σy = crosswind_dispersion(xc, Puff, S, E)
+    σz = vertical_dispersion(xc, Puff, S, E)
 
     c = ( G/((2*π)^(1.5)*σx*σy*σz)
         * exp(-0.5*((x-u*t)/σx)^2)

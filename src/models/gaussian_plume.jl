@@ -2,17 +2,18 @@
 struct GaussianPlume <: PlumeModel end
 
 # Solution to the gaussian plume
-struct GaussianPlumeSolution{P<:PlumeRise, S<:StabilityClass} <: Plume
+struct GaussianPlumeSolution{F<:Number,P<:PlumeRise,S<:StabilityClass,E<:EquationSet} <: Plume
     scenario::Scenario
     model::Symbol
-    max_concentration::Number
-    rate::Number
-    windspeed::Number
-    effective_stack_height::Number
+    max_concentration::F
+    rate::F
+    windspeed::F
+    effective_stack_height::F
     plumerise::P
     stability::Type{S}
-    equationset::EquationSet
+    equationset::Type{E}
 end
+GaussianPlumeSolution(s,m,c_max,Q,u,h_eff,pr,stab,es) = GaussianPlumeSolution(s,m,promote(c_max,Q,u,h_eff)...,pr,stab,es)
 
 @doc doc"""
     plume(::Scenario, GaussianPlume[, ::EquationSet]; kwargs...)
@@ -38,7 +39,7 @@ parameters.
 - `plumerise::Bool=false`: when true, includes plume-rise effects using Briggs' model
 
 """
-function plume(scenario::Scenario, ::Type{GaussianPlume}, eqs::EquationSet=DefaultSet(); downwash::Bool=false, plumerise::Bool=false)
+function plume(scenario::Scenario, ::Type{GaussianPlume}, eqs=DefaultSet; downwash::Bool=false, plumerise::Bool=false, h_min=1.0)
     # parameters of the jet
     ṁ  = _mass_rate(scenario)
     ρⱼ = _release_density(scenario)
@@ -48,8 +49,9 @@ function plume(scenario::Scenario, ::Type{GaussianPlume}, eqs::EquationSet=Defau
     hᵣ = _release_height(scenario)
 
     # parameters of the environment
-    u = _windspeed(scenario)
+    u = _windspeed(scenario,max(hᵣ,h_min),eqs)
     stab = _stability(scenario)
+    Γ = _lapse_rate(scenario)
 
     # max concentration
     Qi = ṁ/ρⱼ
@@ -68,7 +70,7 @@ function plume(scenario::Scenario, ::Type{GaussianPlume}, eqs::EquationSet=Defau
     if plumerise == true
         Tᵣ = _release_temperature(scenario)
         Tₐ = _atmosphere_temperature(scenario)
-        plume = plume_rise(Dⱼ,uⱼ,Tᵣ,u,Tₐ, stab)
+        plume = plume_rise(Dⱼ,uⱼ,Tᵣ,u,Tₐ,Γ,stab)
     else
         plume = NoPlumeRise()
     end
@@ -87,7 +89,7 @@ function plume(scenario::Scenario, ::Type{GaussianPlume}, eqs::EquationSet=Defau
 
 end
 
-function (g::GaussianPlumeSolution{NoPlumeRise, S})(x, y, z, t=0) where {S<:StabilityClass}
+function (g::GaussianPlumeSolution{<:Number,NoPlumeRise,S,E})(x, y, z, t=0) where {S<:StabilityClass,E<:EquationSet}
     # domain check
     h = g.effective_stack_height
     if (x==0)&&(y==0)&&(z==h)
@@ -97,9 +99,8 @@ function (g::GaussianPlumeSolution{NoPlumeRise, S})(x, y, z, t=0) where {S<:Stab
     else
         G = g.rate
         u = g.windspeed
-        eqs = g.equationset
-        σy = crosswind_dispersion(x,Plume,S,eqs)
-        σz = vertical_dispersion(x,Plume,S,eqs)
+        σy = crosswind_dispersion(x,Plume,S,E)
+        σz = vertical_dispersion(x,Plume,S,E)
 
         c = ( G/(2*π*u*σy*σz)
             * exp(-0.5*(y/σy)^2)
@@ -109,7 +110,7 @@ function (g::GaussianPlumeSolution{NoPlumeRise, S})(x, y, z, t=0) where {S<:Stab
     end
 end
 
-function (g::GaussianPlumeSolution{<:BriggsModel, S})(x, y, z, t=0) where {S<:StabilityClass}
+function (g::GaussianPlumeSolution{<:Number,<:BriggsModel,S,E})(x, y, z, t=0) where {S<:StabilityClass,E<:EquationSet}
     # domain check
     h = g.effective_stack_height
     if (x==0)&&(y==0)&&(z==h)
@@ -120,11 +121,10 @@ function (g::GaussianPlumeSolution{<:BriggsModel, S})(x, y, z, t=0) where {S<:St
         G = g.rate
         u = g.windspeed
         h = g.effective_stack_height
-        eqs = g.equationset
         m = g.plumerise
         Δh = plume_rise(x, m)
-        σy = crosswind_dispersion(x,Plume,S,eqs)
-        σz = vertical_dispersion(x,Plume,S,eqs)
+        σy = crosswind_dispersion(x,Plume,S,E)
+        σz = vertical_dispersion(x,Plume,S,E)
         hₑ  = h + Δh
         σyₑ = √( (Δh/3.5)^2 + σy^2 )
         σzₑ = √( (Δh/3.5)^2 + σz^2 )

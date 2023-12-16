@@ -1,17 +1,17 @@
 struct BritterMcQuaidPuff <: PuffModel end
 
-struct BritterMcQuaidPuffSolution <: Puff
+struct BritterMcQuaidPuffSolution{F<:Number,I} <: Puff
     scenario::Scenario
     model::Symbol
-    c₀::Number    # initial concentration,
-    T′::Number    # temperature_correction
-    V₀::Number    # initial volume, m³
-    gₒ::Number    # reduced gravity, m/s²
-    u₁₀::Number   # reference windspeed, m/s
-    itp::LinearInterpolation
-    xnf::Number   # near-field distance
-    xff::Number   # far-field distance
-    A::Number     # far-field constant
+    c₀::F    # initial concentration,
+    T′::F    # temperature_correction
+    V₀::F    # initial volume, m³
+    gₒ::F    # reduced gravity, m/s²
+    u₁₀::F   # reference windspeed, m/s
+    xnf::F   # near-field distance
+    xff::F   # far-field distance
+    A::F     # far-field constant
+    itp::I
 end
 
 """
@@ -28,7 +28,7 @@ a default power-law wind profile is used.
 + Britter, Rex E. and J. McQuaid. 1988. *Workbook on the Dispersion of Dense Gases. HSE Contract Research Report No. 17/1988*
 + AIChE/CCPS. 1999. *Guidelines for Consequence Analysis of Chemical Releases*. New York: American Institute of Chemical Engineers
 """
-function puff(scenario::Scenario, ::Type{BritterMcQuaidPuff}, eqs::EquationSet=DefaultSet())
+function puff(scenario::Scenario, ::Type{BritterMcQuaidPuff}, eqs=DefaultSet)
 
     Q = _release_flowrate(scenario)
     ṁ = _mass_rate(scenario)
@@ -79,11 +79,11 @@ function puff(scenario::Scenario, ::Type{BritterMcQuaidPuff}, eqs::EquationSet=D
         T′,    # temperature_correction
         V₀,    # initial volume, m³
         gₒ,    # reduced gravity, m/s²
-        u₁₀,   # referebce windspeed, m/s
-        itp,   # interpolation::Extrapolation
+        u₁₀,   # reference windspeed, m/s
         xnf,   # near-field distance
         xff,   # far-field distance
-        A      # far-field constant
+        A,     # far-field constant
+        itp   # interpolation::Extrapolation
     )
 
 end

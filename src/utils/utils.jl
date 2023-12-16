@@ -40,7 +40,7 @@ _release_liquid_fraction(s::Scenario) = _liquid_fraction(s.release)
 
 _windspeed(a::Atmosphere) = a.u
 _windspeed(s::Scenario) = _windspeed(s.atmosphere)
-_windspeed(s::Scenario, z::Number, es::EquationSet=DefaultSet()) = _windspeed(s.atmosphere, z, es)
+_windspeed(s::Scenario, z::Number, es=DefaultSet) = _windspeed(s.atmosphere, z, es)
 _windspeed_height(a::Atmosphere) = a.h
 _windspeed_height(s::Scenario) = _windspeed_height(s.atmosphere)
 _stability(a::Atmosphere) = a.stability

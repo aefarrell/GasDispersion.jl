@@ -21,6 +21,7 @@
     atm = SimpleAtmosphere(temperature=298.0,
                  pressure=101325.0,
                  windspeed=2.0,
+                 windspeed_height=1.0,
                  stability=ClassF)
     scn = Scenario(sub,rel,atm)
     pl = plume(scn)
@@ -41,6 +42,11 @@
                   temperature=298.,
                   pressure=101325.,
                   fraction_liquid=0.0)
+    atm = SimpleAtmosphere(temperature=298.0,
+                  pressure=101325.0,
+                  windspeed=2.0,
+                  windspeed_height=10.0,
+                  stability=ClassF)
     scn = Scenario(sub,rel,atm)
     pl = plume(scn; downwash=true)
     @test pl.effective_stack_height ≈ 8.0
