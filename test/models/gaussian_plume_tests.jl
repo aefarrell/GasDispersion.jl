@@ -34,7 +34,7 @@
     @test pl(500,0,0) ≈ 0.00010346728324507407/1.2268
 
     # test stack downwash calculation
-    rel = HorizontalJet(mass_rate=0.1,
+    rel = VerticalJet(mass_rate=0.1,
                   duration=Inf,
                   diameter=1,
                   velocity=1,
@@ -48,7 +48,7 @@
                   windspeed_height=10,
                   stability=ClassF)
     scn = Scenario(sub,rel,atm)
-    pl = plume(scn; downwash=true)
+    pl = plume(scn; downwash=true, plumerise=false)
     @test pl.effective_stack_height ≈ 8
 
     # test with plume rise

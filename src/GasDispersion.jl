@@ -12,7 +12,7 @@ using RecipesBase
 export Atmosphere, SimpleAtmosphere
 export StabilityClass, ClassA, ClassB, ClassC, ClassD, ClassE, ClassF
 export Substance
-export Release, HorizontalJet
+export Release, HorizontalJet, VerticalJet
 export Scenario, scenario_builder
 
 # source models

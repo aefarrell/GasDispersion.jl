@@ -58,6 +58,21 @@ HorizontalJet(; mass_rate, duration, diameter, velocity, height, pressure,
     temperature, fraction_liquid) = HorizontalJet(mass_rate, duration, diameter,
     velocity, height, pressure, temperature, fraction_liquid)
 
+struct VerticalJet{F <: Number} <: Release
+    ṁ::F   # mass emission rate, kg/s
+    Δt::F  # release duration, s
+    d::F   # release diameter, m
+    u::F   # release velocity, m/s
+    h::F   # release height, m
+    P::F   # release pressure, Pa
+    T::F   # release temperature, K
+    f_l::F #  mass fraction liquid, unitless
+end
+VerticalJet(ṁ,Δt,d,u,h,P,T,f_l) = VerticalJet(promote(ṁ,Δt,d,u,h,P,T,f_l)...)
+VerticalJet(; mass_rate, duration, diameter, velocity, height, pressure,
+    temperature, fraction_liquid) = VerticalJet(mass_rate, duration, diameter,
+    velocity, height, pressure, temperature, fraction_liquid)
+
 Base.isapprox(a::Release, b::Release) = all([
     getproperty(a,k)≈getproperty(b,k) for k in fieldnames(typeof(a))
     if typeof(getproperty(a,k))<:Number ])
