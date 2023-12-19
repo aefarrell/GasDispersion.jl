@@ -81,7 +81,8 @@ Base.isapprox(a::Release, b::Release) = all([
     if typeof(getproperty(a,k))<:Number ])
 
 function Base.show(io::IO, mime::MIME"text/plain", r::Release)
-    print(io, "$(typeof(r)) release:\n")
+    r_type = split(string(typeof(r)),"{")[1]
+    print(io, "$r_type release:\n")
     for key in fieldnames(typeof(r))
         val =  getproperty(r, key)
         var =  Symbol(split(string(key),"_")[1])
@@ -119,7 +120,8 @@ Base.isapprox(a::Atmosphere, b::Atmosphere) = all([
     if typeof(getproperty(a,k))<:Number ])
 
 function Base.show(io::IO, mime::MIME"text/plain", a::Atmosphere)
-    print(io, "$(typeof(a)) atmosphere:\n")
+    a_type = split(string(typeof(a)),"{")[1]
+    print(io, "$a_type atmosphere:\n")
     for key in fieldnames(typeof(a))
         val =  getproperty(a, key)
         unit = units[key]

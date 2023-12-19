@@ -20,7 +20,7 @@ end
      fraction_liquid=0.67)
     @test isa(rel1, Release)
     @test rel1 ≈ rel2
-    @test replstr(rel1) == "HorizontalJet{Float64} release:\n    ṁ: 1.0 kg/s \n    Δt: 10.0 s \n    d: 0.25 m \n    u: 15.67 m/s \n    h: 2.0 m \n    P: 101325.0 Pa \n    T: 450.0 K \n    f_l: 0.67  \n"
+    @test replstr(rel1) == "HorizontalJet release:\n    ṁ: 1.0 kg/s \n    Δt: 10.0 s \n    d: 0.25 m \n    u: 15.67 m/s \n    h: 2.0 m \n    P: 101325.0 Pa \n    T: 450.0 K \n    f_l: 0.67  \n"
 end
 
 @testset "SimpleAtmosphere type" begin
@@ -30,7 +30,7 @@ end
     @test isa(atm1, SimpleAtmosphere)
     @test isa(atm1, Atmosphere)
     @test atm1 ≈ atm2
-    @test replstr(atm1) == "SimpleAtmosphere{Float64, ClassA} atmosphere:\n    P: 100000.0 Pa \n    T: 273.15 K \n    Rs: 287.05 J/kg/K \n    u: 2.0 m/s \n    h: 5.0 m \n    rh: 0.0 % \n    stability: ClassA  \n"
+    @test replstr(atm1) == "SimpleAtmosphere atmosphere:\n    P: 100000.0 Pa \n    T: 273.15 K \n    Rs: 287.05 J/kg/K \n    u: 2.0 m/s \n    h: 5.0 m \n    rh: 0.0 % \n    stability: ClassA  \n"
 end
 
 @testset "Scenario type" begin
