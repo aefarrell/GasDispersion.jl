@@ -3,7 +3,7 @@
 include("../../src/utils/utils.jl")
 
 @testset "Property getters" begin
-    sub = Substance("test",8.90,490,298.15,120935.0368,100,123456, 78910,4.19)
+    sub = Substance("test",1.0,8.90,490,298.15,120935.0368,1.3,100,123456,78910,4.19)
     rel = HorizontalJet(1, 10, 0.25, 15.67, 2, 101325, 450, 0.67)
     atm = SimpleAtmosphere(100e3,273.15,287.05,2,5,0,ClassA)
     scn = Scenario(sub,rel,atm)
@@ -30,8 +30,8 @@ include("../../src/utils/utils.jl")
 end
 
 @testset "Density functions" begin
-    sub1 = Substance("test",8.90,490.0,298.15,120935.0368,100.,123456., 78910.,4.19)
-    sub2 = Substance("test",(x,y)->y*x^2,(x,y)->y*x^3,2,3,100.,123456., 78910.,4.19)
+    sub1 = Substance("test",1.0,8.90,490,298.15,120935.0368,1.3,100,123456,78910,4.19)
+    sub2 = Substance("test",1.0,(x,y)->y*x^2,(x,y)->y*x^3,2,3,1.3,100,123456., 78910.,4.19)
     rel = HorizontalJet(1.0, 10.0, 0.25, 15.67, 2.0, 101325.0, 450., 0.5)
     atm = SimpleAtmosphere(100e3,273.15,287.05,2.0,5.0,0.0,ClassA)
     scn1 = Scenario(sub1,rel,atm)
@@ -94,7 +94,7 @@ end
 
     u0, z0, p = 3.0, 1.0, 0.108
     a = SimpleAtmosphere(windspeed=u0, windspeed_height=z0, stability=ClassA)
-    s = Scenario(Substance(:null,0,0,0,0,0,0,0,0),HorizontalJet(0,0,0,0,1.0,0,0,0),a)
+    s = Scenario(Substance(:null,0,0,0,0,0,0,0,0,0,0),HorizontalJet(0,0,0,0,1.0,0,0,0),a)
     @test _windspeed(s) == _windspeed(a) ≈ u0
     @test _windspeed(s,10) == _windspeed(a,10) == _windspeed(u0,z0,10,ClassA,DefaultSet())
 

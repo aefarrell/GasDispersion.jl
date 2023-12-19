@@ -20,11 +20,13 @@ end
     # Britter-McQuaid example, *Workbook on the Dispersion of Dense Gases*
     # Potchefstroom Accident
     s = Substance(name = :ammonia,
+                  vapor_pressure=0,
                   gas_density = 1.434, # initial density of cloud
                 # gas_density = 0.88997,          # Ammonia, NIST Webbook
                   liquid_density = 681.63,        # Ammonia, NIST Webbook
                   reference_temp=(273.15-33.316), # boiling point of Ammonia, NIST Webbook
                   reference_pressure=101325,
+                  k=0,
                   boiling_temp = (273.15-33.316), # Ammonia, NIST Webbook
                   latent_heat = 8.17/0.0160425,   # Ammonia, NIST Webbook
                   gas_heat_capacity = 1.6151,     # Ammonia, NIST Webbook

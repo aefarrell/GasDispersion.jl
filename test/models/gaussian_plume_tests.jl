@@ -2,14 +2,16 @@
     # Gaussian plume example, *Guidelines for Consequence Analysis of Chemical
     # Releases* CCPS, 1999, pg 97
     sub = Substance(name="test gas",
+                    vapor_pressure=0,
                     gas_density=1.2268,
-                    liquid_density=1000.,
-                    reference_temp=298.,
-                    reference_pressure=101325.,
-                    boiling_temp=100.,
-                    latent_heat=1.,
-                    gas_heat_capacity=1.,
-                    liquid_heat_capacity=1.)
+                    liquid_density=1000,
+                    reference_temp=298,
+                    reference_pressure=101325,
+                    k=0,
+                    boiling_temp=100,
+                    latent_heat=1,
+                    gas_heat_capacity=1,
+                    liquid_heat_capacity=1)
     rel = HorizontalJet(mass_rate=0.1,
                   duration=Inf,
                   diameter=1,

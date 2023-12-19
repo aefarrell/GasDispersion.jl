@@ -11,27 +11,30 @@ units = Dict{Symbol,String}([
     :Rs => "J/kg/K",
     :rh => "%",
     :stability => "",
-    :f => ""
+    :f => "",
+    :k => ""
 ])
 
 # Substance type definition
-struct Substance{N<:Union{AbstractString,Symbol},D_G,D_L,F<:Number,H,CP_G,CP_L}
+struct Substance{N<:Union{AbstractString,Symbol},VAP,D_G,D_L,F<:Number,H,CP_G,CP_L}
     name::N
+    P_v::VAP    # vapour pressure, Pa
     ρ_g::D_G    # gas density, kg/m^3
     ρ_l::D_L    # liquid density, kg/m^3
     T_ref::F    # reference temperature for densities, K (default 15°C)
     P_ref::F    # reference pressure for densities, Pa (default 1atm)
+    k::F        # heat capacity ratio Cp/Cv, unitless (default 1.4)
     T_b::F      # normal boiling point, K
     Δh_v::H     # specific enthalpy of vapourization, J/kg
     Cp_g::CP_G  # specific heat capacity, gas, J/kg/K
     Cp_l::CP_L  # specific heat capacity, liquid, J/kg/K
 end
-Substance(name,ρ_g,ρ_l,T_ref,P_ref,T_b,Δh_v,Cp_g,Cp_l) = Substance(name,ρ_g,ρ_l,
-    promote(T_ref,P_ref,T_b)...,Δh_v,Cp_g,Cp_l) 
-Substance(;name,gas_density,liquid_density,reference_temp=288.15,
-           reference_pressure=101325.0,boiling_temp,latent_heat,gas_heat_capacity,
-           liquid_heat_capacity) = Substance(name,gas_density,liquid_density,
-           reference_temp,reference_pressure,boiling_temp,latent_heat,gas_heat_capacity,
+Substance(name,P_v,ρ_g,ρ_l,T_ref,P_ref,k,T_b,Δh_v,Cp_g,Cp_l) = Substance(name,P_v,ρ_g,ρ_l,
+    promote(T_ref,P_ref,k,T_b)...,Δh_v,Cp_g,Cp_l) 
+Substance(;name,vapor_pressure,gas_density,liquid_density,reference_temp=288.15,
+           reference_pressure=101325.0,k=1.4,boiling_temp,latent_heat,gas_heat_capacity,
+           liquid_heat_capacity) = Substance(name,vapor_pressure,gas_density,liquid_density,
+           reference_temp,reference_pressure,k,boiling_temp,latent_heat,gas_heat_capacity,
            liquid_heat_capacity)
 
 Base.isapprox(a::Substance, b::Substance) = all([
@@ -78,7 +81,7 @@ Base.isapprox(a::Release, b::Release) = all([
     if typeof(getproperty(a,k))<:Number ])
 
 function Base.show(io::IO, mime::MIME"text/plain", r::Release)
-    print(io, "Release conditions:\n")
+    print(io, "$(typeof(r)) release:\n")
     for key in fieldnames(typeof(r))
         val =  getproperty(r, key)
         var =  Symbol(split(string(key),"_")[1])
@@ -116,7 +119,7 @@ Base.isapprox(a::Atmosphere, b::Atmosphere) = all([
     if typeof(getproperty(a,k))<:Number ])
 
 function Base.show(io::IO, mime::MIME"text/plain", a::Atmosphere)
-    print(io, "Atmospheric conditions:\n")
+    print(io, "$(typeof(a)) atmosphere:\n")
     for key in fieldnames(typeof(a))
         val =  getproperty(a, key)
         unit = units[key]

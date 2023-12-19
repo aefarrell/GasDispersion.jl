@@ -47,7 +47,6 @@ function plume(scenario::Scenario, ::Type{GaussianPlume}, eqs=DefaultSet; downwa
     # parameters of the environment
     u = _windspeed(scenario,max(hᵣ,h_min),eqs)
     stab = _stability(scenario)
-    Γ = _lapse_rate(scenario)
 
     # max concentration
     Qi = ṁ/ρⱼ

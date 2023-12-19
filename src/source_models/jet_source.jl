@@ -13,7 +13,6 @@ gas and the jet is isentropic).
 # Arguments
 - `phase=:liquid`: the phase, either :liquid or :gas
 - `dischargecoef::Number=0.61`: the discharge coefficient cd
-- `k::Number=1.4`: the heat capacity ratio Cp/Cv
 - `diameter::Number`: the diameter of the hole, m
 - `height::Number`: the height of the hole, m
 - `pressure::Number`: the pressure upstream of the jet, Pa
@@ -21,13 +20,15 @@ gas and the jet is isentropic).
 - `duration::Number`: the duration of the leak, s
 
 """
-function scenario_builder(substance::Substance, ::Type{JetSource}, atmosphere::Atmosphere; phase=:liquid, dischargecoef=0.63, k=1.4, diameter, pressure,temperature, height, duration=Inf)
+function scenario_builder(substance::Substance, ::Type{JetSource}, atmosphere::Atmosphere;
+                          phase=:liquid,dischargecoef=0.63,diameter,pressure,temperature,height,duration=Inf)
     cd = dischargecoef
     d  = diameter
     T₁ = temperature
     P₁ = pressure
     T₂ = _temperature(atmosphere)
     P₂ = _pressure(atmosphere)
+    k = substance.k
     h  = height
     A  = (π/4)*d^2
 

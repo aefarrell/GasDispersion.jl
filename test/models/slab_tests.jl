@@ -152,10 +152,12 @@ end
 # the same input file
 
     s = Substance(name = :BurroLNG,
+                vapor_pressure=0,
                 gas_density = 1.76,
                 liquid_density = 425.6,
                 reference_temp=(273.15-162),
                 reference_pressure=101325,
+                k=0,
                 boiling_temp = 111.66, # K, Methane,
                 latent_heat = 509880,  # J/kg, Methane
                 gas_heat_capacity = 2240, # J/kg/K, Methane

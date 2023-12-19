@@ -83,8 +83,6 @@ end
 function plume_rise(Dⱼ,uⱼ,Tᵣ,u,Tₐ,Γ,stab::Union{Type{ClassE},Type{ClassF}})
     # physics parameters
     g = 9.80616 #m/s^2
-
-    # Γ = 0.020 default lapse rate K/m
     s = (g/Tₐ)*Γ # stability
     Fb = g * uⱼ * Dⱼ^2 * (Tᵣ - Tₐ) / (4Tᵣ) # buoyancy flux
     ΔTc = 0.019582*Tᵣ*uⱼ*√(s) # temperature cross
@@ -107,34 +105,6 @@ function plume_rise(Dⱼ,uⱼ,Tᵣ,u,Tₐ,Γ,stab::Union{Type{ClassE},Type{Class
         return MomentumPlume(Fm,xf,β,u,s,final_rise,stab)
     end
 end
-
-# function plume_rise(Dⱼ,uⱼ,Tᵣ,u,Tₐ, ::Type{ClassF})
-#     # physics parameters
-#     g = 9.80616 #m/s^2
-
-#     Γ = 0.035 # default lapse rate K/m
-#     s = (g/Tₐ)*Γ # stability
-#     Fb = g * uⱼ * Dⱼ^2 * (Tᵣ - Tₐ) / (4Tᵣ) # buoyancy flux
-#     ΔTc = 0.019582*Tᵣ*uⱼ*√(s) # temperature cross
-
-#     if (Tᵣ - Tₐ) > ΔTc
-#         # buoyancy dominated plume rise
-#         xf = 2.0715*u/√(s)
-#         Δhf = 2.6*(Fb/(u*s))^(1/3)
-#         Δhf_calm = 4*(Fb^0.25)/(s^0.375)
-#         final_rise = min(Δhf,Δhf_calm)
-#         return BuoyantPlume(Fb,xf,u,final_rise)
-#     else
-#         # momentum dominated plume rise
-#         Fm = uⱼ^2 * Dⱼ^2 * Tₐ/(4Tᵣ)
-#         xf = (π/2)*(u/√(s))
-#         β = (1/3) + (u/uⱼ)
-#         Δhf = 1.5*(Fm/(uⱼ*√(s)))^(1/3)
-#         Δhf_unstable = 3*Dⱼ*(uⱼ/u)
-#         final_rise = min(Δhf,Δhf_unstable)
-#         return MomentumPlume(Fm,xf,β,s,u,final_rise,ClassF)
-#     end
-# end
 
 function plume_rise(x::Number, m::BuoyantPlume)
     if x < m.xf

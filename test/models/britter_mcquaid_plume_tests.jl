@@ -27,10 +27,12 @@ end
     u = Q/A
 
     s = Substance(name = :LNG,
+                  vapor_pressure=0,
                   gas_density = ρ,
                   liquid_density = 425.6,
                   reference_temp=(273.15-162),
                   reference_pressure=101325,
+                  k = 0,
                   boiling_temp = 111.6, # Methane, NIST Webbook
                   latent_heat = 509880,  # J/kg, Methane
                   gas_heat_capacity = 2240, # J/kg/K, Methane

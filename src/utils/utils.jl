@@ -55,12 +55,12 @@ _rel_humidity(a::SimpleAtmosphere) = a.rh
 
 # density functions
 _liquid_density(s::Substance) = _liquid_density(s, s.T_ref, s.P_ref)
-_liquid_density(s::Substance{<:Any,<:Any,<:Number,<:Any,<:Any,<:Any,<:Any}, T::Number, P::Number) = s.ρ_l
-_liquid_density(s::Substance{<:Any,<:Any,<:Function,<:Any,<:Any,<:Any,<:Any}, T::Number, P::Number) = s.ρ_l(T,P)
+_liquid_density(s::Substance{<:Any,<:Any,<:Any,<:Number,<:Any,<:Any,<:Any,<:Any}, T::Number, P::Number) = s.ρ_l
+_liquid_density(s::Substance{<:Any,<:Any,<:Any,<:Function,<:Any,<:Any,<:Any,<:Any}, T::Number, P::Number) = s.ρ_l(T,P)
 
 _gas_density(s::Substance) = _gas_density(s, s.T_ref, s.P_ref)
-_gas_density(s::Substance{<:Any,<:Number,<:Any,<:Any,<:Any,<:Any,<:Any}, T::Number, P::Number) = s.ρ_g*(s.T_ref/T)*(P/s.P_ref)
-_gas_density(s::Substance{<:Any,<:Function,<:Any,<:Any,<:Any,<:Any,<:Any}, T::Number, P::Number) = s.ρ_g(T,P)
+_gas_density(s::Substance{<:Any,<:Any,<:Number,<:Any,<:Any,<:Any,<:Any,<:Any}, T::Number, P::Number) = s.ρ_g*(s.T_ref/T)*(P/s.P_ref)
+_gas_density(s::Substance{<:Any,<:Any,<:Function,<:Any,<:Any,<:Any,<:Any,<:Any}, T::Number, P::Number) = s.ρ_g(T,P)
 
 function _density(s::Substance, f_l, T, P)
     f_g = 1 - f_l

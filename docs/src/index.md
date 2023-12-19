@@ -216,7 +216,7 @@ by the CCPS: one for rural terrain and one for urban terrain.
 + `CCPSRural`
 + `CCPSUrban`
 
-!!! note Corrections
+!!! note "Corrections"
     The correlations given for the vertical plume dispersion, $\sigma_z$, in urban terrain in the CCPS references contains two typos. These have been corrected as per Griffiths (1994)
 
 
