@@ -15,6 +15,6 @@ SimpleAtmosphere(; pressure=101325,temperature=298.15,gas_constant=287.0500676,
 
 _lapse_rate(a::SimpleAtmosphere{<:Number,ClassE}) = 0.020
 _lapse_rate(a::SimpleAtmosphere{<:Number,ClassF}) = 0.035
-_lapse_rate(a::SimpleAtmosphere{<:Number,<:StabilityClass}) = 0.0
+_lapse_rate(a::SimpleAtmosphere{<:Number,<:StabilityClass}) = nothing
 _density(a::SimpleAtmosphere, T, P) = P/(a.Rs*T)
 _rel_humidity(a::SimpleAtmosphere) = a.rh

@@ -30,6 +30,10 @@ end
     @test isa(atm1, SimpleAtmosphere)
     @test isa(atm1, Atmosphere)
     @test atm1 ≈ atm2
+    @test isnothing(GasDispersion._lapse_rate(atm1))
+    @test GasDispersion._lapse_rate(SimpleAtmosphere(stability=ClassE)) == 0.020
+    @test GasDispersion._lapse_rate(SimpleAtmosphere(stability=ClassF)) == 0.035
+    @test GasDispersion._rel_humidity(atm1) == 0.0
     @test replstr(atm1) == "SimpleAtmosphere atmosphere:\n    P: 100000.0 Pa \n    T: 273.15 K \n    Rs: 287.05 J/kg/K \n    u: 2.0 m/s \n    h: 5.0 m \n    rh: 0.0 % \n    stability: ClassA  \n"
 end
 
