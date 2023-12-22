@@ -8,6 +8,7 @@ RecipesBase.is_key_supported(k::Symbol) = true
 @testset "Plot recipe tests" begin
     # default scenario to test
     sub = Substance(name="test gas",
+                    molar_weight=1.0,
                     vapor_pressure=1.0,
                     gas_density=1.2268,
                     liquid_density=1000.,

@@ -45,18 +45,11 @@ scenario.
 """
 function puff(scenario::Scenario, ::Type{SLAB}, eqs::EquationSet=DefaultSet(); 
               t_av=10, x_max=2000)
-    Pᵣ = scenario.substance.P_ref
-    Tᵣ = scenario.substance.T_ref
-    ρⱼ = _gas_density(scenario.substance)
-    R = 8.31446261815324
-    MW = ρⱼ*R*Tᵣ/Pᵣ
     c_max = 1.0
-
     stab = _slab_stab( _stability(scenario) )
-
     inp = SLAB_Input(;idspl = 2,
                      ncalc = 1,
-                     wms = MW,
+                     wms = _MW(scenario.substance),
                      cps = _cp_gas(scenario.substance),
                      tbp = _boiling_temperature(scenario.substance),
                      cmed0 = _release_liquid_fraction(scenario),

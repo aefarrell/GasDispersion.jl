@@ -20,6 +20,7 @@ end
     # Britter-McQuaid example, *Workbook on the Dispersion of Dense Gases*
     # Potchefstroom Accident
     s = Substance(name = :ammonia,
+                  molar_weight=0,
                   vapor_pressure=0,
                   gas_density = 1.434, # initial density of cloud
                 # gas_density = 0.88997,          # Ammonia, NIST Webbook

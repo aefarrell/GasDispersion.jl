@@ -4,8 +4,8 @@ replstr(x, kv::Pair...) = sprint((io,x) -> show(IOContext(io, :limit => true, :d
 @testset "Base types tests" begin
 
 @testset "Substance type" begin
-    sub1 = Substance("test",1.0,8.90,490,298.15,120935.0368,1.3,100,123456,78910,4.19)
-    sub2 = Substance(name="test",vapor_pressure=1.0,gas_density=8.90,liquid_density=490,
+    sub1 = Substance("test",2.0,1.0,8.90,490,298.15,120935.0368,1.3,100,123456,78910,4.19)
+    sub2 = Substance(name="test",molar_weight=2.0,vapor_pressure=1.0,gas_density=8.90,liquid_density=490,
      reference_temp=298.15,reference_pressure=120935.0368,k=1.3,boiling_temp=100,
      latent_heat=123456,gas_heat_capacity=78910,liquid_heat_capacity=4.19)
     @test isa(sub1, Substance)
@@ -34,7 +34,7 @@ end
 end
 
 @testset "Scenario type" begin
-    sub = Substance("test",1.0,8.90,490,298.15,120935.0368,1.3,100,123456,78910,4.19)
+    sub = Substance("test",2.0,1.0,8.90,490,298.15,120935.0368,1.3,100,123456,78910,4.19)
     rel = HorizontalJet(1, 10, 0.25, 15.67, 2, 101325, 450, 0.67)
     atm = SimpleAtmosphere(100e3,273.15,287.05,2,5,0,ClassA)
     scn1 = Scenario(sub,rel,atm)
@@ -42,6 +42,57 @@ end
     @test isa(scn1, Scenario)
     @test scn1 ≈ scn2
     @test replstr(scn1) == replstr(sub) * replstr(rel) * replstr(atm)
+end
+
+@testset "Property getters" begin
+    sub = Substance("test",2.0,1.0,8.90,490,298.15,120935.0368,1.3,100,123456,78910,4.19)
+    rel = HorizontalJet(1, 10, 0.25, 15.67, 2, 101325, 450, 0.67)
+    atm = SimpleAtmosphere(100e3,273.15,287.05,2,5,0,ClassA)
+    scn = Scenario(sub,rel,atm)
+
+    @test GasDispersion._atmosphere_temperature(scn) == GasDispersion._temperature(atm) == 273.15
+    @test GasDispersion._release_temperature(scn) == GasDispersion._temperature(rel) == 450.0
+    @test GasDispersion._atmosphere_pressure(scn) == GasDispersion._pressure(atm) == 100e3
+    @test GasDispersion._release_pressure(scn) == GasDispersion._pressure(rel) == 101325.0
+
+    @test GasDispersion._mass_rate(scn) == GasDispersion._mass_rate(rel) == 1.0
+    @test GasDispersion._duration(scn) == GasDispersion._duration(rel) == 10.0
+    @test GasDispersion._release_mass(scn) == GasDispersion._mass(rel) == 10.0
+    @test GasDispersion._release_diameter(scn) == GasDispersion._diameter(rel) == 0.25
+    @test GasDispersion._release_area(scn) == GasDispersion._area(rel) ≈ (π/4)*0.25^2
+    @test GasDispersion._release_velocity(scn) == GasDispersion._velocity(rel) == 15.67
+    @test GasDispersion._release_flowrate(scn) == GasDispersion._flowrate(rel) ≈ (π/4)*(0.25^2)*15.67
+    @test GasDispersion._release_height(scn) == GasDispersion._height(rel) == 2.0
+    @test GasDispersion._release_liquid_fraction(scn) == GasDispersion._liquid_fraction(rel) == 0.67
+
+    @test GasDispersion._windspeed(scn) == GasDispersion._windspeed(atm) == 2.0
+    @test GasDispersion._windspeed_height(scn) == GasDispersion._windspeed_height(atm) == 5.0
+    @test GasDispersion._stability(scn) == GasDispersion._stability(atm) == ClassA
+
+end
+
+@testset "Density functions" begin
+    sub1 = Substance("test",2.0,1.0,8.90,490,298.15,120935.0368,1.3,100,123456,78910,4.19)
+    sub2 = Substance("test",2.0,1.0,(x,y)->y*x^2,(x,y)->y*x^3,2,3,1.3,100,123456., 78910.,4.19)
+    rel = HorizontalJet(1.0, 10.0, 0.25, 15.67, 2.0, 101325.0, 450., 0.5)
+    atm = SimpleAtmosphere(100e3,273.15,287.05,2.0,5.0,0.0,ClassA)
+    scn1 = Scenario(sub1,rel,atm)
+    scn2 = Scenario(sub2,rel,atm)
+
+    @test GasDispersion._liquid_density(sub1) ≈ 490.0
+    @test GasDispersion._liquid_density(sub2) ≈ 24
+    @test GasDispersion._gas_density(sub1) ≈ 8.90
+    @test GasDispersion._gas_density(sub2) ≈ 12
+
+    @test GasDispersion._density(sub1, 0.5, 298.15, 120935.0368) ≈ 2/(1/8.9 + 1/490.)
+    @test GasDispersion._density(sub2, 0.5, 2, 3) ≈ 48/3
+
+    @test GasDispersion._release_density(scn1) == GasDispersion._density(sub1,0.5,450.0,101325.0)
+    @test GasDispersion._release_density(scn2) == GasDispersion._density(sub2,0.5,450.0,101325.0)
+
+    @test GasDispersion._density(atm, 100, 200) ≈ 2/287.05
+    @test GasDispersion._atmosphere_density(scn1) == GasDispersion._density(atm)
+
 end
 
 end

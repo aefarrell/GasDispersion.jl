@@ -31,11 +31,6 @@ Base.isapprox(a::MomentumPlume, b::MomentumPlume) = all([
     if typeof(getproperty(a,k))<:Number ])
 
 
-_lapse_rate(s::Scenario) = _lapse_rate(s.atmosphere)
-_lapse_rate(a::SimpleAtmosphere{<:Number,ClassE}) = 0.020
-_lapse_rate(a::SimpleAtmosphere{<:Number,ClassF}) = 0.035
-_lapse_rate(a::SimpleAtmosphere{<:Number,<:StabilityClass}) = 0.0
-
 """
     plume_rise(Dⱼ,uⱼ,Tᵣ,a::Atmosphere)
 Implements the Briggs plume rise equations for buoyancy and momentum driven

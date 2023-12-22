@@ -150,13 +150,19 @@ end
 # this tests the output against an example from the Burro LNG dispersion tests
 # the output of slab.jl was compared to that generated from SLAB (fortran) using
 # the same input file
+    R = 8.31446261815324
+    ρ = 1.76
+    T = 273.15-162
+    P = 101325
+    MW = ρ*R*T/P
 
     s = Substance(name = :BurroLNG,
-                vapor_pressure=0,
-                gas_density = 1.76,
+                molar_weight = MW,
+                vapor_pressure = nothing,
+                gas_density = ρ,
                 liquid_density = 425.6,
-                reference_temp=(273.15-162),
-                reference_pressure=101325,
+                reference_temp=T,
+                reference_pressure=P,
                 k=0,
                 boiling_temp = 111.66, # K, Methane,
                 latent_heat = 509880,  # J/kg, Methane
@@ -167,8 +173,8 @@ end
                 diameter = 1,
                 velocity = 70.815,
                 height = 0,
-                pressure = 101325,
-                temperature = (273.15-162),
+                pressure = P,
+                temperature = T,
                 fraction_liquid = 0)
     a = SimpleAtmosphere(windspeed=10.9, temperature=298, stability=ClassF)
     scn = Scenario(s,r,a)

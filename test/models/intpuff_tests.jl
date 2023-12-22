@@ -2,7 +2,8 @@
     # Gaussian plume example, *Guidelines for Consequence Analysis of Chemical
     # Releases* CCPS, 1999, pg 101
     sub = Substance(name="test gas",
-                    vapor_pressure=0,
+                    molar_weight=1,
+                    vapor_pressure=nothing,
                     gas_density=1.2268,
                     liquid_density=1000,
                     reference_temp=298,

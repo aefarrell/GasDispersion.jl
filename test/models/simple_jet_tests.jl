@@ -5,7 +5,8 @@
     T1 = 25 + 273.15 # K
     
     propane = Substance(name = :propane,
-                vapor_pressure=0,
+                molar_weight=1,
+                vapor_pressure=nothing,
                 gas_density = 9.7505, # Propane, NIST Webbook
                 liquid_density = 526.13, # Propane, NIST Webbook
                 reference_temp= T1,

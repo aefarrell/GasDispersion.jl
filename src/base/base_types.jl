@@ -15,9 +15,16 @@ units = Dict{Symbol,String}([
     :k => ""
 ])
 
+struct Antoine{F<:Number}
+    A::F
+    B::F
+    C::F
+end
+
 # Substance type definition
-struct Substance{N<:Union{AbstractString,Symbol},VAP,D_G,D_L,F<:Number,H,CP_G,CP_L}
+struct Substance{N<:Union{AbstractString,Symbol},MOL_WT,VAP,D_G,D_L,F<:Number,H,CP_G,CP_L}
     name::N
+    MW::MOL_WT  # molar weight, kg/mol
     P_v::VAP    # vapour pressure, Pa
     ρ_g::D_G    # gas density, kg/m^3
     ρ_l::D_L    # liquid density, kg/m^3
@@ -29,11 +36,34 @@ struct Substance{N<:Union{AbstractString,Symbol},VAP,D_G,D_L,F<:Number,H,CP_G,CP
     Cp_g::CP_G  # specific heat capacity, gas, J/kg/K
     Cp_l::CP_L  # specific heat capacity, liquid, J/kg/K
 end
-Substance(name,P_v,ρ_g,ρ_l,T_ref,P_ref,k,T_b,Δh_v,Cp_g,Cp_l) = Substance(name,P_v,ρ_g,ρ_l,
-    promote(T_ref,P_ref,k,T_b)...,Δh_v,Cp_g,Cp_l) 
-Substance(;name,vapor_pressure,gas_density,liquid_density,reference_temp=288.15,
+
+function Substance(name,molar_weight,vapor_pressure,gas_density,liquid_density,
+                   reference_temp,reference_pressure,k,boiling_temp,latent_heat,
+                   gas_heat_capacity,liquid_heat_capacity)
+
+    R = 8.31446261815324
+    
+    # initialize with ideal gas
+    if isnothing(gas_density)
+        gas_density = reference_pressure*molar_weight/(R*reference_temp)
+    end
+
+    # if no vapour pressure correlation given, use Clapeyron equation
+    if isnothing(vapor_pressure)
+        B = latent_heat*molar_weight/R
+        A = B/(boiling_temp)
+        C = 0.0
+        vapor_pressure = Antoine(A,B,C)
+    end
+
+    return Substance(name,molar_weight,vapor_pressure,gas_density,liquid_density,
+    promote(reference_temp,reference_pressure,k,boiling_temp)...,latent_heat,gas_heat_capacity,
+    liquid_heat_capacity)
+end
+
+Substance(;name,molar_weight,vapor_pressure=nothing,gas_density=nothing,liquid_density,reference_temp=288.15,
            reference_pressure=101325.0,k=1.4,boiling_temp,latent_heat,gas_heat_capacity,
-           liquid_heat_capacity) = Substance(name,vapor_pressure,gas_density,liquid_density,
+           liquid_heat_capacity) = Substance(name,molar_weight,vapor_pressure,gas_density,liquid_density,
            reference_temp,reference_pressure,k,boiling_temp,latent_heat,gas_heat_capacity,
            liquid_heat_capacity)
 
@@ -44,6 +74,34 @@ Base.isapprox(a::Substance, b::Substance) = all([
 function Base.show(io::IO, mime::MIME"text/plain", s::Substance)
     print(io, "Substance: $(s.name) \n")
 end
+
+# Substance property getters
+_MW(s::Substance) = s.MW
+_vapor_pressure(s::Substance{<:Any,<:Any,<:Antoine,<:Any,<:Any,<:Any,<:Any,<:Any}, T) = s.P_ref*exp(s.P_v.A - s.P_v.B/(T + s.P_v.C))
+_vapor_pressure(s::Substance{<:Any,<:Any,<:Function,<:Any,<:Any,<:Any,<:Any,<:Any}, T) = s.P_ref*s.P_v(T)
+_cp_gas(s::Substance{<:Any,<:Any,<:Any,<:Any,<:Any,<:Any,<:Number,<:Any}) = s.Cp_g
+_cp_liquid(s::Substance{<:Any,<:Any,<:Any,<:Any,<:Any,<:Any,<:Any,<:Number}) = s.Cp_l
+_boiling_temperature(s::Substance) = s.T_b
+_latent_heat(s::Substance{<:Any,<:Any,<:Any,<:Any,<:Any,<:Number,<:Any,<:Any}) = s.Δh_v
+
+# density functions
+_liquid_density(s::Substance) = _liquid_density(s, s.T_ref, s.P_ref)
+_liquid_density(s::Substance{<:Any,<:Any,<:Any,<:Any,<:Number,<:Any,<:Any,<:Any,<:Any}, T::Number, P::Number) = s.ρ_l
+_liquid_density(s::Substance{<:Any,<:Any,<:Any,<:Any,<:Function,<:Any,<:Any,<:Any,<:Any}, T::Number, P::Number) = s.ρ_l(T,P)
+
+_gas_density(s::Substance) = _gas_density(s, s.T_ref, s.P_ref)
+_gas_density(s::Substance{<:Any,<:Any,<:Any,<:Number,<:Any,<:Any,<:Any,<:Any,<:Any}, T::Number, P::Number) = s.ρ_g*(s.T_ref/T)*(P/s.P_ref)
+_gas_density(s::Substance{<:Any,<:Any,<:Any,<:Function,<:Any,<:Any,<:Any,<:Any,<:Any}, T::Number, P::Number) = s.ρ_g(T,P)
+
+function _density(s::Substance, f_l, T, P)
+    f_g = 1 - f_l
+    ρ_l = _liquid_density(s,T,P)
+    ρ_g = _gas_density(s,T,P)
+
+    return 1/(f_l/ρ_l + f_g/ρ_g)
+end
+
+
 
 # Release type definition
 struct HorizontalJet{F <: Number} <: Release
@@ -91,6 +149,18 @@ function Base.show(io::IO, mime::MIME"text/plain", r::Release)
     end
 end
 
+# Release property getters
+_temperature(r::Release) = r.T
+_pressure(r::Release) = r.P
+_mass_rate(r::Release) = r.ṁ
+_duration(r::Release) = r.Δt
+_mass(r::Release) = _mass_rate(r)*_duration(r)
+_diameter(r::Release) = r.d
+_area(r::Release) = (π/4)*r.d^2
+_velocity(r::Release) = r.u
+_flowrate(r::Release) = _area(r)*_velocity(r)
+_height(r::Release) = r.h
+_liquid_fraction(r::Release) = r.f_l
 
 # Stability classes
 struct ClassA <: StabilityClass end
@@ -99,21 +169,6 @@ struct ClassC <: StabilityClass end
 struct ClassD <: StabilityClass end
 struct ClassE <: StabilityClass end
 struct ClassF <: StabilityClass end
-
-# SimpleAtmosphere atmosphere type definition
-struct SimpleAtmosphere{F<:Number,S<:StabilityClass} <: Atmosphere
-    P::F  # atmospheric pressure, Pa
-    T::F # atmospheric temperature, K
-    Rs::F # specific gas constant for dry air, 287.0500676 J/kg/K
-    u::F  # windspeed at windspeed height, m/s
-    h::F  # reference height for windspeed, m
-    rh::F      # relative humidity, %
-    stability::Type{S} # Pasquill-Gifford stability class
-end
-SimpleAtmosphere(P,T,Rs,u,h,rh,stability) = SimpleAtmosphere(promote(P,T,Rs,u,h,rh,)...,stability)
-SimpleAtmosphere(; pressure=101325,temperature=298.15,gas_constant=287.0500676,
-        windspeed=1.5,windspeed_height=10,rel_humidity=0.0,stability=ClassF) = SimpleAtmosphere(pressure,
-        temperature,gas_constant,windspeed,windspeed_height,rel_humidity,stability)
 
 Base.isapprox(a::Atmosphere, b::Atmosphere) = all([
     getproperty(a,k)≈getproperty(b,k) for k in fieldnames(typeof(a))
@@ -128,6 +183,16 @@ function Base.show(io::IO, mime::MIME"text/plain", a::Atmosphere)
         print(io, "    $key: $val $unit \n")
     end
 end
+
+# Atmosphere property getters
+_temperature(a::Atmosphere) = a.T
+_pressure(a::Atmosphere) = a.P
+_windspeed(a::Atmosphere) = a.u
+_windspeed_height(a::Atmosphere) = a.h
+_stability(a::Atmosphere) = a.stability
+_density(a::Atmosphere) = _density(a, _temperature(a), _pressure(a))
+
+include("simple_atmosphere.jl")
 
 # Scenario type definition
 struct Scenario{S<:Substance,R<:Release,A<:Atmosphere}
@@ -148,5 +213,28 @@ function Base.show(io::IO, mime::MIME"text/plain", s::Scenario)
  show(io,mime,s.atmosphere)
 end
 
+# property getters
+_lapse_rate(s::Scenario) = _lapse_rate(s.atmosphere)
+_atmosphere_temperature(s::Scenario) = _temperature(s.atmosphere)
+_release_temperature(s::Scenario) = _temperature(s.release)
+_atmosphere_pressure(s::Scenario) = _pressure(s.atmosphere)
+_release_pressure(s::Scenario) = _pressure(s.release)
+_mass_rate(s::Scenario) = _mass_rate(s.release)
+_duration(s::Scenario) = _duration(s.release)
+_release_mass(s::Scenario) = _mass(s.release)
+_release_diameter(s::Scenario) = _diameter(s.release)
+_release_area(s::Scenario) = _area(s.release)
+_release_velocity(s::Scenario) = _velocity(s.release)
+_release_flowrate(s::Scenario) = _flowrate(s.release)
+_release_height(s::Scenario) = _height(s.release)
+_release_liquid_fraction(s::Scenario) = _liquid_fraction(s.release)
+_windspeed(s::Scenario) = _windspeed(s.atmosphere)
+_windspeed(s::Scenario, z::Number, es=DefaultSet) = _windspeed(s.atmosphere, z, es)
+_windspeed_height(s::Scenario) = _windspeed_height(s.atmosphere)
+_stability(s::Scenario) = _stability(s.atmosphere)
+_atmosphere_density(s::Scenario) = _density(s.atmosphere)
+_release_density(s::Scenario) = _density(s.substance, _release_liquid_fraction(s), _release_temperature(s), _release_pressure(s))
+
 # Default equation set
 struct DefaultSet <: EquationSet end
+

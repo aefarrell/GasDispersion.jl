@@ -20,18 +20,23 @@ end
 @testset "Britter-McQuaid plume tests" begin
     # Britter-McQuaid example, *Guidelines for Consequence Analysis of Chemical
     # Releases* CCPS, 1999, pg 122
+    R = 8.31446261815324
     ṁ = 0.23*425.6 # liquid spill rate times liquid density
     ρ = 1.76
+    T = 273.15-162
+    P = 101325
+    MW = ρ*R*T/P
     Q = ṁ/ρ # gas volumetric flowrate: mass flowrate divided by gas density
     A = (π/4)*(1)^2 # release area, assuming a diameter of 1m.
     u = Q/A
 
     s = Substance(name = :LNG,
-                  vapor_pressure=0,
+                  molar_weight=MW,
+                  vapor_pressure=nothing,
                   gas_density = ρ,
                   liquid_density = 425.6,
-                  reference_temp=(273.15-162),
-                  reference_pressure=101325,
+                  reference_temp=T,
+                  reference_pressure=P,
                   k = 0,
                   boiling_temp = 111.6, # Methane, NIST Webbook
                   latent_heat = 509880,  # J/kg, Methane
@@ -43,8 +48,8 @@ end
                   diameter = 1,
                   velocity = u,
                   height = 0,
-                  pressure = 101325,
-                  temperature = (273.15-162),
+                  pressure = P,
+                  temperature = T,
                   fraction_liquid = 0)
     a = SimpleAtmosphere(windspeed=10.9, temperature=298, stability=ClassF)
     scn = Scenario(s,r,a)
