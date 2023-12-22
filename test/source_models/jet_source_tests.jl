@@ -2,7 +2,7 @@
     # Liquid jet example, *Guidelines for Consequence Analysis of Chemical
     # Releases* CCPS, 1999, pg 40
     a = SimpleAtmosphere()
-    s1 = Substance(name="test liquid", molar_weight=nothing,vapor_pressure=0, gas_density=0, liquid_density=490,
+    s1 = Substance(name="test liquid", molar_weight=0,vapor_pressure=0, gas_density=0, liquid_density=490,
          boiling_temp=0,k=0,latent_heat=0,gas_heat_capacity=0,
          liquid_heat_capacity=0)
     #known answer
@@ -13,7 +13,7 @@
 
     # Gas jet example, *Guidelines for Consequence Analysis of Chemical
     # Releases* CCPS, 1999, pg 47
-    s2 = Substance(name="test gas",molar_weight=nothing,vapor_pressure=0,gas_density=8.90,liquid_density=0,
+    s2 = Substance(name="test gas",molar_weight=0,vapor_pressure=0,gas_density=8.90,liquid_density=0,
          reference_temp=298,k=1.15,reference_pressure=501e3,boiling_temp=0,
          latent_heat=0,gas_heat_capacity=0,liquid_heat_capacity=0)
     #known answer

@@ -29,7 +29,7 @@
     a, b = 6, 5
     ξ² = log(2)/b^2
     x, y, z =  a, √(a^2*ξ²), 1
-    c = 0.00014695820366436948
+    c = 0.00014697139683447435
 
     # horizontal jet
     j = plume(scn, SimpleJet; release_angle=0, k2=a, k3=b)

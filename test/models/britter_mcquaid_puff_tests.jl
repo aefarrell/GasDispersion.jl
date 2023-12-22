@@ -48,9 +48,9 @@ end
     # in the near-field
     x₁, t₁, c₁ = 160, 200, 0.11109705839813348/1.434
     # example, in the interpolation region
-    x₂, t₂, c₂ = 355, 200, 0.06264084534270946/1.434
+    x₂, t₂, c₂ = 355, 200, 0.04368259217437896
     # far field
-    x₃, t₃, c₃ = 3133, 3000, 0.0006403658290584752/1.434
+    x₃, t₃, c₃ = 3133, 3000, 0.0004464242323595325
 
     # test overall solution
     pf = puff(scn, BritterMcQuaidPuff)

@@ -59,9 +59,9 @@ end
     # in the near-field
     x₁, c₁ = 2.26*20, 0.6720234544594696
     # example, in the interpolation region
-    x₂, c₂ = 367, 0.05071175952024219
+    x₂, c₂ = 367, 0.050717667650511944
     # far field
-    x₃, c₃ = 1200, 0.004920569368181627
+    x₃, c₃ = 1200, 0.004921409666659286
 
     # test overall solution
     pl = plume(scn, BritterMcQuaidPlume)
@@ -91,7 +91,7 @@ end
     a = SimpleAtmosphere(windspeed=0.8322, temperature=298, stability=ClassF)
     scn = Scenario(s,r,a)
     pl_nf = plume(scn, BritterMcQuaidPlume)
-    c_nf  = 0.5310668347189341
+    c_nf  = 0.5311215219329275
     @test pl_nf(pl_nf.xnf*pl_nf.D,0,0) ≈ c_nf
 
 end

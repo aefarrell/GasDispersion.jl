@@ -15,16 +15,15 @@ units = Dict{Symbol,String}([
     :k => ""
 ])
 
-struct Antoine{F<:Number}
-    A::F
-    B::F
-    C::F
-end
+include("substance_correls.jl")
+
+const CALLABLE = Union{Function,PropertyCorrelation}
+const CC = Union{Number,CALLABLE}
 
 # Substance type definition
-struct Substance{N<:Union{AbstractString,Symbol},MOL_WT,VAP,D_G,D_L,F<:Number,H,CP_G,CP_L}
+struct Substance{N<:Union{AbstractString,Symbol},VAP<:CC,D_G<:CC,D_L<:CC,F<:Number,H<:CC,CP_G<:CC,CP_L<:CC}
     name::N
-    MW::MOL_WT  # molar weight, kg/mol
+    MW::F  # molar weight, kg/mol
     P_v::VAP    # vapour pressure, Pa
     ρ_g::D_G    # gas density, kg/m^3
     ρ_l::D_L    # liquid density, kg/m^3
@@ -50,22 +49,30 @@ function Substance(name,molar_weight,vapor_pressure,gas_density,liquid_density,
 
     # if no vapour pressure correlation given, use Clapeyron equation
     if isnothing(vapor_pressure)
-        B = latent_heat*molar_weight/R
+        if latent_heat isa Number
+            Δh = latent_heat
+        else
+            Δh = latent_heat(T)
+        end
+
+        B = Δh*molar_weight/R
         A = B/(boiling_temp)
         C = 0.0
         vapor_pressure = Antoine(A,B,C)
     end
 
+    molar_weight,reference_temp,reference_pressure,k,boiling_temp = promote(molar_weight,reference_temp,reference_pressure,k,boiling_temp)
+
     return Substance(name,molar_weight,vapor_pressure,gas_density,liquid_density,
-    promote(reference_temp,reference_pressure,k,boiling_temp)...,latent_heat,gas_heat_capacity,
-    liquid_heat_capacity)
+    reference_temp,reference_pressure,k,boiling_temp,latent_heat,
+    gas_heat_capacity,liquid_heat_capacity)
 end
 
 Substance(;name,molar_weight,vapor_pressure=nothing,gas_density=nothing,liquid_density,reference_temp=288.15,
-           reference_pressure=101325.0,k=1.4,boiling_temp,latent_heat,gas_heat_capacity,
-           liquid_heat_capacity) = Substance(name,molar_weight,vapor_pressure,gas_density,liquid_density,
-           reference_temp,reference_pressure,k,boiling_temp,latent_heat,gas_heat_capacity,
-           liquid_heat_capacity)
+          reference_pressure=101325,k=1.4,boiling_temp,latent_heat,gas_heat_capacity,
+          liquid_heat_capacity) = Substance(name,molar_weight,vapor_pressure,gas_density,liquid_density,
+          reference_temp,reference_pressure,k,boiling_temp,latent_heat,gas_heat_capacity,
+          liquid_heat_capacity)
 
 Base.isapprox(a::Substance, b::Substance) = all([
     getproperty(a,k)≈getproperty(b,k) for k in fieldnames(typeof(a))
@@ -77,21 +84,29 @@ end
 
 # Substance property getters
 _MW(s::Substance) = s.MW
-_vapor_pressure(s::Substance{<:Any,<:Any,<:Antoine,<:Any,<:Any,<:Any,<:Any,<:Any}, T) = s.P_ref*exp(s.P_v.A - s.P_v.B/(T + s.P_v.C))
-_vapor_pressure(s::Substance{<:Any,<:Any,<:Function,<:Any,<:Any,<:Any,<:Any,<:Any}, T) = s.P_ref*s.P_v(T)
-_cp_gas(s::Substance{<:Any,<:Any,<:Any,<:Any,<:Any,<:Any,<:Number,<:Any}) = s.Cp_g
-_cp_liquid(s::Substance{<:Any,<:Any,<:Any,<:Any,<:Any,<:Any,<:Any,<:Number}) = s.Cp_l
+_vapor_pressure(s::Substance, T) = s.P_ref*s.P_v(T)
+
+_cp_gas(s::Substance{<:Any,<:Any,<:Any,<:Any,<:Any,<:Number,<:Any},T) = s.Cp_g
+_cp_gas(s::Substance{<:Any,<:Any,<:Any,<:Any,<:Any,<:CALLABLE,<:Any},T) = s.Cp_g(T)
+_cp_gas(s::Substance) = _cp_gas(s, s.T_ref)
+
+_cp_liquid(s::Substance{<:Any,<:Any,<:Any,<:Any,<:Any,<:Any,<:Number},T) = s.Cp_l
+_cp_liquid(s::Substance{<:Any,<:Any,<:Any,<:Any,<:Any,<:Any,<:CALLABLE},T) = s.Cp_l(T)
+_cp_liquid(s::Substance) = _cp_liquid(s, s.T_ref)
+
 _boiling_temperature(s::Substance) = s.T_b
-_latent_heat(s::Substance{<:Any,<:Any,<:Any,<:Any,<:Any,<:Number,<:Any,<:Any}) = s.Δh_v
+_latent_heat(s::Substance{<:Any,<:Any,<:Any,<:Any,<:Number,<:Any,<:Any},T) = s.Δh_v
+_latent_heat(s::Substance{<:Any,<:Any,<:Any,<:Any,<:CALLABLE,<:Any,<:Any},T) = s.Δh_v(T)
+_latent_heat(s::Substance) = _latent_heat(s, s.T_ref)
 
 # density functions
+_liquid_density(s::Substance{<:Any,<:Any,<:Any,<:Number,<:Any,<:Any,<:Any,<:Any}, T::Number, P::Number) = s.ρ_l
+_liquid_density(s::Substance{<:Any,<:Any,<:Any,<:CALLABLE,<:Any,<:Any,<:Any,<:Any}, T::Number, P::Number) = s.ρ_l(T,P)
 _liquid_density(s::Substance) = _liquid_density(s, s.T_ref, s.P_ref)
-_liquid_density(s::Substance{<:Any,<:Any,<:Any,<:Any,<:Number,<:Any,<:Any,<:Any,<:Any}, T::Number, P::Number) = s.ρ_l
-_liquid_density(s::Substance{<:Any,<:Any,<:Any,<:Any,<:Function,<:Any,<:Any,<:Any,<:Any}, T::Number, P::Number) = s.ρ_l(T,P)
 
+_gas_density(s::Substance{<:Any,<:Any,<:Number,<:Any,<:Any,<:Any,<:Any,<:Any}, T::Number, P::Number) = s.ρ_g*(s.T_ref/T)*(P/s.P_ref)
+_gas_density(s::Substance{<:Any,<:Any,<:CALLABLE,<:Any,<:Any,<:Any,<:Any,<:Any}, T::Number, P::Number) = s.ρ_g(T,P)
 _gas_density(s::Substance) = _gas_density(s, s.T_ref, s.P_ref)
-_gas_density(s::Substance{<:Any,<:Any,<:Any,<:Number,<:Any,<:Any,<:Any,<:Any,<:Any}, T::Number, P::Number) = s.ρ_g*(s.T_ref/T)*(P/s.P_ref)
-_gas_density(s::Substance{<:Any,<:Any,<:Any,<:Function,<:Any,<:Any,<:Any,<:Any,<:Any}, T::Number, P::Number) = s.ρ_g(T,P)
 
 function _density(s::Substance, f_l, T, P)
     f_g = 1 - f_l
