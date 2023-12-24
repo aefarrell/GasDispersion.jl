@@ -8,19 +8,19 @@ const DRYAIR = Substance(name = :dryair,
                          boiling_temp=78.80,
                          latent_heat=DIPPRLatentHeat(0.028960,132.45,0.8474e7,0.3822,0,0,0),
                          gas_heat_capacity=DIPPRIdealGasHeatCapacity(0.028960,132.45,0.28958e5,0.0939e5,3.012e3,0.0758e5,1484),
-                         liquid_heat_capacity=DIPPRLiquidHeatCapacity(0.028960,132.45,-214_460,9_185.1,-106.12,0.41616,0.0))
+                         liquid_heat_capacity=DIPPRLiquidHeatCapacity(Eq1,0.028960,132.45,-214_460,9_185.1,-106.12,0.41616,0.0))
 
 const WATER = Substance(name = :water,
                         molar_weight = 0.018015, # kg/mol
                         vapor_pressure= DIPPRVaporPressure(73.649,-7_258.2,-7.3037,4.1653e-6,2),
-                        liquid_density= (T) -> 0.018015*0.001*(17.863 + 58.606*(T/647.096)^(0.35) - 95.396*(T/647.096)^(2/3) + 213.89*(T/647.096) - 141.26*(T/647.096)^(4/3)),
+                        liquid_density= (T,P) -> 0.018015*1000*(17.863 + 58.606*(T/647.096)^(0.35) - 95.396*(T/647.096)^(2/3) + 213.89*(T/647.096) - 141.26*(T/647.096)^(4/3)),
                         reference_temp=288.15,
                         reference_pressure=101325.0,
                         k=1.3,
                         boiling_temp=373.15,
                         latent_heat=DIPPRLatentHeat(0.018015,647.096,5.2053e7,0.3199,-0.212,0.25795,0.0),
-                        gas_heat_capacity=DIPPRLiquidHeatCapacity(0.018015,647.096,0.33363e5,0.2679e5,2.6105e3,0.08896e5,1169),
-                        liquid_heat_capacity=DIPPRLiquidHeatCapacity(0.018015,647.096,276_370,-2_090.1,8.125,-0.014116,9.3701e-6))
+                        gas_heat_capacity=DIPPRIdealGasHeatCapacity(0.018015,647.096,0.33363e5,0.2679e5,2.6105e3,0.08896e5,1169),
+                        liquid_heat_capacity=DIPPRLiquidHeatCapacity(Eq1,0.018015,647.096,276_370,-2_090.1,8.125,-0.014116,9.3701e-6))
 
 # SimpleAtmosphere atmosphere type definition
 struct SimpleAtmosphere{F<:Number,S<:StabilityClass} <: Atmosphere
@@ -46,7 +46,7 @@ function _density(a::SimpleAtmosphere, T, P)
     ρ_w = _gas_density(WATER,T,P)
 
     rh = _rel_humidity(a)/100
-    y_w = rh*min(_vapor_pressure(WATER,T)/WATER.P_ref,1)/P
+    y_w = rh*min(_vapor_pressure(WATER,T)/P,1)
     y_a = 1-y_w
     return y_a*ρ_a + y_w*ρ_w
 end

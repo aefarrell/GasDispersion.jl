@@ -4,13 +4,74 @@ replstr(x, kv::Pair...) = sprint((io,x) -> show(IOContext(io, :limit => true, :d
 @testset "Base types tests" begin
 
 @testset "Substance type" begin
-    sub1 = Substance("test",2.0,1.0,8.90,490,298.15,120935.0368,1.3,100,123456,78910,4.19)
-    sub2 = Substance(name="test",molar_weight=2.0,vapor_pressure=1.0,gas_density=8.90,liquid_density=490,
-     reference_temp=298.15,reference_pressure=120935.0368,k=1.3,boiling_temp=100,
-     latent_heat=123456,gas_heat_capacity=78910,liquid_heat_capacity=4.19)
-    @test isa(sub1, Substance)
-    @test sub1 ≈ sub2
-    @test replstr(sub1) == "Substance: test \n"
+
+    R = 8.31446261815324
+
+    # propane from Perry's 8th edition, DIPPR correlations
+    pv = GasDispersion.DIPPRVaporPressure(59.078,-3_492.6,-6.0669,1.0919e-5,2)
+    ρl = GasDispersion.DIPPRLiquidDensity(0.044096,369.83,1.3757,0.27453,369.83,0.29359)
+    ρg = 0.044096*101325/(R*288.15)
+    Δhv = GasDispersion.DIPPRLatentHeat(0.044096,369.83,2.9209e7,0.78237,-0.77319,0.39246,0)
+    cp_ig = GasDispersion.DIPPRIdealGasHeatCapacity(0.044096,369.83,0.5192e5,1.9245e5,1.6265e3,1.168e5,723.6)
+    cp_l = GasDispersion.DIPPRLiquidHeatCapacity(GasDispersion.Eq2,0.044096,369.83,62.983,113_630,633.21,-873.46,0)
+
+    propane = Substance(name="propane",
+                        molar_weight=0.044096,
+                        vapor_pressure=pv,
+                        gas_density=nothing,
+                        liquid_density=ρl,
+                        reference_temp=288.15,
+                        reference_pressure=101325,
+                        k=1.3,
+                        boiling_temp=231.02,
+                        latent_heat=Δhv,
+                        gas_heat_capacity=cp_ig,
+                        liquid_heat_capacity=cp_l)
+    @test isa(propane, Substance)
+    @test replstr(propane) == "Substance: propane \n"
+
+    @test GasDispersion._MW(propane) ≈ 0.044096
+    @test GasDispersion._boiling_temperature(propane) ≈ 231.02
+    @test GasDispersion._vapor_pressure(propane,288.15) == pv(288.15) ≈ 732387.3305651173
+    @test GasDispersion._liquid_density(propane) == GasDispersion._liquid_density(propane,288.15,101325) == ρl(288.15,101325) ≈ 506.61518872042035
+    @test GasDispersion._gas_density(propane) == GasDispersion._gas_density(propane,288.15,101325) ≈ ρg
+    @test GasDispersion._density(propane,0.5,288.15,101325) ≈ 2/(1/ρg + 1/506.61518872042035)
+    @test GasDispersion._latent_heat(propane) == GasDispersion._latent_heat(propane,288.15) == Δhv(288.15) ≈ 352233.34066640574
+    @test GasDispersion._cp_gas(propane) == GasDispersion._cp_gas(propane,288.15) == cp_ig(288.15) ≈ 1618.86346283786
+    @test GasDispersion._cp_liquid(propane) == GasDispersion._cp_liquid(propane,288.15) == cp_l(288.15) ≈ 2626.002694859999
+
+    Base.isapprox(a::GasDispersion.Antoine, b::GasDispersion.Antoine) = all([
+        getproperty(a,k)≈getproperty(b,k) for k in fieldnames(typeof(a))
+        if typeof(getproperty(a,k))<:Number ])
+
+    test_pv = Substance(name="propane",
+                        molar_weight=0.044096,
+                        vapor_pressure=nothing,
+                        gas_density=nothing,
+                        liquid_density=ρl,
+                        reference_temp=288.15,
+                        reference_pressure=101325,
+                        k=1.3,
+                        boiling_temp=231.02,
+                        latent_heat=Δhv,
+                        gas_heat_capacity=cp_ig,
+                        liquid_heat_capacity=cp_l)
+    @test test_pv.P_v ≈ GasDispersion.Antoine(8.086226333190652, 1868.0800074937044, 0.0)
+    
+    test_pv2 = Substance(name="propane",
+                         molar_weight=0.044096,
+                         vapor_pressure=nothing,
+                         gas_density=nothing,
+                         liquid_density=ρl,
+                         reference_temp=288.15,
+                         reference_pressure=101325,
+                         k=1.3,
+                         boiling_temp=231.02,
+                         latent_heat=Δhv(288.15),
+                         gas_heat_capacity=cp_ig,
+                         liquid_heat_capacity=cp_l)
+    @test test_pv2.P_v ≈ GasDispersion.Antoine(8.086226333190652, 1868.0800074937044, 0.0)
+
 end
 
 @testset "Release type" begin
@@ -82,14 +143,6 @@ end
     atm = SimpleAtmosphere(100e3,273.15,2.0,5.0,0.0,ClassA)
     scn1 = Scenario(sub1,rel,atm)
     scn2 = Scenario(sub2,rel,atm)
-
-    @test GasDispersion._liquid_density(sub1) ≈ 490.0
-    @test GasDispersion._liquid_density(sub2) ≈ 24
-    @test GasDispersion._gas_density(sub1) ≈ 8.90
-    @test GasDispersion._gas_density(sub2) ≈ 12
-
-    @test GasDispersion._density(sub1, 0.5, 298.15, 120935.0368) ≈ 2/(1/8.9 + 1/490.)
-    @test GasDispersion._density(sub2, 0.5, 2, 3) ≈ 48/3
 
     @test GasDispersion._release_density(scn1) == GasDispersion._density(sub1,0.5,450.0,101325.0)
     @test GasDispersion._release_density(scn2) == GasDispersion._density(sub2,0.5,450.0,101325.0)

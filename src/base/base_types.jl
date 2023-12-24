@@ -52,7 +52,7 @@ function Substance(name,molar_weight,vapor_pressure,gas_density,liquid_density,
         if latent_heat isa Number
             Δh = latent_heat
         else
-            Δh = latent_heat(T)
+            Δh = latent_heat(reference_temp)
         end
 
         B = Δh*molar_weight/R
@@ -84,7 +84,7 @@ end
 
 # Substance property getters
 _MW(s::Substance) = s.MW
-_vapor_pressure(s::Substance, T) = s.P_ref*s.P_v(T)
+_vapor_pressure(s::Substance, T) = s.P_v(T)
 
 _cp_gas(s::Substance{<:Any,<:Any,<:Any,<:Any,<:Any,<:Number,<:Any},T) = s.Cp_g
 _cp_gas(s::Substance{<:Any,<:Any,<:Any,<:Any,<:Any,<:CALLABLE,<:Any},T) = s.Cp_g(T)
@@ -95,17 +95,17 @@ _cp_liquid(s::Substance{<:Any,<:Any,<:Any,<:Any,<:Any,<:Any,<:CALLABLE},T) = s.C
 _cp_liquid(s::Substance) = _cp_liquid(s, s.T_ref)
 
 _boiling_temperature(s::Substance) = s.T_b
-_latent_heat(s::Substance{<:Any,<:Any,<:Any,<:Any,<:Number,<:Any,<:Any},T) = s.Δh_v
-_latent_heat(s::Substance{<:Any,<:Any,<:Any,<:Any,<:CALLABLE,<:Any,<:Any},T) = s.Δh_v(T)
+_latent_heat(s::Substance{<:Any,<:Any,<:Any,<:Any,<:Any,<:Number},T) = s.Δh_v
+_latent_heat(s::Substance{<:Any,<:Any,<:Any,<:Any,<:Any,<:CALLABLE},T) = s.Δh_v(T)
 _latent_heat(s::Substance) = _latent_heat(s, s.T_ref)
 
 # density functions
-_liquid_density(s::Substance{<:Any,<:Any,<:Any,<:Number,<:Any,<:Any,<:Any,<:Any}, T::Number, P::Number) = s.ρ_l
-_liquid_density(s::Substance{<:Any,<:Any,<:Any,<:CALLABLE,<:Any,<:Any,<:Any,<:Any}, T::Number, P::Number) = s.ρ_l(T,P)
+_liquid_density(s::Substance{<:Any,<:Any,<:Any,<:Number}, T::Number, P::Number) = s.ρ_l
+_liquid_density(s::Substance{<:Any,<:Any,<:Any,<:CALLABLE}, T::Number, P::Number) = s.ρ_l(T,P)
 _liquid_density(s::Substance) = _liquid_density(s, s.T_ref, s.P_ref)
 
-_gas_density(s::Substance{<:Any,<:Any,<:Number,<:Any,<:Any,<:Any,<:Any,<:Any}, T::Number, P::Number) = s.ρ_g*(s.T_ref/T)*(P/s.P_ref)
-_gas_density(s::Substance{<:Any,<:Any,<:CALLABLE,<:Any,<:Any,<:Any,<:Any,<:Any}, T::Number, P::Number) = s.ρ_g(T,P)
+_gas_density(s::Substance{<:Any,<:Any,<:Number}, T::Number, P::Number) = s.ρ_g*(s.T_ref/T)*(P/s.P_ref)
+_gas_density(s::Substance{<:Any,<:Any,<:CALLABLE}, T::Number, P::Number) = s.ρ_g(T,P)
 _gas_density(s::Substance) = _gas_density(s, s.T_ref, s.P_ref)
 
 function _density(s::Substance, f_l, T, P)

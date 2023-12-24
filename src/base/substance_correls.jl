@@ -1,4 +1,8 @@
 abstract type PropertyCorrelation end
+abstract type EquationNumber end
+
+struct Eq1 <: EquationNumber end
+struct Eq2 <: EquationNumber end
 
 struct Antoine{F<:Number} <: PropertyCorrelation
     A::F
@@ -38,7 +42,7 @@ DIPPRLiquidDensity(MW,Tc,C1,C2,C3,C4) = DIPPRLiquidDensity(promote(MW,Tc,C1,C2,C
 function (l::DIPPRLiquidDensity)(T,P)
     #Tr = T/l.Tc
     ρl = l.C1/( l.C2^(1 + (1 - T/l.C3)^l.C4) )
-    return ρl*MW*0.001
+    return ρl*l.MW*1000
 end
 
 struct DIPPRLatentHeat{F<:Number} <: PropertyCorrelation
@@ -75,7 +79,8 @@ function (c::DIPPRIdealGasHeatCapacity)(T)
     return Cp/(c.MW*1000)
 end
 
-struct DIPPRLiquidHeatCapacity{F<:Number} <: PropertyCorrelation
+struct DIPPRLiquidHeatCapacity{E<:EquationNumber, F<:Number} <: PropertyCorrelation
+    EQ::Type{E}
     MW::F
     Tc::F
     C1::F
@@ -84,10 +89,16 @@ struct DIPPRLiquidHeatCapacity{F<:Number} <: PropertyCorrelation
     C4::F
     C5::F
 end
-DIPPRLiquidHeatCapacity(MW,Tc,C1,C2,C3,C4,C5) = DIPPRLiquidHeatCapacity(promote(MW,Tc,C1,C2,C3,C4,C5)...)
+DIPPRLiquidHeatCapacity(EQ,MW,Tc,C1,C2,C3,C4,C5) = DIPPRLiquidHeatCapacity(EQ,promote(MW,Tc,C1,C2,C3,C4,C5)...)
 
-function (c::DIPPRLiquidHeatCapacity)(T)
-    #Tr = T/c.Tc
+function (c::DIPPRLiquidHeatCapacity{Eq1,<:Number})(T)
     Cp = c.C1 + c.C2*T + c.C3*T^2 + c.C4*T^3 + c.C5*T^4
+    return Cp/(c.MW*1000)
+end
+
+function (c::DIPPRLiquidHeatCapacity{Eq2,<:Number})(T)
+    Tr = T/c.Tc
+    t = 1-Tr
+    Cp = c.C1^2/t + c.C2 - 2*c.C1*c.C3*t - c.C1*c.C4*t^2 - c.C3^2*t^3/3 - c.C3*c.C4*t^4/2 - c.C4^2*t^5/5
     return Cp/(c.MW*1000)
 end
