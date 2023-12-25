@@ -33,20 +33,21 @@ _slab_stab(::Type{ClassF}) = 6.0
 _slab_ala(::SimpleAtmosphere) = 0.0
 
 # Recover the constants of the Antoine equation
-function _slab_antoine(s::Substance)
-    if s.P_v isa Number
+function _slab_antoine(s::Scenario)
+    if s.substance.P_v isa Number
         return Antoine(0,-1.0,0)
-    elseif s.P_v isa Antoine
-        return s.P_v
+    elseif s.substance.P_v isa Antoine
+        return s.substance.P_v
     else
-        # Fit the Antoine equation to the given correlation
-        T1 = s.T_b
-        T3 = s.T_ref
+        # Find three temperatures that cover the range of the scenario
+        T1 = _boiling_temperature(s.substance)
+        T3 = max(_release_temperature(s),_atmosphere_temperature(s))
         T2 = (T1+T3)/2
 
         # Curve fit to these three points
+        P_v = (T) -> _vapor_pressure(s.substance, T)
         T = [T1,T2,T3]
-        P = s.P_v.(T)
+        P = P_v.(T)
 
         # Fit the linear form y = a1 + a2*x + a3*x*y
         y = log.(P)
@@ -80,7 +81,7 @@ function puff(scenario::Scenario, ::Type{SLAB}, eqs::EquationSet=DefaultSet();
               t_av=10, x_max=2000)
     c_max = 1.0
     stab = _slab_stab( _stability(scenario) )
-    antoine = _slab_antoine(scenario.substance)
+    antoine = _slab_antoine(scenario)
     inp = SLAB_Input(;idspl = 2,
                      ncalc = 1,
                      wms = _MW(scenario.substance),

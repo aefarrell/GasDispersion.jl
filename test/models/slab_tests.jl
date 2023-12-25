@@ -7,10 +7,12 @@
         getproperty(a,k)≈getproperty(b,k) for k in fieldnames(typeof(a))
         if typeof(getproperty(a,k))<:Number ])
 
+    r = HorizontalJet(mass_rate=1,duration=1,diameter=1,velocity=1,
+                      height=0,pressure=101325,temperature=288.15,fraction_liquid=0)
     s = Substance(name=:test,molar_weight=1,vapor_pressure=1,gas_density=1,
                   liquid_density=1,boiling_temp =1,latent_heat=1,gas_heat_capacity=1,
                   liquid_heat_capacity=1) 
-    @test GasDispersion._slab_antoine(s) ≈ GasDispersion.Antoine(0.0,-1.0,0.0)
+    @test GasDispersion._slab_antoine(Scenario(s,r,SimpleAtmosphere(temperature=288.15))) ≈ GasDispersion.Antoine(0.0,-1.0,0.0)
 
     # propane from Perry's 8th edition, DIPPR correlations
     pv = GasDispersion.DIPPRVaporPressure(59.078,-3_492.6,-6.0669,1.0919e-5,2)
@@ -19,33 +21,17 @@
     cp_ig = GasDispersion.DIPPRIdealGasHeatCapacity(0.044096,369.83,0.5192e5,1.9245e5,1.6265e3,1.168e5,723.6)
     cp_l = GasDispersion.DIPPRLiquidHeatCapacity(GasDispersion.Eq2,0.044096,369.83,62.983,113_630,633.21,-873.46,0)
 
-    propane = Substance(name="propane",
-                        molar_weight=0.044096,
-                        vapor_pressure=pv,
-                        gas_density=nothing,
-                        liquid_density=ρl,
-                        reference_temp=288.15,
-                        reference_pressure=101325,
-                        k=1.3,
-                        boiling_temp=231.02,
-                        latent_heat=Δhv,
-                        gas_heat_capacity=cp_ig,
-                        liquid_heat_capacity=cp_l)
-    @test GasDispersion._slab_antoine(propane) ≈ GasDispersion.Antoine(20.75136471777637, 1929.0514351993063, -21.974809894382986)
+    s = Substance(name="propane",molar_weight=0.044096,vapor_pressure=pv,gas_density=nothing,
+                  liquid_density=ρl,reference_temp=288.15,reference_pressure=101325,k=1.3,
+                  boiling_temp=231.02,latent_heat=Δhv,gas_heat_capacity=cp_ig,
+                  liquid_heat_capacity=cp_l)
+    @test GasDispersion._slab_antoine(Scenario(s,r,SimpleAtmosphere(temperature=288.15))) ≈ GasDispersion.Antoine(20.75136471777637, 1929.0514351993063, -21.974809894382986)
 
-    propane = Substance(name="propane",
-                        molar_weight=0.044096,
-                        vapor_pressure=nothing,
-                        gas_density=nothing,
-                        liquid_density=ρl,
-                        reference_temp=288.15,
-                        reference_pressure=101325,
-                        k=1.3,
-                        boiling_temp=231.02,
-                        latent_heat=Δhv,
-                        gas_heat_capacity=cp_ig,
-                        liquid_heat_capacity=cp_l)
-    @test GasDispersion._slab_antoine(propane) ≈ GasDispersion.Antoine(8.086226333190652, 1868.0800074937044, 0.0)
+    s = Substance(name="propane",molar_weight=0.044096,vapor_pressure=nothing,gas_density=nothing,
+                  liquid_density=ρl,reference_temp=288.15,reference_pressure=101325,k=1.3,
+                  boiling_temp=231.02,latent_heat=Δhv,gas_heat_capacity=cp_ig,
+                  liquid_heat_capacity=cp_l)
+    @test GasDispersion._slab_antoine(Scenario(s,r,SimpleAtmosphere(temperature=288.15))) ≈ GasDispersion.Antoine(8.086226333190652, 1868.0800074937044, 0.0)
 
 end
 
