@@ -29,6 +29,39 @@ _slab_stab(::Type{ClassD}) = 4.0
 _slab_stab(::Type{ClassE}) = 5.0
 _slab_stab(::Type{ClassF}) = 6.0
 
+# SLAB ala mapping
+_slab_ala(::SimpleAtmosphere) = 0.0
+
+# Recover the constants of the Antoine equation
+function _slab_antoine(s::Substance)
+    if s.P_v isa Number
+        return Antoine(0,-1.0,0)
+    elseif s.P_v isa Antoine
+        return s.P_v
+    else
+        # Fit the Antoine equation to the given correlation
+        T1 = s.T_b
+        T3 = s.T_ref
+        T2 = (T1+T3)/2
+
+        # Curve fit to these three points
+        T = [T1,T2,T3]
+        P = s.P_v.(T)
+
+        # Fit the linear form y = a1 + a2*x + a3*x*y
+        y = log.(P)
+        x = T.^-1
+        X = [ ones(typeof(T1),3) x x.*y ]
+        a = X\y
+
+        # Recover Antoine coefficients
+        A = a[1]
+        C = -1*a[3]
+        B = A*C - a[2]
+        return Antoine(A,B,C)
+    end
+end
+
 @doc doc"""
     puff(::Scenario, SLAB; kwargs...)
 
@@ -47,6 +80,7 @@ function puff(scenario::Scenario, ::Type{SLAB}, eqs::EquationSet=DefaultSet();
               t_av=10, x_max=2000)
     c_max = 1.0
     stab = _slab_stab( _stability(scenario) )
+    antoine = _slab_antoine(scenario.substance)
     inp = SLAB_Input(;idspl = 2,
                      ncalc = 1,
                      wms = _MW(scenario.substance),
@@ -56,8 +90,8 @@ function puff(scenario::Scenario, ::Type{SLAB}, eqs::EquationSet=DefaultSet();
                      dhe = _latent_heat(scenario.substance),
                      cpsl = _cp_liquid(scenario.substance),
                      rhosl = _liquid_density(scenario.substance),
-                     spb = -1.0,
-                     spc = 0.0,
+                     spb = antoine.B,
+                     spc = antoine.C,
                      ts = _release_temperature(scenario),
                      qs = _mass_rate(scenario),
                      as = _release_area(scenario),
@@ -67,13 +101,13 @@ function puff(scenario::Scenario, ::Type{SLAB}, eqs::EquationSet=DefaultSet();
                      tav = t_av,
                      xffm = x_max,
                      zp = [0.0],
-                     z0 = 1.0,
+                     z0 = _surface_roughness(scenario.atmosphere),
                      za = _windspeed_height(scenario),
                      ua = _windspeed(scenario),
                      ta = _atmosphere_temperature(scenario),
                      rh = _rel_humidity(scenario.atmosphere),
                      stab = stab,
-                     ala = 0.0)
+                     ala = _slab_ala(scenario.atmosphere))
     out = slab_main(inp)
     return SLABSolution(scenario,:SLAB,inp,out,c_max,
                         AkimaInterpolation(out.cc.cc, out.cc.x),
