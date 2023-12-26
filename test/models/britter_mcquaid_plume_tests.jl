@@ -20,41 +20,48 @@ end
 @testset "Britter-McQuaid plume tests" begin
     # Britter-McQuaid example, *Guidelines for Consequence Analysis of Chemical
     # Releases* CCPS, 1999, pg 122
+    R = 8.31446261815324
     ṁ = 0.23*425.6 # liquid spill rate times liquid density
     ρ = 1.76
+    T = 273.15-162
+    P = 101325
+    MW = ρ*R*T/P
     Q = ṁ/ρ # gas volumetric flowrate: mass flowrate divided by gas density
     A = (π/4)*(1)^2 # release area, assuming a diameter of 1m.
     u = Q/A
 
     s = Substance(name = :LNG,
+                  molar_weight=MW,
+                  vapor_pressure=nothing,
                   gas_density = ρ,
                   liquid_density = 425.6,
-                  reference_temp=(273.15-162),
-                  reference_pressure=101325.0,
+                  reference_temp=T,
+                  reference_pressure=P,
+                  k = 0,
                   boiling_temp = 111.6, # Methane, NIST Webbook
-                  latent_heat = 509880.0,  # J/kg, Methane
-                  gas_heat_capacity = 2240.0, # J/kg/K, Methane
-                  liquid_heat_capacity = 3349.0) # J/kg/K, Methane
+                  latent_heat = 509880,  # J/kg, Methane
+                  gas_heat_capacity = 2240, # J/kg/K, Methane
+                  liquid_heat_capacity = 3349) # J/kg/K, Methane
 
-    r = Release( mass_rate = ṁ,
+    r = HorizontalJet( mass_rate = ṁ,
                   duration = ρ,
-                  diameter = 1.0,
+                  diameter = 1,
                   velocity = u,
-                  height = 0.0,
-                  pressure = 101325.0,
-                  temperature = (273.15-162),
-                  fraction_liquid = 0.0)
-    a = DryAir(windspeed=10.9, temperature=298, stability=ClassF)
+                  height = 0,
+                  pressure = P,
+                  temperature = T,
+                  fraction_liquid = 0)
+    a = SimpleAtmosphere(windspeed=10.9, temperature=298, stability=ClassF)
     scn = Scenario(s,r,a)
     # known answers
     # initial concentration
-    c₀ = 1.0
+    c₀ = 1
     # in the near-field
     x₁, c₁ = 2.26*20, 0.6720234544594696
     # example, in the interpolation region
-    x₂, c₂ = 367.0, 0.05071175952024219
+    x₂, c₂ = 367, 0.050717667650511944
     # far field
-    x₃, c₃ = 1200.0, 0.004920569368181627
+    x₃, c₃ = 1200, 0.004921409666659286
 
     # test overall solution
     pl = plume(scn, BritterMcQuaidPlume)
@@ -81,10 +88,10 @@ end
     @test pl(0, 0, Lv - 2*eps(Float64)) ≈ c₀
 
     # test large α near-field
-    a = DryAir(windspeed=0.8322, temperature=298, stability=ClassF)
+    a = SimpleAtmosphere(windspeed=0.8322, temperature=298, stability=ClassF)
     scn = Scenario(s,r,a)
     pl_nf = plume(scn, BritterMcQuaidPlume)
-    c_nf  = 0.5310668347189341
+    c_nf  = 0.5311215219329275
     @test pl_nf(pl_nf.xnf*pl_nf.D,0,0) ≈ c_nf
 
 end

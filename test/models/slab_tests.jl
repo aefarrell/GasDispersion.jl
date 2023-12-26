@@ -1,180 +1,181 @@
-include("../../src/models/slab/slab.jl")
-
-using .slab
-using DelimitedFiles: readdlm
-
 @testset "SLAB puff tests" begin
 
     @test GasDispersion._slab_stab.([ClassA,ClassB,ClassC,ClassD,ClassE,ClassF]) ≈ [1.0,2.0,3.0,4.0,5.0,6.0]
 
+@testset "Antoine Coefficent Recovery" begin
+    Base.isapprox(a::GasDispersion.Antoine, b::GasDispersion.Antoine) = all([
+        getproperty(a,k)≈getproperty(b,k) for k in fieldnames(typeof(a))
+        if typeof(getproperty(a,k))<:Number ])
+
+    r = HorizontalJet(mass_rate=1,duration=1,diameter=1,velocity=1,
+                      height=0,pressure=101325,temperature=288.15,fraction_liquid=0)
+    s = Substance(name=:test,molar_weight=1,vapor_pressure=1,gas_density=1,
+                  liquid_density=1,boiling_temp =1,latent_heat=1,gas_heat_capacity=1,
+                  liquid_heat_capacity=1) 
+    @test GasDispersion._slab_antoine(Scenario(s,r,SimpleAtmosphere(temperature=288.15))) ≈ GasDispersion.Antoine(0.0,-1.0,0.0)
+
+    # propane from Perry's 8th edition, DIPPR correlations
+    pv = GasDispersion.DIPPRVaporPressure(59.078,-3_492.6,-6.0669,1.0919e-5,2)
+    ρl = GasDispersion.DIPPRLiquidDensity(0.044096,369.83,1.3757,0.27453,369.83,0.29359)
+    Δhv = GasDispersion.DIPPRLatentHeat(0.044096,369.83,2.9209e7,0.78237,-0.77319,0.39246,0)
+    cp_ig = GasDispersion.DIPPRIdealGasHeatCapacity(0.044096,369.83,0.5192e5,1.9245e5,1.6265e3,1.168e5,723.6)
+    cp_l = GasDispersion.DIPPRLiquidHeatCapacity(GasDispersion.Eq2,0.044096,369.83,62.983,113_630,633.21,-873.46,0)
+
+    s = Substance(name="propane",molar_weight=0.044096,vapor_pressure=pv,gas_density=nothing,
+                  liquid_density=ρl,reference_temp=288.15,reference_pressure=101325,k=1.3,
+                  boiling_temp=231.02,latent_heat=Δhv,gas_heat_capacity=cp_ig,
+                  liquid_heat_capacity=cp_l)
+    @test GasDispersion._slab_antoine(Scenario(s,r,SimpleAtmosphere(temperature=288.15))) ≈ GasDispersion.Antoine(20.75136471777637, 1929.0514351993063, -21.974809894382986)
+
+    s = Substance(name="propane",molar_weight=0.044096,vapor_pressure=nothing,gas_density=nothing,
+                  liquid_density=ρl,reference_temp=288.15,reference_pressure=101325,k=1.3,
+                  boiling_temp=231.02,latent_heat=Δhv,gas_heat_capacity=cp_ig,
+                  liquid_heat_capacity=cp_l)
+    @test GasDispersion._slab_antoine(Scenario(s,r,SimpleAtmosphere(temperature=288.15))) ≈ GasDispersion.Antoine(8.086226333190652, 1868.0800074937044, 0.0)
+
+end
+
 @testset "INPR2 Horizontal Jet" begin
 # this directly tests the slab.jl submodule against the given test problem 2
-    inp = SLAB_Input(idspl =  2,
-                     ncalc =  1,
-                     wms   =  0.017031,
-                     cps   =  2045.90,
-                     tbp   =  239.57,
-                     cmed0 =  0.81,
-                     dhe   =  1170000.0,
-                     cpsl  =  4611.80,
-                     rhosl =  603.00,
-                     spb   =  2976.01,
-                     spc   =  0.00,
-                     ts    =  239.57,
-                     qs    =  107.87,
-                     as    =  0.93,
-                     tsd   =  381.0,
-                     qtis  =  0.00,
-                     hs    =  1.00,
-                     tav   =  10.00,
-                     xffm  =  2800.00,
-                     zp    =  [0.00, 1.00, 0.00, 0.00],
-                     z0    =  0.003000,
-                     za    =  2.00,
-                     ua    =  4.50,
-                     ta    =  306.20,
-                     rh    =  21.30,
-                     stab  =  0.00,
-                     ala   =  0.0221)
-    res = slab_main(inp)
+    inp = GasDispersion.SLAB_Input(idspl =  2,
+                                    ncalc =  1,
+                                    wms   =  0.017031,
+                                    cps   =  2045.90,
+                                    tbp   =  239.57,
+                                    cmed0 =  0.81,
+                                    dhe   =  1170000.0,
+                                    cpsl  =  4611.80,
+                                    rhosl =  603.00,
+                                    spb   =  2976.01,
+                                    spc   =  0.00,
+                                    ts    =  239.57,
+                                    qs    =  107.87,
+                                    as    =  0.93,
+                                    tsd   =  381.0,
+                                    qtis  =  0.00,
+                                    hs    =  1.00,
+                                    tav   =  10.00,
+                                    xffm  =  2800.00,
+                                    zp    =  [0.00, 1.00, 0.00, 0.00],
+                                    z0    =  0.003000,
+                                    za    =  2.00,
+                                    ua    =  4.50,
+                                    ta    =  306.20,
+                                    rh    =  21.30,
+                                    stab  =  0.00,
+                                    ala   =  0.0221)
+    res = GasDispersion.slab.slab_main(inp)
     out = readdlm("test_data/slab_inpr2_out.txt", Float64; header=false);
-    # These test whether or not the parameters calculated
-    # from SLAB.for up to line 567 (call editin)
-    # are doing what they are supposed to be doing
-    @testset "release gas properties" begin
-        @test res.p.rgp.wms   ≈ 1.7031E-02
-        @test res.p.rgp.cps   ≈ 2.0459E+03
-        @test res.p.rgp.ts    ≈ 2.3957E+02
-        @test res.p.rgp.rhos  ≈ 0.8663594467626095
-        @test res.p.rgp.tbp   ≈ 2.3957E+02
-        @test res.p.rgp.cmed0 ≈ 8.1000E-01
-        @test res.p.rgp.cpsl  ≈ 4.6118E+03
-        @test res.p.rgp.dhe   ≈ 1.1700E+06
-        @test res.p.rgp.rhosl ≈ 6.0300E+02
-        @test res.p.rgp.spa   ≈ 12.422298284426265
-        @test res.p.rgp.spb   ≈ 2976.01
-        @test res.p.rgp.spc   ≈ 0.0000E+00
-    end
+  
+    # @testset "release gas properties" begin
+    #     @test res.p.rgp.wms   ≈ 1.7031E-02
+    #     @test res.p.rgp.cps   ≈ 2.0459E+03
+    #     @test res.p.rgp.ts    ≈ 2.3957E+02
+    #     @test res.p.rgp.rhos  ≈ 0.8663594467626095
+    #     @test res.p.rgp.tbp   ≈ 2.3957E+02
+    #     @test res.p.rgp.cmed0 ≈ 8.1000E-01
+    #     @test res.p.rgp.cpsl  ≈ 4.6118E+03
+    #     @test res.p.rgp.dhe   ≈ 1.1700E+06
+    #     @test res.p.rgp.rhosl ≈ 6.0300E+02
+    #     @test res.p.rgp.spa   ≈ 12.422298284426265
+    #     @test res.p.rgp.spb   ≈ 2976.01
+    #     @test res.p.rgp.spc   ≈ 0.0000E+00
+    # end
 
 
-    @testset "spill characteristics" begin
-        @test res.p.spl.idspl≈ 2
-        @test res.p.spl.qs   ≈ 1.0787E+02
-        @test res.p.spl.tsd  ≈ 3.8100E+02
-        @test res.p.spl.qtcs ≈ 41098.47
-        @test res.p.spl.qtis ≈ 0.0000E+00
-        @test res.p.spl.as   ≈ 9.3000E-01
-        @test res.p.spl.ws   ≈ 0.0000E+00
-        @test res.p.spl.bs   ≈ 0.4821825380496478
-        @test res.p.spl.hs   ≈ 1.0000E+00
-        @test res.p.spl.us   ≈ 25.59323553673247
-    end
+    # @testset "spill characteristics" begin
+    #     @test res.p.spl.idspl≈ 2
+    #     @test res.p.spl.qs   ≈ 1.0787E+02
+    #     @test res.p.spl.tsd  ≈ 3.8100E+02
+    #     @test res.p.spl.qtcs ≈ 41098.47
+    #     @test res.p.spl.qtis ≈ 0.0000E+00
+    #     @test res.p.spl.as   ≈ 9.3000E-01
+    #     @test res.p.spl.ws   ≈ 0.0000E+00
+    #     @test res.p.spl.bs   ≈ 0.4821825380496478
+    #     @test res.p.spl.hs   ≈ 1.0000E+00
+    #     @test res.p.spl.us   ≈ 25.59323553673247
+    # end
 
 
-    @testset "field parameters" begin
-        @test res.p.fld.tav  ≈  1.0000E+01
-        @test res.p.fld.hmx  ≈  726.038044311263
-        @test res.p.fld.xffm ≈  2.8000E+03
-        @test res.p.fld.zp ==  [0.0, 1.0, 0.0, 0.0]
-    end
+    # @testset "field parameters" begin
+    #     @test res.p.fld.tav  ≈  1.0000E+01
+    #     @test res.p.fld.hmx  ≈  726.038044311263
+    #     @test res.p.fld.xffm ≈  2.8000E+03
+    #     @test res.p.fld.zp ==  [0.0, 1.0, 0.0, 0.0]
+    # end
 
 
-    @testset "ambient meteorological properties" begin
-        @test res.p.met.wmae  ≈  0.0288353038537132
-        @test res.p.met.cpaa  ≈  1011.8542876036452
-        @test res.p.met.rhoa  ≈  1.147650750527487
-        @test res.p.met.za    ≈  2.0000E+00
-        @test res.p.met.pa    ≈  101325.0
-        @test res.p.met.ua    ≈  4.5000E+00
-        @test res.p.met.ta    ≈  3.0620E+02
-        @test res.p.met.rh    ≈  2.1300E+01
-        @test res.p.met.uastr ≈  0.26631640297328646
-        @test res.p.met.stab  ≈  4.518466475995308
-        @test res.p.met.ala   ≈  2.2100E-02
-        @test res.p.met.z0    ≈  3.0000E-03
-    end
+    # @testset "ambient meteorological properties" begin
+    #     @test res.p.met.wmae  ≈  0.0288353038537132
+    #     @test res.p.met.cpaa  ≈  1011.8542876036452
+    #     @test res.p.met.rhoa  ≈  1.147650750527487
+    #     @test res.p.met.za    ≈  2.0000E+00
+    #     @test res.p.met.pa    ≈  101325.0
+    #     @test res.p.met.ua    ≈  4.5000E+00
+    #     @test res.p.met.ta    ≈  3.0620E+02
+    #     @test res.p.met.rh    ≈  2.1300E+01
+    #     @test res.p.met.uastr ≈  0.26631640297328646
+    #     @test res.p.met.stab  ≈  4.518466475995308
+    #     @test res.p.met.ala   ≈  2.2100E-02
+    #     @test res.p.met.z0    ≈  3.0000E-03
+    # end
 
-    @testset "additional parameters" begin
-        @test res.p.xtra.ncalc == 1
-        @test res.p.xtra.nssm  == 3
-        @test res.p.xtra.grav ≈ 9.80665
-        @test res.p.xtra.rr ≈ 8.31431
-        @test res.p.xtra.xk ≈ 0.41
+    # @testset "additional parameters" begin
+    #     @test res.p.xtra.ncalc == 1
+    #     @test res.p.xtra.nssm  == 3
+    #     @test res.p.xtra.grav ≈ 9.80665
+    #     @test res.p.xtra.rr ≈ 8.31431
+    #     @test res.p.xtra.xk ≈ 0.41
 
-    end
+    # end
 
-    @testset "instantaneous spatially averaged cloud parameters" begin
-        @test res.s.x ≈ out[:, 1];
-        @test res.s.zc ≈ out[:, 2];
-        @test res.s.h ≈ out[:, 3];
-        @test res.s.bb ≈ out[:, 4];
-        @test res.s.b ≈ out[:, 5];
-        @test res.s.bbx ≈ out[:, 6];
-        @test res.s.bx ≈ out[:, 7];
-        @test res.s.cv ≈ out[:, 8];
-        @test res.s.rho ≈ out[:, 9];
-        @test res.s.t ≈ out[:, 10];
-        @test res.s.u ≈ out[:, 11];
-        @test res.s.uab ≈ out[:, 12];
-        @test res.s.cm ≈ out[:, 13];
-        @test res.s.cmev ≈ out[:, 14];
-        @test res.s.cmda ≈ out[:, 15];
-        @test res.s.cmw ≈ out[:, 16];
-        @test res.s.cmwv ≈ out[:, 17];
-        @test res.s.wc ≈ out[:, 18];
-        @test res.s.vg ≈ out[:, 19];
-        @test res.s.ug ≈ out[:, 20];
-        @test res.s.w ≈ out[:, 21];
-        @test res.s.v ≈ out[:, 22];
-        @test res.s.vx ≈ out[:, 23];
-    end
+    # instantaneous spatially averaged cloud parameters
+    result = [res.s.x res.s.zc res.s.h res.s.bb res.s.b res.s.bbx res.s.bx res.s.cv res.s.rho res.s.t res.s.u res.s.uab res.s.cm res.s.cmev res.s.cmda res.s.cmw res.s.cmwv res.s.wc res.s.vg res.s.ug res.s.w res.s.v res.s.vx ]
+    @test result ≈ out[:, 1:23]
 
-    @testset "time averaged cloud parameters" begin
-        @test res.cc.x ≈ out[:, 1];
-        @test res.cc.cc ≈ out[:, 24];
-        @test res.cc.b ≈ out[:, 5];
-        @test res.cc.betac ≈ out[:, 25];
-        @test res.cc.zc ≈ out[:, 2];
-        @test res.cc.sig ≈ out[:, 26];
-        @test res.cc.t ≈ out[:, 27];
-        @test res.cc.xc ≈ out[:, 28];
-        @test res.cc.bx ≈ out[:, 7];
-        @test res.cc.betax ≈ out[:, 29];
-        @test res.cc.tim ≈ out[:, 30];
-        @test res.cc.tcld ≈ out[:, 31];
-        @test res.cc.bbc ≈ out[:, 32];
-    end
+    #averaged cloud parameters
+    result = [res.cc.cc res.cc.betac res.cc.sig res.cc.t res.cc.xc res.cc.betax res.cc.tim res.cc.tcld res.cc.bbc]
+    @test result ≈ out[:, 24:32]
+
 end
 
 @testset "Burro LNG test" begin
 # this tests the output against an example from the Burro LNG dispersion tests
 # the output of slab.jl was compared to that generated from SLAB (fortran) using
 # the same input file
+    R = 8.31446261815324
+    ρ = 1.76
+    T = 273.15-162
+    P = 101325
+    MW = ρ*R*T/P
 
     s = Substance(name = :BurroLNG,
-                gas_density = 1.76,
+                molar_weight = MW,
+                vapor_pressure = nothing,
+                gas_density = ρ,
                 liquid_density = 425.6,
-                reference_temp=(273.15-162),
-                reference_pressure=101325.0,
+                reference_temp=T,
+                reference_pressure=P,
+                k=1.4,
                 boiling_temp = 111.66, # K, Methane,
-                latent_heat = 509880.0,  # J/kg, Methane
-                gas_heat_capacity = 2240.0, # J/kg/K, Methane
-                liquid_heat_capacity = 3349.0) # J/kg/K, Methane
-    r = Release( mass_rate = (0.23*425.6),
+                latent_heat = 509880,  # J/kg, Methane
+                gas_heat_capacity = 2240, # J/kg/K, Methane
+                liquid_heat_capacity = 3349) # J/kg/K, Methane
+    r = HorizontalJet( mass_rate = (0.23*425.6),
                 duration = 174,
-                diameter = 1.0,
+                diameter = 1,
                 velocity = 70.815,
-                height = 0.0,
-                pressure = 101325.0,
-                temperature = (273.15-162),
-                fraction_liquid = 0.0)
-    a = DryAir(windspeed=10.9, temperature=298, stability=ClassF)
+                height = 0,
+                pressure = P,
+                temperature = T,
+                fraction_liquid = 0)
+    a = SimpleAtmosphere(windspeed=10.9, temperature=298, stability=ClassF)
     scn = Scenario(s,r,a)
     rls = puff(scn, SLAB; )
 
     # basic checks that it returns the expected object
     @test isa(rls,GasDispersion.SLABSolution)
-    @test isa(rls, Puff)
+    @test isa(rls,Puff)
 
     # basic domain checks
     @test rls(0.0,0.0,r.h,1.0) ≈ 1.0

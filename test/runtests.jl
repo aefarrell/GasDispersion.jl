@@ -1,5 +1,6 @@
 using GasDispersion
 using Test
+using DelimitedFiles: readdlm
 
 @testset "GasDispersion.jl tests" begin
     @test_throws MethodError scenario_builder()

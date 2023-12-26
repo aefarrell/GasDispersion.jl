@@ -29,6 +29,40 @@ _slab_stab(::Type{ClassD}) = 4.0
 _slab_stab(::Type{ClassE}) = 5.0
 _slab_stab(::Type{ClassF}) = 6.0
 
+# SLAB ala mapping
+_slab_ala(::SimpleAtmosphere) = 0.0
+
+# Recover the constants of the Antoine equation
+function _slab_antoine(s::Scenario)
+    if s.substance.P_v isa Number
+        return Antoine(0,-1.0,0)
+    elseif s.substance.P_v isa Antoine
+        return s.substance.P_v
+    else
+        # Find three temperatures that cover the range of the scenario
+        T1 = _boiling_temperature(s.substance)
+        T3 = max(_release_temperature(s),_atmosphere_temperature(s))
+        T2 = (T1+T3)/2
+
+        # Curve fit to these three points
+        P_v = (T) -> _vapor_pressure(s.substance, T)
+        T = [T1,T2,T3]
+        P = P_v.(T)
+
+        # Fit the linear form y = a1 + a2*x + a3*x*y
+        y = log.(P)
+        x = T.^-1
+        X = [ ones(typeof(T1),3) x x.*y ]
+        a = X\y
+
+        # Recover Antoine coefficients
+        A = a[1]
+        C = -1*a[3]
+        B = A*C - a[2]
+        return Antoine(A,B,C)
+    end
+end
+
 @doc doc"""
     puff(::Scenario, SLAB; kwargs...)
 
@@ -45,26 +79,20 @@ scenario.
 """
 function puff(scenario::Scenario, ::Type{SLAB}, eqs::EquationSet=DefaultSet(); 
               t_av=10, x_max=2000)
-    Pᵣ = scenario.substance.P_ref
-    Tᵣ = scenario.substance.T_ref
-    ρⱼ = _gas_density(scenario.substance)
-    R = 8.31446261815324
-    MW = ρⱼ*R*Tᵣ/Pᵣ
     c_max = 1.0
-
     stab = _slab_stab( _stability(scenario) )
-
+    antoine = _slab_antoine(scenario)
     inp = SLAB_Input(;idspl = 2,
                      ncalc = 1,
-                     wms = MW,
+                     wms = _MW(scenario.substance),
                      cps = _cp_gas(scenario.substance),
                      tbp = _boiling_temperature(scenario.substance),
                      cmed0 = _release_liquid_fraction(scenario),
                      dhe = _latent_heat(scenario.substance),
                      cpsl = _cp_liquid(scenario.substance),
                      rhosl = _liquid_density(scenario.substance),
-                     spb = -1.0,
-                     spc = 0.0,
+                     spb = antoine.B,
+                     spc = antoine.C,
                      ts = _release_temperature(scenario),
                      qs = _mass_rate(scenario),
                      as = _release_area(scenario),
@@ -74,13 +102,13 @@ function puff(scenario::Scenario, ::Type{SLAB}, eqs::EquationSet=DefaultSet();
                      tav = t_av,
                      xffm = x_max,
                      zp = [0.0],
-                     z0 = 1.0,
+                     z0 = _surface_roughness(scenario.atmosphere),
                      za = _windspeed_height(scenario),
                      ua = _windspeed(scenario),
                      ta = _atmosphere_temperature(scenario),
                      rh = _rel_humidity(scenario.atmosphere),
                      stab = stab,
-                     ala = 0.0)
+                     ala = _slab_ala(scenario.atmosphere))
     out = slab_main(inp)
     return SLABSolution(scenario,:SLAB,inp,out,c_max,
                         AkimaInterpolation(out.cc.cc, out.cc.x),

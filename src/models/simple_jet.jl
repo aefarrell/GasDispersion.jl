@@ -1,17 +1,18 @@
 # defining type for dispatch
 struct SimpleJet <: PlumeModel end
 
-struct SimpleJetSolution <: Plume
+struct SimpleJetSolution{F<:Number} <: Plume
     scenario::Scenario
     model::Symbol
-    diameter::Number
-    height::Number
-    angle::Number
-    initial_concentration::Number
-    density_correction::Number
-    k2::Number
-    k3::Number
+    diameter::F
+    height::F
+    angle::F
+    initial_concentration::F
+    density_correction::F
+    k2::F
+    k3::F
 end
+SimpleJetSolution(s,m,d,h,θ,c0,kd,k2,k3) = SimpleJetSolution(s,m,promote(d,h,θ,c0,kd,k2,k3)...)
 
 @doc doc"""
     plume(::Scenario, SimpleJet; kwargs...)

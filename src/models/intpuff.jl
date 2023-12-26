@@ -1,17 +1,18 @@
 # defining type for dispatch
 struct IntPuff <: PuffModel end
 
-struct IntPuffSolution{T<:Number,S<:StabilityClass} <: Puff
+struct IntPuffSolution{F<:Number,N<:Number,S<:StabilityClass,E<:EquationSet} <: Puff
     scenario::Scenario
     model::Symbol
-    rate::Number
-    duration::Number
-    npuffs::T
-    height::Number
-    windspeed::Number
+    rate::F
+    duration::F
+    height::F
+    windspeed::F
+    npuffs::N
     stability::Type{S}
-    equationset::EquationSet
+    equationset::Type{E}
 end
+IntPuffSolution(s,m,r,d,h,u,n,stab,es) = IntPuffSolution(s,m,promote(r,d,h,u,)...,n,stab,es)
 
 @doc doc"""
     puff(::Scenario, IntPuff[, ::EquationSet]; kwargs...)
@@ -33,7 +34,7 @@ where δt is Δt/n, and the σs are dispersion parameters correlated with the di
 - `n::Integer`: the number of discrete gaussian puffs, defaults to infinity
 
 """
-function puff(scenario::Scenario, ::Type{IntPuff}, eqs::EquationSet=DefaultSet(); n::Number=Inf)
+function puff(scenario::Scenario, ::Type{IntPuff}, eqs=DefaultSet; n::Number=Inf)
 
     stab = _stability(scenario)
     ṁ = _mass_rate(scenario)
@@ -41,7 +42,7 @@ function puff(scenario::Scenario, ::Type{IntPuff}, eqs::EquationSet=DefaultSet()
     Qi = ṁ/ρⱼ
     Δt = _duration(scenario)
     h = _release_height(scenario)
-    u = _windspeed(scenario)
+    u = _windspeed(scenario,h,eqs)
 
     if n > 1
         return IntPuffSolution(
@@ -49,9 +50,9 @@ function puff(scenario::Scenario, ::Type{IntPuff}, eqs::EquationSet=DefaultSet()
             :intpuff, #model::Symbol
             Qi,    # massrate
             Δt,   # duration
-            n,    # number of puffs
             h,    # release height
             u,    # windspeed
+            n,    # number of puffs
             stab, # stability class
             eqs   # equation set
         )
@@ -71,7 +72,7 @@ function puff(scenario::Scenario, ::Type{IntPuff}, eqs::EquationSet=DefaultSet()
 end
 
 
-function (ip::IntPuffSolution{<:Integer,S})(x,y,z,t) where {S<:StabilityClass}
+function (ip::IntPuffSolution{<:Number,<:Integer,S,E})(x,y,z,t) where {S<:StabilityClass,E<:EquationSet}
     # domain check
     if (x<0)||(z<0)||(t<0)
         return 0.0
@@ -82,7 +83,6 @@ function (ip::IntPuffSolution{<:Integer,S})(x,y,z,t) where {S<:StabilityClass}
     n = ip.npuffs # number of intervals = number of puffs - 1
     h = ip.height
     u = ip.windspeed
-    eqs = ip.equationset
 
     # Only account for puffs that have already been emitted
     Δt = min(t,Δt)
@@ -97,13 +97,13 @@ function (ip::IntPuffSolution{<:Integer,S})(x,y,z,t) where {S<:StabilityClass}
         t′ = t-i*δt
         xc = u*t′ # center of cloud
 
-        σx = downwind_dispersion(xc, Puff, S, eqs)
+        σx = downwind_dispersion(xc, Puff, S, E)
         gx = t′>0 ? exp(-0.5*((x-u*t′)/σx)^2)/(√(2π)*σx) : 0
 
-        σy = crosswind_dispersion(xc, Puff, S, eqs)
+        σy = crosswind_dispersion(xc, Puff, S, E)
         gy = exp(-0.5*(y/σy)^2)/(√(2π)*σy)
 
-        σz = vertical_dispersion(xc, Puff, S, eqs)
+        σz = vertical_dispersion(xc, Puff, S, E)
         gz = ( exp(-0.5*((z-h)/σz)^2) + exp(-0.5*((z+h)/σz)^2) )/(√(2π)*σz)
 
         g = gx*gy*gz
@@ -119,7 +119,7 @@ function (ip::IntPuffSolution{<:Integer,S})(x,y,z,t) where {S<:StabilityClass}
     return c
 end
 
-function (ip::IntPuffSolution{Float64,S})(x,y,z,t) where {S<:StabilityClass}
+function (ip::IntPuffSolution{<:Number,<:AbstractFloat,S,E})(x,y,z,t) where {S<:StabilityClass,E<:EquationSet}
     # domain check
     if (x<0)||(z<0)||(t<0)
         return 0.0
@@ -129,24 +129,23 @@ function (ip::IntPuffSolution{Float64,S})(x,y,z,t) where {S<:StabilityClass}
     Δt = ip.duration
     h = ip.height
     u = ip.windspeed
-    eqs = ip.equationset
 
     # Only account for puffs that have already been emitted
     Δt = min(t,Δt)
 
     # Gaussian dispersion in the x direction
-    σx_a = downwind_dispersion(u*(t-Δt), Puff, S, eqs)
-    σx_b = downwind_dispersion(u*t, Puff, S, eqs)
+    σx_a = downwind_dispersion(u*(t-Δt), Puff, S, E)
+    σx_b = downwind_dispersion(u*t, Puff, S, E)
     a  = (x-u*(t-Δt))/(√2*σx_a)
     b  = (x-u*t)/(√2*σx_b)
     ∫gx = erf(b,a)/(2u)
 
     # Gaussian dispersion in the y direction
-    σy = crosswind_dispersion(x, Puff, S, eqs)
+    σy = crosswind_dispersion(x, Puff, S, E)
     gy = exp((-1/2)*(y/σy)^2)/(√(2π)*σy)
 
     # Gaussian dispersion in the z direction
-    σz = vertical_dispersion(x, Puff, S, eqs)
+    σz = vertical_dispersion(x, Puff, S, E)
     gz = ( exp((-1/2)*((z-h)/σz)^2) + exp((-1/2)*((z+h)/σz)^2) )/(√(2π)*σz)
 
     # concentration

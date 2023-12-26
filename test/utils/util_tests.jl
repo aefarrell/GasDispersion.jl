@@ -1,57 +1,4 @@
-# this is probably a bad way of doing things but I want to test some utils
-# that are not otherwise exposed to the user
 include("../../src/utils/utils.jl")
-
-@testset "Property getters" begin
-    sub = Substance("test",8.90,490.0,298.15,120935.0368,100.,123456., 78910.,4.19)
-    rel = Release(1.0, 10.0, 0.25, 15.67, 2.0, 101325.0, 450., 0.67)
-    atm = DryAir(100e3,273.15,287.05,2.0,5.0,ClassA)
-    scn = Scenario(sub,rel,atm)
-
-    @test _atmosphere_temperature(scn) == _temperature(atm) == 273.15
-    @test _release_temperature(scn) == _temperature(rel) == 450.0
-    @test _atmosphere_pressure(scn) == _pressure(atm) == 100e3
-    @test _release_pressure(scn) == _pressure(rel) == 101325.0
-
-    @test _mass_rate(scn) == _mass_rate(rel) == 1.0
-    @test _duration(scn) == _duration(rel) == 10.0
-    @test _release_mass(scn) == _mass(rel) == 10.0
-    @test _release_diameter(scn) == _diameter(rel) == 0.25
-    @test _release_area(scn) == _area(rel) ≈ (π/4)*0.25^2
-    @test _release_velocity(scn) == _velocity(rel) == 15.67
-    @test _release_flowrate(scn) == _flowrate(rel) ≈ (π/4)*(0.25^2)*15.67
-    @test _release_height(scn) == _height(rel) == 2.0
-    @test _release_liquid_fraction(scn) == _liquid_fraction(rel) == 0.67
-
-    @test _windspeed(scn) == _windspeed(atm) == _velocity(atm) == 2.0
-    @test _windspeed_height(scn) == _windspeed_height(atm) == _height(atm) == 5.0
-    @test _stability(scn) == _stability(atm) == ClassA
-
-end
-
-@testset "Density functions" begin
-    sub1 = Substance("test",8.90,490.0,298.15,120935.0368,100.,123456., 78910.,4.19)
-    sub2 = Substance("test",(x,y)->y*x^2,(x,y)->y*x^3,2,3,100.,123456., 78910.,4.19)
-    rel = Release(1.0, 10.0, 0.25, 15.67, 2.0, 101325.0, 450., 0.5)
-    atm = DryAir(100e3,273.15,287.05,2.0,5.0,ClassA)
-    scn1 = Scenario(sub1,rel,atm)
-    scn2 = Scenario(sub2,rel,atm)
-
-    @test _liquid_density(sub1) ≈ 490.0
-    @test _liquid_density(sub2) ≈ 24
-    @test _gas_density(sub1) ≈ 8.90
-    @test _gas_density(sub2) ≈ 12
-
-    @test _density(sub1, 0.5, 298.15, 120935.0368) ≈ 2/(1/8.9 + 1/490.)
-    @test _density(sub2, 0.5, 2, 3) ≈ 48/3
-
-    @test _release_density(scn1) == _density(sub1,0.5,450.0,101325.0)
-    @test _release_density(scn2) == _density(sub2,0.5,450.0,101325.0)
-
-    @test _density(atm, 100, 200) ≈ 2/287.05
-    @test _atmosphere_density(scn1) == _density(atm)
-
-end
 
 @testset "Monin-Obukhov length tests" begin
     @test _monin_obukhov(1.2, ClassA) ≈ -11.609752888076077
@@ -93,10 +40,10 @@ end
 @testset "Windspeed by powerlaw" begin
 
     u0, z0, p = 3.0, 1.0, 0.108
-    a = DryAir(windspeed=u0, windspeed_height=z0, stability=ClassA)
-    s = Scenario(Substance(:null,0,0,0,0,0,0,0,0),Release(0,0,0,0,1.0,0,0,0),a)
-    @test _windspeed(s) == _windspeed(a) ≈ u0
-    @test _windspeed(s,10) == _windspeed(a,10) == _windspeed(u0,z0,10,ClassA,DefaultSet())
+    a = SimpleAtmosphere(windspeed=u0, windspeed_height=z0, stability=ClassA)
+    s = Scenario(Substance(:null,0,0,0,0,0,0,0,0,0,0,0),HorizontalJet(0,0,0,0,1.0,0,0,0),a)
+    @test GasDispersion._windspeed(s) == GasDispersion._windspeed(a) ≈ u0
+    @test GasDispersion._windspeed(s,10) == GasDispersion._windspeed(a,10) == _windspeed(u0,z0,10,ClassA,DefaultSet())
 
     knowns = [(ClassA, 3.846991747968065),
               (ClassB, 3.882587524349958),
@@ -130,8 +77,8 @@ end
     # test Briggs model of plume rise
     g = 9.80616 # m/s^2
     Tₐ = 288.15 # ambient temperature, K
-    u = 4. # windspeed, m/s
-    x = 50. # test point, m
+    u = 4 # windspeed, m/s
+    x = 50 # test point, m
 
     # Buoyant unstable plume
     # Fb = 50 case
@@ -139,9 +86,9 @@ end
     uⱼ = 72.93819699672669 # m/s
     xf = 565.0050541491846 # m
     Δhf = 100.71365158671999 # m
-    sln = plume_rise(1.0,uⱼ,Tᵣ,u,Tₐ,ClassA)
+    sln = plume_rise(1,uⱼ,Tᵣ,u,Tₐ,0,ClassA)
     @test isa(sln,BuoyantPlume)
-    @test sln ≈ BuoyantPlume(50.0,xf,u,Δhf)
+    @test sln ≈ BuoyantPlume(50,xf,u,Δhf)
     @test plume_rise(x, sln) ≈ 20.0
     @test plume_rise(2xf, sln) ≈ Δhf
 
@@ -149,9 +96,9 @@ end
     uⱼ = 87.52583639607202
     xf = 612.07897481385
     Δhf = 112.8895989623143
-    sln = plume_rise(1.0,uⱼ,Tᵣ,u,Tₐ,ClassA)
+    sln = plume_rise(1,uⱼ,Tᵣ,u,Tₐ,0,ClassA)
     @test isa(sln,BuoyantPlume)
-    @test sln ≈ BuoyantPlume(60.0,xf,u,Δhf)
+    @test sln ≈ BuoyantPlume(60,xf,u,Δhf)
 
     # Momentum dominated unstable plume
     # Fb = 50 case
@@ -161,9 +108,9 @@ end
     Fm = 7171.814541070672
     β = (1/3) + (u/uⱼ)
     Δhf = 3*(uⱼ/u) # m
-    sln = plume_rise(1.0,uⱼ,Tᵣ,u,Tₐ,ClassA)
+    sln = plume_rise(1,uⱼ,Tᵣ,u,Tₐ,0,ClassA)
     @test isa(sln,MomentumPlume)
-    @test sln ≈ MomentumPlume(Fm,xf,β,nothing,u,Δhf,ClassA)
+    @test sln ≈ MomentumPlume(Fm,xf,β,u,0,Δhf,ClassA)
     @test plume_rise(x, sln) ≈ 81.01824072514351
     @test plume_rise(2xf, sln) ≈ Δhf
 
@@ -173,18 +120,18 @@ end
     uⱼ = 72.93819699672669 # m/s
     xf = 317.60677324769046 # m
     Δhf = 68.59722859012221 # m
-    sln = plume_rise(1.0,uⱼ,Tᵣ,u,Tₐ,ClassE)
+    sln = plume_rise(1,uⱼ,Tᵣ,u,Tₐ,0.02,ClassE)
     @test isa(sln,BuoyantPlume)
-    @test sln ≈ BuoyantPlume(50.0,xf,u,Δhf)
+    @test sln ≈ BuoyantPlume(50,xf,u,Δhf)
 
     # Fb = 50, class F
     Tᵣ = 400 # K
     uⱼ = 72.93819699672669 # m/s
     xf = 240.0881533494489 # m
     Δhf = 56.92380039947288 # m
-    sln = plume_rise(1.0,uⱼ,Tᵣ,u,Tₐ,ClassF)
+    sln = plume_rise(1,uⱼ,Tᵣ,u,Tₐ,0.035,ClassF)
     @test isa(sln,BuoyantPlume)
-    @test sln ≈ BuoyantPlume(50.0,xf,u,Δhf)
+    @test sln ≈ BuoyantPlume(50,xf,u,Δhf)
 
     # Momentum dominated stable plume
     # Fb = 67, class E
@@ -195,9 +142,9 @@ end
     β = (1/3)+(u/uⱼ)
     s = 0.0006806288391462781
     Δhf = 19.04522445600697 # m
-    sln = plume_rise(1.0,uⱼ,Tᵣ,u,Tₐ,ClassE)
+    sln = plume_rise(1,uⱼ,Tᵣ,u,Tₐ,0.02,ClassE)
     @test isa(sln,MomentumPlume)
-    @test sln ≈ MomentumPlume(Fm,xf,β,s,u,Δhf,ClassE)
+    @test sln ≈ MomentumPlume(Fm,xf,β,u,s,Δhf,ClassE)
     @test plume_rise(x, sln) ≈ Δhf
     @test plume_rise(2xf, sln) ≈ Δhf
 
@@ -210,9 +157,9 @@ end
     β = (1/3)+(u/uⱼ)
     s = 0.0011911004685059867
     Δhf = 17.349211998937378 # m
-    sln = plume_rise(1.0,uⱼ,Tᵣ,u,Tₐ,ClassF)
+    sln = plume_rise(1,uⱼ,Tᵣ,u,Tₐ,0.035,ClassF)
     @test isa(sln,MomentumPlume)
-    @test sln ≈ MomentumPlume(Fm,xf,β,s,u,Δhf,ClassF)
+    @test sln ≈ MomentumPlume(Fm,xf,β,u,s,Δhf,ClassF)
 
 end
 
