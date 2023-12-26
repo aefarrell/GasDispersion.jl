@@ -39,12 +39,10 @@ end
 function Substance(name,molar_weight,vapor_pressure,gas_density,liquid_density,
                    reference_temp,reference_pressure,k,boiling_temp,latent_heat,
                    gas_heat_capacity,liquid_heat_capacity)
-
-    R = 8.31446261815324
-    
+   
     # initialize with ideal gas
     if isnothing(gas_density)
-        gas_density = reference_pressure*molar_weight/(R*reference_temp)
+        gas_density = reference_pressure*molar_weight/(R_GAS_CONST*reference_temp)
     end
 
     # if no vapour pressure correlation given, use Clapeyron equation
@@ -55,7 +53,7 @@ function Substance(name,molar_weight,vapor_pressure,gas_density,liquid_density,
             Δh = latent_heat(reference_temp)
         end
 
-        B = Δh*molar_weight/R
+        B = Δh*molar_weight/R_GAS_CONST
         A = B/(boiling_temp)
         C = 0.0
         vapor_pressure = Antoine(A,B,C)

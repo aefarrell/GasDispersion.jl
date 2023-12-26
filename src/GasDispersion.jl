@@ -41,6 +41,8 @@ abstract type PuffModel end
 abstract type Puff end
 abstract type EquationSet end
 
+const R_GAS_CONST = 8.31446261815324 #Universal Gas Constant, J/mol/K
+
 # basic type definitions and such
 include("base/base_types.jl")
 include("base/plot_recipes.jl")

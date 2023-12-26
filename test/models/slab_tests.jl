@@ -135,7 +135,7 @@ end
 
     #averaged cloud parameters
     result = [res.cc.cc res.cc.betac res.cc.sig res.cc.t res.cc.xc res.cc.betax res.cc.tim res.cc.tcld res.cc.bbc]
-    @test result ≈ out[:,24:32]
+    @test result ≈ out[:, 24:32]
 
 end
 
@@ -175,7 +175,7 @@ end
 
     # basic checks that it returns the expected object
     @test isa(rls,GasDispersion.SLABSolution)
-    @test isa(rls, Puff)
+    @test isa(rls,Puff)
 
     # basic domain checks
     @test rls(0.0,0.0,r.h,1.0) ≈ 1.0

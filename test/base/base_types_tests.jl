@@ -5,7 +5,12 @@ replstr(x, kv::Pair...) = sprint((io,x) -> show(IOContext(io, :limit => true, :d
 
 @testset "Substance type" begin
 
-    R = 8.31446261815324
+    R = GasDispersion.R_GAS_CONST
+
+    # Antoine equation, propane, *Properties of Gases and Liquids, 5th ed*
+    # constants converted from log_10(Pv [bar]) to ln(Pv [Pa])
+    pv_ant = GasDispersion.Antoine(log(10)*(3.92828+5),log(10)*803.9970,247.040-273.15)
+    @test pv_ant(247.76) ≈ 199964.60671380349
 
     # propane from Perry's 8th edition, DIPPR correlations
     pv = GasDispersion.DIPPRVaporPressure(59.078,-3_492.6,-6.0669,1.0919e-5,2)
@@ -85,17 +90,38 @@ end
 end
 
 @testset "SimpleAtmosphere type" begin
-    atm1 = SimpleAtmosphere(100e3,273.15,2,5,0,ClassA)
+    # check that the air and water correlations are correct
+    # i.e. match known values from Perry's
+    @test GasDispersion._MW(GasDispersion.DRYAIR) ≈ 0.028960
+    @test GasDispersion._vapor_pressure(GasDispersion.DRYAIR,132.45) ≈ 3.794896199565284e6 # Table 2-8
+    @test GasDispersion._gas_density(GasDispersion.DRYAIR) ≈ 1.2247920562603996 # Ideal Gas Law
+    @test GasDispersion._liquid_density(GasDispersion.DRYAIR, 132.45, 101325)/28.96 ≈ 10.83417498971309 # Table 2-32
+    @test GasDispersion._latent_heat(GasDispersion.DRYAIR, 59.15)*28.96 ≈ 6.759007660367378e6 # Table 2-150
+    @test GasDispersion._cp_gas(GasDispersion.DRYAIR, 50)*28.96 ≈ 28958.0 # Table 2-156
+    @test GasDispersion._cp_liquid(GasDispersion.DRYAIR, 75)*28.96 ≈ 53065.0 # Table 2-153
+
+    @test GasDispersion._MW(GasDispersion.WATER) ≈ 0.018015
+    @test GasDispersion._vapor_pressure(GasDispersion.WATER, 273.16) ≈  610.5626315257215 # Table 2-8
+    @test GasDispersion._gas_density(GasDispersion.WATER) ≈  0.7619001689755213 # Ideal Gas Law
+    @test GasDispersion._liquid_density(GasDispersion.WATER, 273.16, 101325)/18.015 ≈  53.07493666634459 # Hand calc, equation given in Table 2-32
+    @test GasDispersion._latent_heat(GasDispersion.WATER, 273.16)*18.015 ≈ 4.473232632794751e7 # Table 2-150
+    @test GasDispersion._cp_gas(GasDispersion.WATER, 100)*18.015 ≈ 33363.000341254825 # Table 2-156
+    @test GasDispersion._cp_liquid(GasDispersion.WATER, 273.16)*18.015 ≈ 76150.12956433237 # Table 2-153
+
+    atm1 = SimpleAtmosphere(100e3,273.15,2,5,10,ClassA)
     atm2 = SimpleAtmosphere(pressure=100e3,temperature=273.15,windspeed=2,
-                            windspeed_height=5,stability=ClassA)
+                            windspeed_height=5,rel_humidity=10,stability=ClassA)
     @test isa(atm1, SimpleAtmosphere)
     @test isa(atm1, Atmosphere)
     @test atm1 ≈ atm2
+    @test replstr(atm1) == "SimpleAtmosphere atmosphere:\n    P: 100000.0 Pa \n    T: 273.15 K \n    u: 2.0 m/s \n    h: 5.0 m \n    rh: 10.0 % \n    stability: ClassA  \n"
+
     @test isnothing(GasDispersion._lapse_rate(atm1))
     @test GasDispersion._lapse_rate(SimpleAtmosphere(stability=ClassE)) == 0.020
     @test GasDispersion._lapse_rate(SimpleAtmosphere(stability=ClassF)) == 0.035
-    @test GasDispersion._rel_humidity(atm1) == 0.0
-    @test replstr(atm1) == "SimpleAtmosphere atmosphere:\n    P: 100000.0 Pa \n    T: 273.15 K \n    u: 2.0 m/s \n    h: 5.0 m \n    rh: 0.0 % \n    stability: ClassA  \n"
+    @test GasDispersion._rel_humidity(atm1) ≈ 10.0
+    @test GasDispersion._surface_roughness(atm1) == 1.0
+    @test GasDispersion._density(atm1) ≈ 1.2748615244572732
 end
 
 @testset "Scenario type" begin
