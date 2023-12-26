@@ -29,9 +29,10 @@
     x₁, t₁, Δt, h = 500, 250, 10, 10
 
     # testing default behaviour
-    @test isa(puff(scn, IntPuff;n=1), GasDispersion.GaussianPuffSolution)
-    @test isa(puff(scn, IntPuff;n=3), GasDispersion.IntPuffSolution{<:Number,<:Integer,<:StabilityClass,<:EquationSet})
-    @test isa(puff(scn, IntPuff), GasDispersion.IntPuffSolution{<:Number,<:Float64,<:StabilityClass,<:EquationSet})
+    @test GasDispersion.IntPuffSolution(scn,:test_promotion,1.0,2,3,4,3,ClassA,DefaultSet) isa GasDispersion.IntPuffSolution{Float64, Int64, ClassA, DefaultSet}
+    @test puff(scn, IntPuff;n=1) isa GasDispersion.GaussianPuffSolution
+    @test puff(scn, IntPuff;n=3) isa GasDispersion.IntPuffSolution{<:Number,<:Integer,<:StabilityClass,<:EquationSet}
+    @test puff(scn, IntPuff) isa GasDispersion.IntPuffSolution{<:Number,<:Float64,<:StabilityClass,<:EquationSet}
     @test_throws ErrorException puff(scn, IntPuff; n=0)
 
     # testing 3 puffs

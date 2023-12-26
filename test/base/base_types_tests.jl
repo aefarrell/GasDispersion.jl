@@ -77,6 +77,9 @@ replstr(x, kv::Pair...) = sprint((io,x) -> show(IOContext(io, :limit => true, :d
                          liquid_heat_capacity=cp_l)
     @test test_pv2.P_v ≈ GasDispersion.Antoine(8.086226333190652, 1868.0800074937044, 0.0)
 
+    # adding this to be tediously completionist
+    @test GasDispersion.DIPPRLiquidDensity(0.044096,369.83,1,2,3,4) == GasDispersion.DIPPRLiquidDensity(0.044096,369.83,1.0,2.0,3.0,4.0)
+
 end
 
 @testset "Release type" begin
