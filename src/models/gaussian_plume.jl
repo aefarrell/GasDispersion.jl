@@ -21,7 +21,7 @@ GaussianPlumeSolution(s,m,c_max,Q,u,h_eff,pr,stab,es) = GaussianPlumeSolution(s,
 Returns the solution to a Gaussian plume dispersion model for the given scenario.
 
 ```math
-c\left(x,y,z\right) = { {Q_{i,j} \over { 2 \pi \sigma_{y} \sigma_{z} u } }
+c\left(x,y,z\right) = {Q_{i} \over { 2 \pi \sigma_{y} \sigma_{z} u } }
 \exp \left[ -\frac{1}{2} \left( y \over \sigma_{y} \right)^2 \right] \\
 \times \left\{ \exp \left[ -\frac{1}{2} \left( { z -h } \over \sigma_{z} \right)^2 \right]
 + \exp \left[ -\frac{1}{2} \left( { z + h } \over \sigma_{z} \right)^2 \right] \right\}
@@ -35,7 +35,7 @@ parameters.
 + AIChE/CCPS. 1999. *Guidelines for Consequence Analysis of Chemical Releases*. New York: American Institute of Chemical Engineers
 
 """
-function plume(scenario::Scenario, ::Type{GaussianPlume}, eqs=DefaultSet; downwash::Bool=false, plumerise::Bool=false, h_min=1.0)
+function plume(scenario::Scenario, ::Type{GaussianPlume}, eqs=DefaultSet; h_min=1.0)
     # parameters of the jet
     ṁ  = _mass_rate(scenario)
     ρⱼ = _release_density(scenario)
@@ -68,10 +68,11 @@ end
 @doc doc"""
     plume(::Scenario{Substance,VerticalJet,Atmosphere}, GaussianPlume[, ::EquationSet]; kwargs...)
 
-Returns the solution to a Gaussian plume dispersion model for the given scenario.
+Returns the solution to a Gaussian plume dispersion model for a vertical jet. By default the Briggs
+plume rise model is used.
 
 ```math
-c\left(x,y,z\right) = { {Q_{i,j} \over { 2 \pi \sigma_{y} \sigma_{z} u } }
+c\left(x,y,z\right) = {Q_{i} \over { 2 \pi \sigma_{y} \sigma_{z} u } }
 \exp \left[ -\frac{1}{2} \left( y \over \sigma_{y} \right)^2 \right] \\
 \times \left\{ \exp \left[ -\frac{1}{2} \left( { z -h } \over \sigma_{z} \right)^2 \right]
 + \exp \left[ -\frac{1}{2} \left( { z + h } \over \sigma_{z} \right)^2 \right] \right\}
@@ -81,12 +82,13 @@ where the σs are dispersion parameters correlated with the distance x. The
 `EquationSet` defines the set of correlations used to calculate the dispersion 
 parameters.
 
-# References
-+ AIChE/CCPS. 1999. *Guidelines for Consequence Analysis of Chemical Releases*. New York: American Institute of Chemical Engineers
-
 # Arguments
 - `downwash::Bool=false`: when true, includes stack-downwash effects
 - `plumerise::Bool=true`: when true, includes plume-rise effects using Briggs' model
+
+# References
++ AIChE/CCPS. 1999. *Guidelines for Consequence Analysis of Chemical Releases*. New York: American Institute of Chemical Engineers
++ Briggs, Gary A. 1969. *Plume Rise* Oak Ridge: U.S. Atomic Energy Commission
 
 """
 function plume(scenario::Scenario{<:Substance,<:VerticalJet,<:Atmosphere}, ::Type{GaussianPlume}, eqs=DefaultSet; downwash::Bool=false, plumerise::Bool=true, h_min=1.0)
