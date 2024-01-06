@@ -22,7 +22,7 @@ Long, V.D. 1963. "Estimation of the Extent of Hazard Areas Round a Vent." *Chem.
 
 Pasquill, Frank. 1974. *Atmospheric Diffusion, 2nd Ed.* New York: Halstead Press, New York
 
-Spicer, Thomas O. and Jerry A. Havens. 1988. *Development of Vapor Dispersion Models for Non-Neutrally Buoyant Gas Mixtures--Analysis of TFI/NH3 Test Data*. United States.
+Spicer, Thomas O. and Jerry A. Havens. 1988. *Development of Vapor Dispersion Models for Non-Neutrally Buoyant Gas Mixtures--Analysis of TFI/NH3 Test Data*. Tyndall Air Force Base, FL: USAF Engineering & Services Laboratory
 
 Seinfeld, John H. 1986. *Atmospheric Chemistry and Physics of Air Pollution*. New York: John Wiley and Sons
 
