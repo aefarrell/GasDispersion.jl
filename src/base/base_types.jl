@@ -1,26 +1,53 @@
 # units for the show function
-units = Dict{Symbol,String}([
-    :ṁ => "kg/s",
-    :Δt => "s",
-    :d => "m",
-    :u => "m/s",
-    :h => "m",
-    :ρ => "kg/m^3",
-    :P => "Pa",
-    :T => "K",
-    :Rs => "J/kg/K",
-    :rh => "%",
-    :stability => "",
-    :f => "",
-    :k => ""
-])
+const UNITS = Dict{Symbol,String}([
+                                    :ṁ => "kg/s",
+                                    :Δt => "s",
+                                    :d => "m",
+                                    :u => "m/s",
+                                    :h => "m",
+                                    :ρ => "kg/m^3",
+                                    :P => "Pa",
+                                    :T => "K",
+                                    :Rs => "J/kg/K",
+                                    :rh => "%",
+                                    :stability => "",
+                                    :f => "",
+                                    :k => "",
+                                    :name => "",
+                                    :MW => "kg/mol",
+                                    :Δh => "J/kg",
+                                    :Cp => "J/kg/K"
+                                ])
 
 include("substance_correls.jl")
 
 const CALLABLE = Union{Function,PropertyCorrelation}
 const CC = Union{Number,CALLABLE}
 
-# Substance type definition
+"""
+    Substance{N,VAP,D_G,D_L,F,H,CP_G,CP_L}(;kwargs...)
+
+A simple container for the physical and thermal properties of substances.
+
+`vapor_pressure`, `latent_heat`, `gas_heat_capacity`, and `liquid_heat_capacity` can be functions of temperature (in Kelvin) or constants.
+
+`gas_density` and `liquid_density` can be functions of temperature (in Kelvin) and pressure (in Pascal) or constants.
+
+# Arguments
+- `name<:Union{AbstractString,Symbol}`: the name of the substance
+- `molar_weight::Number`: the molar weight, kg/mol
+- `vapor_pressure<:Union{Number,Function,Nothing}=nothing`: the vapor pressure, Pa. If `nothing` then the Clausius-Clapeyron equation is used to derive a vapor pressure curve
+- `gas_density<:Union{Number,Function,Nothing}=nothing`: the gas density, kg/m³. If `nothing` the ideal gas law is used.
+- `liquid_density<:Union{Number,Function}`: the liquid density, kg/m³.
+- `reference_temp::Number=288.15`: the reference temperature for the given properties, K.
+- `reference_pressure::Number=101325`: the reference pressure for the given properties, Pa.
+- `k::Number=1.4`: the isentropic expansion factor, cp/cv, unitless.
+- `boiling_temp<:Union{Number,Function}::Number`: the normal boiling temperature, K.
+- `latent_heat<:Union{Number,Function}`: the latent heat of vaporization, J/kg.
+- `gas_heat_capacity<:Union{Number,Function}`: the gas heat capacity, J/kg/K.
+- `liquid_heat_capacity<:Union{Number,Function}`: the liquid heat capacity, J/kg/K.
+
+"""
 struct Substance{N<:Union{AbstractString,Symbol},VAP<:CC,D_G<:CC,D_L<:CC,F<:Number,H<:CC,CP_G<:CC,CP_L<:CC}
     name::N
     MW::F  # molar weight, kg/mol
@@ -76,8 +103,17 @@ Base.isapprox(a::Substance, b::Substance) = all([
     getproperty(a,k)≈getproperty(b,k) for k in fieldnames(typeof(a))
     if typeof(getproperty(a,k))<:Number ])
 
-function Base.show(io::IO, mime::MIME"text/plain", s::Substance)
-    print(io, "Substance: $(s.name) \n")
+function Base.show(io::IO, mime::MIME"text/plain", s::S) where { S<:Substance}
+    s_type = split(string(S),"{")[1]
+    print(io, "$s_type: $(s.name) \n")
+    for key in fieldnames(S) 
+        if key != :name
+            val =  getproperty(s, key)
+            var =  Symbol(split(string(key),"_")[1])
+            unit = UNITS[var]
+            print(io, "    $key: $val $unit \n")
+        end
+    end
 end
 
 # Substance property getters
@@ -116,7 +152,22 @@ end
 
 
 
-# Release type definition
+"""
+    HorizontalJet{<:Number}(;kwargs...)<:Release
+
+A simple container for parameters of a horizontal jet release.
+
+# Arguments
+- `mass_rate::Number`: the mass emission rate of the substance, kg/s.
+- `duration::Number`: the duration of the release, s.
+- `diameter::Number`: the diameter of the jet, m.
+- `velocity::Number`: the average velocity of the jet, m/s.
+- `height::Number`: the height of the jet center, m.
+- `pressure::Number`: the pressure at the jet exit, Pa.
+- `temperature::Number`: the temperature at the jet exit, K.
+- `fraction_liquid::Number`: the fraction of the release that is liquid (for gas liquid mixtures), vol fraction.
+
+"""
 struct HorizontalJet{F <: Number} <: Release
     ṁ::F   # mass emission rate, kg/s
     Δt::F  # release duration, s
@@ -132,6 +183,22 @@ HorizontalJet(; mass_rate, duration, diameter, velocity, height, pressure,
     temperature, fraction_liquid) = HorizontalJet(mass_rate, duration, diameter,
     velocity, height, pressure, temperature, fraction_liquid)
 
+"""
+    VerticalJet{<:Number}(;kwargs...)<:Release
+
+A simple container for parameters of a vertical jet release.
+
+# Arguments
+- `mass_rate::Number`: the mass emission rate of the substance, kg/s.
+- `duration::Number`: the duration of the release, s.
+- `diameter::Number`: the diameter of the jet, m.
+- `velocity::Number`: the average velocity of the jet, m/s.
+- `height::Number`: the height of the jet center, m.
+- `pressure::Number`: the pressure at the jet exit, Pa.
+- `temperature::Number`: the temperature at the jet exit, K.
+- `fraction_liquid::Number`: the fraction of the release that is liquid (for gas liquid mixtures), vol fraction.
+
+"""
 struct VerticalJet{F <: Number} <: Release
     ṁ::F   # mass emission rate, kg/s
     Δt::F  # release duration, s
@@ -157,7 +224,7 @@ function Base.show(io::IO, mime::MIME"text/plain", r::Release)
     for key in fieldnames(typeof(r))
         val =  getproperty(r, key)
         var =  Symbol(split(string(key),"_")[1])
-        unit = units[var]
+        unit = UNITS[var]
         print(io, "    $key: $val $unit \n")
     end
 end
@@ -192,7 +259,7 @@ function Base.show(io::IO, mime::MIME"text/plain", a::Atmosphere)
     print(io, "$a_type atmosphere:\n")
     for key in fieldnames(typeof(a))
         val =  getproperty(a, key)
-        unit = units[key]
+        unit = UNITS[key]
         print(io, "    $key: $val $unit \n")
     end
 end
@@ -207,12 +274,18 @@ _density(a::Atmosphere) = _density(a, _temperature(a), _pressure(a))
 
 include("simple_atmosphere.jl")
 
-# Scenario type definition
+"""
+    Scenario{<:Substance,<:Release,<:Atmosphere}(s<:Substance,r<:Release,a<:Atmosphere=SimpleAtmosphere())
+
+A chemical release scenario.
+
+"""
 struct Scenario{S<:Substance,R<:Release,A<:Atmosphere}
     substance::S
     release::R
     atmosphere::A
 end
+Scenario(substance,release) = Scenario(substance,release,SimpleAtmosphere())
 Scenario(;substance, release, atmosphere=SimpleAtmosphere()) = Scenario(substance,
 release, atmosphere)
 

@@ -58,7 +58,7 @@ Runs the plume dispersion model on the given scenario and returns the solution
 which is callable to give the concentration
     c(x, y, z[, t])
 
-The concentration is in kg/m³, if `model` is unspecified, defaults to a simple
+The concentration is in vol fraction, if `model` is unspecified, defaults to a simple
 gaussian plume model.
 
 `equationset`s are used to specify that an alternative set of correlations 
@@ -85,7 +85,7 @@ Runs the puff dispersion model on the given scenario and returns the solution
 which is callable to give the concentration
     c(x, y, z, t)
 
-The concentration is in kg/m³, if `model` is unspecified, defaults to a
+The concentration is in vol fraction, if `model` is unspecified, defaults to a
 simple gaussian puff.
 
 `equationset`s are used to specify that an alternative set of correlations 

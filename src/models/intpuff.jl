@@ -28,7 +28,7 @@ c\left(x,y,z,t\right) = \sum_{i}^{n-1} { {Q_{i,j} \Delta t} \over n }
 + \exp \left( -\frac{1}{2} \left( {z + h} \over \sigma_z \right)^2 \right) } \over { \sqrt{2\pi} \sigma_z } }
 ```
 
-where δt is Δt/n, and the σs are dispersion parameters correlated with the distance x. The `EquationSet` defines the set of correlations used to calculate the dispersion parameters.
+where δt is Δt/n, and the σs are dispersion parameters correlated with the distance x. The `EquationSet` defines the set of correlations used to calculate the dispersion parameters and windspeed.
 
 # Arguments
 - `n::Integer`: the number of discrete gaussian puffs, defaults to infinity

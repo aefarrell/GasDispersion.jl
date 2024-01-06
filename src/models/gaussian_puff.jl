@@ -28,7 +28,7 @@ c\left(x,y,z,t\right) = Q_{i,j} \Delta t
 
 where the σs are dispersion parameters correlated with the distance x. The 
 `EquationSet` defines the set of correlations used to calculate the dispersion
- parameters.
+ parameters and windspeed.
 
 # References
 + AIChE/CCPS. 1999. *Guidelines for Consequence Analysis of Chemical Releases*. New York: American Institute of Chemical Engineers

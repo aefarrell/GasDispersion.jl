@@ -22,7 +22,20 @@ const WATER = Substance(name = :water,
                         gas_heat_capacity=DIPPRIdealGasHeatCapacity(0.018015,647.096,0.33363e5,0.2679e5,2.6105e3,0.08896e5,1169),
                         liquid_heat_capacity=DIPPRLiquidHeatCapacity(Eq1,0.018015,647.096,276_370,-2_090.1,8.125,-0.014116,9.3701e-6))
 
-# SimpleAtmosphere atmosphere type definition
+"""
+    SimpleAtmosphere{<:Number,<:StabilityClass}(kwargs...)<:Atmosphere
+
+A simple model of the atmosphere.
+
+# Arguments
+- `pressure::Number=101325`: atmospheric pressure, Pa
+- `temperature::Number=298.15`: ambient pressure, K
+- `windspeed::Number=1.5`: windspeed at anemometer height, m/s
+- `windspeed_height::Number=10`: anemometer height, m
+- `rel_humidity::Number=0`: relative humidity, %
+- `stability::StabilityClass=ClassF`: Pasquill-Gifford stability class
+
+"""
 struct SimpleAtmosphere{F<:Number,S<:StabilityClass} <: Atmosphere
     P::F  # atmospheric pressure, Pa
     T::F  # atmospheric temperature, K
