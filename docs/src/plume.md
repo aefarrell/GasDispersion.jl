@@ -229,12 +229,13 @@ Simple jet dispersion models are a useful tool for evaluating dispersion near th
 c = k_2 c_0 \left( d \over z \right) \sqrt{ \rho_j \over \rho_a } \exp \left( - \left( k_3 { y \over x } \right)^2 \right) \left[ \exp \left( - \left( k_3 { (z-h) \over x }\right)^2 \right) + \exp \left( - \left( k_3 { (z+h) \over x }\right)^2 \right) \right]
 ```
 
-With 
-+ model parameters $k_2$ and $k_3$
-+ initial concentration, $c_0$
-+ diameter of the jet, $d$
-+ initial density of the jet material, $\rho_j$
-+ density of the ambient atmosphere, $\rho_a$
+with
++ *c* - concentration, volume fraction
++  $k_2$ and $k_3$ - model parameters
++  $c_0$ - initial concentration, volume fraction
++ *d* - diameter of the jet, m
++  $\rho_j$ - initial density of the jet material, kg/m^3
++  $\rho_a$ - density of the ambient atmosphere, kg/m^3
 
 ### Model Parameters
 
