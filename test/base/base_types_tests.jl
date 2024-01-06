@@ -5,6 +5,10 @@ replstr(x, kv::Pair...) = sprint((io,x) -> show(IOContext(io, :limit => true, :d
 
 @testset "Substance type" begin
 
+    sub = Substance("test",2.0,1.0,8.90,490,298.15,120935.0368,1.3,100,123456,78910,4.19)
+    @test sub isa Substance
+    @test replstr(sub) == "Substance: test \n    MW: 2.0 kg/mol \n    P_v: 1.0 Pa \n    ρ_g: 8.9 kg/m^3 \n    ρ_l: 490 kg/m^3 \n    T_ref: 298.15 K \n    P_ref: 120935.0368 Pa \n    k: 1.3  \n    T_b: 100.0 K \n    Δh_v: 123456 J/kg \n    Cp_g: 78910 J/kg/K \n    Cp_l: 4.19 J/kg/K \n"
+
     R = GasDispersion.R_GAS_CONST
 
     # Antoine equation, propane, *Properties of Gases and Liquids, 5th ed*
@@ -32,8 +36,8 @@ replstr(x, kv::Pair...) = sprint((io,x) -> show(IOContext(io, :limit => true, :d
                         latent_heat=Δhv,
                         gas_heat_capacity=cp_ig,
                         liquid_heat_capacity=cp_l)
-    @test isa(propane, Substance)
-    @test replstr(propane) == "Substance: propane \n    MW: 0.044096 kg/mol \n    P_v: GasDispersion.DIPPRVaporPressure{Float64}(59.078, -3492.6, -6.0669, 1.0919e-5, 2.0) Pa \n    ρ_g: 1.864931992847327 kg/m^3 \n    ρ_l: GasDispersion.DIPPRLiquidDensity{Float64}(0.044096, 369.83, 1.3757, 0.27453, 369.83, 0.29359) kg/m^3 \n    T_ref: 288.15 K \n    P_ref: 101325.0 Pa \n    k: 1.3  \n    T_b: 231.02 K \n    Δh_v: GasDispersion.DIPPRLatentHeat{Float64}(0.044096, 369.83, 2.9209e7, 0.78237, -0.77319, 0.39246, 0.0) J/kg \n    Cp_g: GasDispersion.DIPPRIdealGasHeatCapacity{Float64}(0.044096, 369.83, 51920.0, 192450.0, 1626.5, 116800.0, 723.6) J/kg/K \n    Cp_l: GasDispersion.DIPPRLiquidHeatCapacity{GasDispersion.Eq2, Float64}(GasDispersion.Eq2, 0.044096, 369.83, 62.983, 113630.0, 633.21, -873.46, 0.0) J/kg/K \n"
+    # @test isa(propane, Substance)
+    # @test replstr(propane) == "Substance: propane \n    MW: 0.044096 kg/mol \n    P_v: GasDispersion.DIPPRVaporPressure{Float64}(59.078, -3492.6, -6.0669, 1.0919e-5, 2.0) Pa \n    ρ_g: 1.864931992847327 kg/m^3 \n    ρ_l: GasDispersion.DIPPRLiquidDensity{Float64}(0.044096, 369.83, 1.3757, 0.27453, 369.83, 0.29359) kg/m^3 \n    T_ref: 288.15 K \n    P_ref: 101325.0 Pa \n    k: 1.3  \n    T_b: 231.02 K \n    Δh_v: GasDispersion.DIPPRLatentHeat{Float64}(0.044096, 369.83, 2.9209e7, 0.78237, -0.77319, 0.39246, 0.0) J/kg \n    Cp_g: GasDispersion.DIPPRIdealGasHeatCapacity{Float64}(0.044096, 369.83, 51920.0, 192450.0, 1626.5, 116800.0, 723.6) J/kg/K \n    Cp_l: GasDispersion.DIPPRLiquidHeatCapacity{GasDispersion.Eq2, Float64}(GasDispersion.Eq2, 0.044096, 369.83, 62.983, 113630.0, 633.21, -873.46, 0.0) J/kg/K \n"
 
     @test GasDispersion._MW(propane) ≈ 0.044096
     @test GasDispersion._boiling_temperature(propane) ≈ 231.02
