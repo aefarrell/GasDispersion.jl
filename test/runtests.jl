@@ -19,12 +19,12 @@ if GROUP == "All" || GROUP == "Base"
     include("base/recipe_tests.jl")
 end
 
-if GROUP == "All" || GROUP == "Utils"
+if GROUP == "All" || GROUP == "Util"
     # testing utilities
     include("utils/util_tests.jl")
 end
 
-if GROUP == "All" || GROUP == "Models"
+if GROUP == "All" || GROUP == "Model"
     # testing source models
     include("source_models/jet_source_tests.jl")
 
@@ -40,6 +40,6 @@ end
 
 # some doc tests don't work with julia 1.3, because of Documenter
 # but I still want to run them in the tests sometimes
-if GROUP == "Docs" && VERSION != "1.3"
+if GROUP == "Doc" && VERSION != "1.3"
     doctest(GasDispersion, fix=false)
 end
