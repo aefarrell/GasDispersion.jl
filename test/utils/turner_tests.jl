@@ -10,11 +10,11 @@
                  (ClassE, 0.10742276488910325, 0.09522313470055986, 4.156640589233231, 13.43619462405115, 346.73685045253166),
                  (ClassF, 0.07894741678277778, 0.0659507672737797, 2.625547335519663, 8.572359097689173, 106.16955571987263)]
         @testset "Plume dispersion, stability class $class" for (class,sy,sz1,sz2,sz3,sz4) in known
-            @test crosswind_dispersion(1.2, Plume, class, Turner) ≈ sy
-            @test vertical_dispersion(1.2, Plume, class, Turner) ≈ sz1
-            @test vertical_dispersion(120, Plume, class, Turner) ≈ sz2
-            @test vertical_dispersion(520, Plume, class, Turner) ≈ sz3
-            @test vertical_dispersion(1e6, Plume, class, Turner) ≈ sz4
+            @test GasDispersion.crosswind_dispersion(1.2, Plume, class, Turner) ≈ sy
+            @test GasDispersion.vertical_dispersion(1.2, Plume, class, Turner) ≈ sz1
+            @test GasDispersion.vertical_dispersion(120, Plume, class, Turner) ≈ sz2
+            @test GasDispersion.vertical_dispersion(520, Plume, class, Turner) ≈ sz3
+            @test GasDispersion.vertical_dispersion(1e6, Plume, class, Turner) ≈ sz4
         end
 
     end

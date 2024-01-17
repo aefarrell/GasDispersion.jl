@@ -1,18 +1,17 @@
 @testset "Britter-McQuaid puff correlations" begin
-    include("../../src/utils/britter_mcquaid_correls.jl")
 
-    @test _bm_pf_c(-0.75)[2] ≈ [0.7, 0.85, 0.95, 1.15, 1.48, 1.83, 2.075]
-    @test _bm_pf_c(0.0)[2] ≈ [0.81, 1.0, 1.19, 1.39, 1.62, 1.83, 2.05]
-    @test _bm_pf_c(0.75)[2] ≈ [0.93, 1.03, 1.1849999999999998, 1.375, 1.525, 1.68, 1.8474999999999997]
+    @test GasDispersion._bm_pf_c(-0.75)[2] ≈ [0.7, 0.85, 0.95, 1.15, 1.48, 1.83, 2.075]
+    @test GasDispersion._bm_pf_c(0.0)[2] ≈ [0.81, 1.0, 1.19, 1.39, 1.62, 1.83, 2.05]
+    @test GasDispersion._bm_pf_c(0.75)[2] ≈ [0.93, 1.03, 1.1849999999999998, 1.375, 1.525, 1.68, 1.8474999999999997]
 
     # test domain warning
-    @test_logs (:warn, "α= 1.1 is out of range") _bm_pf_c_1(1.1)
-    @test_logs (:warn, "α= 1.1 is out of range") _bm_pf_c_05(1.1)
-    @test_logs (:warn, "α= 1.1 is out of range") _bm_pf_c_02(1.1)
-    @test_logs (:warn, "α= 1.1 is out of range") _bm_pf_c_01(1.1)
-    @test_logs (:warn, "α= 1.1 is out of range") _bm_pf_c_005(1.1)
-    @test_logs (:warn, "α= 1.1 is out of range") _bm_pf_c_002(1.1)
-    @test_logs (:warn, "α= 1.1 is out of range") _bm_pf_c_001(1.1)
+    @test_logs (:warn, "α= 1.1 is out of range") GasDispersion._bm_pf_c_1(1.1)
+    @test_logs (:warn, "α= 1.1 is out of range") GasDispersion._bm_pf_c_05(1.1)
+    @test_logs (:warn, "α= 1.1 is out of range") GasDispersion._bm_pf_c_02(1.1)
+    @test_logs (:warn, "α= 1.1 is out of range") GasDispersion._bm_pf_c_01(1.1)
+    @test_logs (:warn, "α= 1.1 is out of range") GasDispersion._bm_pf_c_005(1.1)
+    @test_logs (:warn, "α= 1.1 is out of range") GasDispersion._bm_pf_c_002(1.1)
+    @test_logs (:warn, "α= 1.1 is out of range") GasDispersion._bm_pf_c_001(1.1)
 
 end
 

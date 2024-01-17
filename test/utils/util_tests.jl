@@ -1,12 +1,11 @@
-include("../../src/utils/utils.jl")
 
 @testset "Monin-Obukhov length tests" begin
-    @test _monin_obukhov(1.2, ClassA) ≈ -11.609752888076077
-    @test _monin_obukhov(1.2, ClassB) ≈ -26.818480014823884
-    @test _monin_obukhov(1.2, ClassC) ≈ -129.91505611802876
-    @test _monin_obukhov(1.2, ClassD) == Inf
-    @test _monin_obukhov(1.2, ClassE) ≈ 129.91505611802876
-    @test _monin_obukhov(1.2, ClassF) ≈ 26.818480014823884
+    @test GasDispersion._monin_obukhov(1.2, ClassA) ≈ -11.609752888076077
+    @test GasDispersion._monin_obukhov(1.2, ClassB) ≈ -26.818480014823884
+    @test GasDispersion._monin_obukhov(1.2, ClassC) ≈ -129.91505611802876
+    @test GasDispersion._monin_obukhov(1.2, ClassD) == Inf
+    @test GasDispersion._monin_obukhov(1.2, ClassE) ≈ 129.91505611802876
+    @test GasDispersion._monin_obukhov(1.2, ClassF) ≈ 26.818480014823884
 end
 
 @testset "Pasquill-Gifford dispersion tests" begin
@@ -19,8 +18,8 @@ end
               (ClassE, 0.12018860465437811, 0.028796954615478678),
               (ClassF, 0.0794187446441675, 0.014462956106986533)]
     @testset "Stability class $class" for (class,cwind,vert) in knowns
-        @test crosswind_dispersion(1.2, Plume, class, DefaultSet()) ≈ cwind
-        @test vertical_dispersion(1.2, Plume, class, DefaultSet()) ≈ vert
+        @test GasDispersion.crosswind_dispersion(1.2, Plume, class, DefaultSet()) ≈ cwind
+        @test GasDispersion.vertical_dispersion(1.2, Plume, class, DefaultSet()) ≈ vert
     end
 
     # Puff dispersion
@@ -31,9 +30,9 @@ end
               (ClassE, 0.047304966328689864, 0.11258170198247626),
               (ClassF, 0.023523465599668385, 0.05588182287353654)]
     @testset "Stability class $class" for (class,cwind,vert) in knowns
-        @test crosswind_dispersion(1.2, Puff, class, DefaultSet()) ≈ cwind
-        @test downwind_dispersion(1.2, Puff, class, DefaultSet()) ≈ cwind
-        @test vertical_dispersion(1.2, Puff, class, DefaultSet()) ≈ vert
+        @test GasDispersion.crosswind_dispersion(1.2, Puff, class, DefaultSet()) ≈ cwind
+        @test GasDispersion.downwind_dispersion(1.2, Puff, class, DefaultSet()) ≈ cwind
+        @test GasDispersion.vertical_dispersion(1.2, Puff, class, DefaultSet()) ≈ vert
     end
 end
 
@@ -43,7 +42,7 @@ end
     a = SimpleAtmosphere(windspeed=u0, windspeed_height=z0, stability=ClassA)
     s = Scenario(Substance(:null,0,0,0,0,0,0,0,0,0,0,0),HorizontalJet(0,0,0,0,1.0,0,0,0),a)
     @test GasDispersion._windspeed(s) == GasDispersion._windspeed(a) ≈ u0
-    @test GasDispersion._windspeed(s,10) == GasDispersion._windspeed(a,10) == _windspeed(u0,z0,10,ClassA,DefaultSet())
+    @test GasDispersion._windspeed(s,10) == GasDispersion._windspeed(a,10) == GasDispersion._windspeed(u0,z0,10,ClassA,DefaultSet())
 
     knowns = [(ClassA, 3.846991747968065),
               (ClassB, 3.882587524349958),
@@ -53,26 +52,26 @@ end
               (ClassF, 5.371817562105883)]
 
     @testset "Stability class $class" for (class, ans) in knowns
-        @test  _windspeed(u0,z0,10,class,DefaultSet()) ≈ ans
+        @test  GasDispersion._windspeed(u0,z0,10,class,DefaultSet()) ≈ ans
     end
 
 end
 
 @testset "Windspeed by Monin-Obukhov length" begin
     ustar, zR, k = 3.0, 1.0, 0.35
-    λ = _monin_obukhov(zR, ClassA)
+    λ = GasDispersion._monin_obukhov(zR, ClassA)
     a(z) = (1-15*(z/λ))^0.25
     Ψ(a) = 2*log((1+a)/2) + log((1+a^2)/2) - 2*atan(a) + π/2
 
-    @test _windspeed(10, ustar, zR, λ, ClassA) ≈ (ustar/k)*(log((10+zR)/zR) - Ψ(a(10)))
-    @test _windspeed(10, ustar, zR, λ, ClassD) ≈ (ustar/k)*(log((10+zR)/zR))
-    @test _windspeed(10, ustar, zR, λ, ClassE) ≈ (ustar/k)*(log((10+zR)/zR) - 4.7*(10/λ))
+    @test GasDispersion._windspeed(10, ustar, zR, λ, ClassA) ≈ (ustar/k)*(log((10+zR)/zR) - Ψ(a(10)))
+    @test GasDispersion._windspeed(10, ustar, zR, λ, ClassD) ≈ (ustar/k)*(log((10+zR)/zR))
+    @test GasDispersion._windspeed(10, ustar, zR, λ, ClassE) ≈ (ustar/k)*(log((10+zR)/zR) - 4.7*(10/λ))
 end
 
 @testset "Plume rise" begin
 
     # test null case
-    @test isa(NoPlumeRise(),PlumeRise)
+    @test isa(GasDispersion.NoPlumeRise(),GasDispersion.PlumeRise)
 
     # test Briggs model of plume rise
     g = 9.80616 # m/s^2
@@ -86,19 +85,19 @@ end
     uⱼ = 72.93819699672669 # m/s
     xf = 565.0050541491846 # m
     Δhf = 100.71365158671999 # m
-    sln = plume_rise(1,uⱼ,Tᵣ,u,Tₐ,0,ClassA)
-    @test isa(sln,BuoyantPlume)
-    @test sln ≈ BuoyantPlume(50,xf,u,Δhf)
-    @test plume_rise(x, sln) ≈ 20.0
-    @test plume_rise(2xf, sln) ≈ Δhf
+    sln = GasDispersion.plume_rise(1,uⱼ,Tᵣ,u,Tₐ,0,ClassA)
+    @test isa(sln,GasDispersion.BuoyantPlume)
+    @test sln ≈ GasDispersion.BuoyantPlume(50,xf,u,Δhf)
+    @test GasDispersion.plume_rise(x, sln) ≈ 20.0
+    @test GasDispersion.plume_rise(2xf, sln) ≈ Δhf
 
     # Fb = 60 case
     uⱼ = 87.52583639607202
     xf = 612.07897481385
     Δhf = 112.8895989623143
-    sln = plume_rise(1,uⱼ,Tᵣ,u,Tₐ,0,ClassA)
-    @test isa(sln,BuoyantPlume)
-    @test sln ≈ BuoyantPlume(60,xf,u,Δhf)
+    sln = GasDispersion.plume_rise(1,uⱼ,Tᵣ,u,Tₐ,0,ClassA)
+    @test isa(sln,GasDispersion.BuoyantPlume)
+    @test sln ≈ GasDispersion.BuoyantPlume(60,xf,u,Δhf)
 
     # Momentum dominated unstable plume
     # Fb = 50 case
@@ -108,11 +107,11 @@ end
     Fm = 7171.814541070672
     β = (1/3) + (u/uⱼ)
     Δhf = 3*(uⱼ/u) # m
-    sln = plume_rise(1,uⱼ,Tᵣ,u,Tₐ,0,ClassA)
-    @test isa(sln,MomentumPlume)
-    @test sln ≈ MomentumPlume(Fm,xf,β,u,0,Δhf,ClassA)
-    @test plume_rise(x, sln) ≈ 81.01824072514351
-    @test plume_rise(2xf, sln) ≈ Δhf
+    sln = GasDispersion.plume_rise(1,uⱼ,Tᵣ,u,Tₐ,0,ClassA)
+    @test isa(sln,GasDispersion.MomentumPlume)
+    @test sln ≈ GasDispersion.MomentumPlume(Fm,xf,β,u,0,Δhf,ClassA)
+    @test GasDispersion.plume_rise(x, sln) ≈ 81.01824072514351
+    @test GasDispersion.plume_rise(2xf, sln) ≈ Δhf
 
     # Buoyant stable plume
     # Fb = 50, class E
@@ -120,18 +119,18 @@ end
     uⱼ = 72.93819699672669 # m/s
     xf = 317.60677324769046 # m
     Δhf = 68.59722859012221 # m
-    sln = plume_rise(1,uⱼ,Tᵣ,u,Tₐ,0.02,ClassE)
-    @test isa(sln,BuoyantPlume)
-    @test sln ≈ BuoyantPlume(50,xf,u,Δhf)
+    sln = GasDispersion.plume_rise(1,uⱼ,Tᵣ,u,Tₐ,0.02,ClassE)
+    @test isa(sln,GasDispersion.BuoyantPlume)
+    @test sln ≈ GasDispersion.BuoyantPlume(50,xf,u,Δhf)
 
     # Fb = 50, class F
     Tᵣ = 400 # K
     uⱼ = 72.93819699672669 # m/s
     xf = 240.0881533494489 # m
     Δhf = 56.92380039947288 # m
-    sln = plume_rise(1,uⱼ,Tᵣ,u,Tₐ,0.035,ClassF)
-    @test isa(sln,BuoyantPlume)
-    @test sln ≈ BuoyantPlume(50,xf,u,Δhf)
+    sln = GasDispersion.plume_rise(1,uⱼ,Tᵣ,u,Tₐ,0.035,ClassF)
+    @test isa(sln,GasDispersion.BuoyantPlume)
+    @test sln ≈ GasDispersion.BuoyantPlume(50,xf,u,Δhf)
 
     # Momentum dominated stable plume
     # Fb = 67, class E
@@ -142,11 +141,11 @@ end
     β = (1/3)+(u/uⱼ)
     s = 0.0006806288391462781
     Δhf = 19.04522445600697 # m
-    sln = plume_rise(1,uⱼ,Tᵣ,u,Tₐ,0.02,ClassE)
-    @test isa(sln,MomentumPlume)
-    @test sln ≈ MomentumPlume(Fm,xf,β,u,s,Δhf,ClassE)
-    @test plume_rise(x, sln) ≈ Δhf
-    @test plume_rise(2xf, sln) ≈ Δhf
+    sln = GasDispersion.plume_rise(1,uⱼ,Tᵣ,u,Tₐ,0.02,ClassE)
+    @test isa(sln,GasDispersion.MomentumPlume)
+    @test sln ≈ GasDispersion.MomentumPlume(Fm,xf,β,u,s,Δhf,ClassE)
+    @test GasDispersion.plume_rise(x, sln) ≈ Δhf
+    @test GasDispersion.plume_rise(2xf, sln) ≈ Δhf
 
     # Momentum dominated stable plume
     # Fb = 67, class F
@@ -157,9 +156,9 @@ end
     β = (1/3)+(u/uⱼ)
     s = 0.0011911004685059867
     Δhf = 17.349211998937378 # m
-    sln = plume_rise(1,uⱼ,Tᵣ,u,Tₐ,0.035,ClassF)
-    @test isa(sln,MomentumPlume)
-    @test sln ≈ MomentumPlume(Fm,xf,β,u,s,Δhf,ClassF)
+    sln = GasDispersion.plume_rise(1,uⱼ,Tᵣ,u,Tₐ,0.035,ClassF)
+    @test isa(sln,GasDispersion.MomentumPlume)
+    @test sln ≈ GasDispersion.MomentumPlume(Fm,xf,β,u,s,Δhf,ClassF)
 
 end
 
