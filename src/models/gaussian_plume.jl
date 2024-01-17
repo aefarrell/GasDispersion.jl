@@ -169,10 +169,7 @@ function (g::GaussianPlumeSolution{F,NoPlumeRise,S,E})(x, y, z, t=0) where {F<:N
 
         # c is in kg/m^3
         # use density at ambient conditions to convert to vol pct
-        T_a = _atmosphere_temperature(g.scenario)
-        P_a = _atmosphere_pressure(g.scenario)
-        ρ = _gas_density(g.scenario.substance,T_a,P_a)
-        c_vol = c/ρ
+        c_vol = c/g.mass_to_vol
 
         return min(c_vol,g.max_concentration)
     end
@@ -203,10 +200,7 @@ function (g::GaussianPlumeSolution{F,<:BriggsModel,S,E})(x, y, z, t=0) where {F<
 
         # c is in kg/m^3
         # use density at ambient conditions to convert to vol pct
-        T_a = _atmosphere_temperature(g.scenario)
-        P_a = _atmosphere_pressure(g.scenario)
-        ρ = _gas_density(g.scenario.substance,T_a,P_a)
-        c_vol = c/ρ
+        c_vol = c/g.mass_to_vol
 
         return min(c_vol,g.max_concentration)
     end

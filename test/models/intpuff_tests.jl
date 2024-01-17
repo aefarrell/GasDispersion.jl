@@ -29,7 +29,7 @@
     x₁, t₁, Δt, h = 500, 250, 10, 10
 
     # testing default behaviour
-    @test GasDispersion.IntPuffSolution(scn,:test_promotion,1.0,2,3,4,3,ClassA,DefaultSet) isa GasDispersion.IntPuffSolution{Float64, Int64, ClassA, DefaultSet}
+    @test GasDispersion.IntPuffSolution(scn,:test_promotion,1.0,2,3,4,5,6,ClassA,DefaultSet) isa GasDispersion.IntPuffSolution{Float64, Int64, ClassA, DefaultSet}
     @test puff(scn, IntPuff;n=1) isa GasDispersion.GaussianPuffSolution
     @test puff(scn, IntPuff;n=3) isa GasDispersion.IntPuffSolution{<:Number,<:Integer,<:StabilityClass,<:EquationSet}
     @test puff(scn, IntPuff) isa GasDispersion.IntPuffSolution{<:Number,<:Float64,<:StabilityClass,<:EquationSet}

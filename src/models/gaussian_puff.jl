@@ -5,13 +5,14 @@ struct GaussianPuff <: PuffModel end
 struct GaussianPuffSolution{F<:Number,S<:StabilityClass,E<:EquationSet} <: Puff
     scenario::Scenario
     model::Symbol
-    volume::F
+    mass::F
+    mass_to_vol::F
     height::F
     windspeed::F
     stability::Type{S}
     equationset::Type{E}
 end
-GaussianPuffSolution(s,m,Q,h,u,stab,es) = GaussianPuffSolution(s,m,promote(Q,h,u)...,stab,es)
+GaussianPuffSolution(s,m,q,ρ,h,u,stab,es) = GaussianPuffSolution(s,m,promote(q,ρ,h,u)...,stab,es)
 
 @doc doc"""
     puff(::Scenario, GaussianPuff[, ::EquationSet])
@@ -19,7 +20,7 @@ GaussianPuffSolution(s,m,Q,h,u,stab,es) = GaussianPuffSolution(s,m,promote(Q,h,u
 Returns the solution to a Gaussian puff dispersion model for the given scenario.
 
 ```math
-c\left(x,y,z,t\right) = Q_{i,j} \Delta t
+c\left(x,y,z,t\right) = m_{i} \Delta t
 { { \exp \left( -\frac{1}{2} \left( {x - u t } \over \sigma_x \right)^2 \right) } \over { \sqrt{2\pi} \sigma_x } }
 { { \exp \left( -\frac{1}{2} \left( {y} \over \sigma_y \right)^2 \right) } \over { \sqrt{2\pi} \sigma_y } }\\
 \times { { \exp \left( -\frac{1}{2} \left( {z - h} \over \sigma_z \right)^2 \right)
@@ -28,7 +29,8 @@ c\left(x,y,z,t\right) = Q_{i,j} \Delta t
 
 where the σs are dispersion parameters correlated with the distance x. The 
 `EquationSet` defines the set of correlations used to calculate the dispersion
- parameters and windspeed.
+parameters and windspeed. The concentration returned is in volume fraction, assuming the puff
+is a gas at ambient conditions.
 
 # References
 + AIChE/CCPS. 1999. *Guidelines for Consequence Analysis of Chemical Releases*. New York: American Institute of Chemical Engineers
@@ -37,15 +39,20 @@ function puff(scenario::Scenario, ::Type{GaussianPuff}, eqs=DefaultSet; h_min=1.
 
     stab = _stability(scenario)
     m = _release_mass(scenario)
-    ρ = _release_density(scenario)
-    V = m/ρ
+
+    # jet at ambient conditions
+    Tₐ = _atmosphere_temperature(scenario)
+    Pₐ = _atmosphere_pressure(scenario)
+    ρₐ = _gas_density(scenario.substance,Tₐ,Pₐ)
+
     h = _release_height(scenario)
     u = _windspeed(scenario,max(h,h_min),eqs)
 
     return GaussianPuffSolution(
         scenario,  #scenario::Scenario
         :gaussian, #model::Symbol
-        V,    # volume
+        m,    # mass
+        ρₐ,   # mass-to-vol
         h,    # release height
         u,    # windspeed
         stab, # stability class
@@ -55,14 +62,14 @@ function puff(scenario::Scenario, ::Type{GaussianPuff}, eqs=DefaultSet; h_min=1.
 end
 
 
-function (g::GaussianPuffSolution{<:Number,S,E})(x,y,z,t) where {S<:StabilityClass,E<:EquationSet}
+function (g::GaussianPuffSolution{F,S,E})(x,y,z,t) where {F<:Number,S<:StabilityClass,E<:EquationSet}
 
     # domain check
     if (x<0)||(z<0)||(t<0)
-        return 0.0
+        return zero(F)
     end
 
-    G = g.volume
+    G = g.mass
     h = g.height
     u = g.windspeed
     xc = abs(u*t) # location of center of cloud
@@ -75,7 +82,7 @@ function (g::GaussianPuffSolution{<:Number,S,E})(x,y,z,t) where {S<:StabilityCla
         * exp(-0.5*(y/σy)^2)
         * ( exp(-0.5*((z-h)/σz)^2) + exp(-0.5*((z+h)/σz)^2) ) )
 
-    c = isnan(c) ? 0.0 : c
+    c_vol = isnan(c) ? zero(F) : c/g.mass_to_vol
 
-    return c
+    return min(c_vol,one(F))
 end

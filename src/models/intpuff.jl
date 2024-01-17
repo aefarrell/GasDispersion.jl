@@ -5,6 +5,7 @@ struct IntPuffSolution{F<:Number,N<:Number,S<:StabilityClass,E<:EquationSet} <: 
     scenario::Scenario
     model::Symbol
     rate::F
+    mass_to_vol::F
     duration::F
     height::F
     windspeed::F
@@ -12,7 +13,7 @@ struct IntPuffSolution{F<:Number,N<:Number,S<:StabilityClass,E<:EquationSet} <: 
     stability::Type{S}
     equationset::Type{E}
 end
-IntPuffSolution(s,m,r,d,h,u,n,stab,es) = IntPuffSolution(s,m,promote(r,d,h,u,)...,n,stab,es)
+IntPuffSolution(s,m,r,ρ,d,h,u,n,stab,es) = IntPuffSolution(s,m,promote(r,ρ,d,h,u,)...,n,stab,es)
 
 @doc doc"""
     puff(::Scenario, IntPuff[, ::EquationSet]; kwargs...)
@@ -28,7 +29,10 @@ c\left(x,y,z,t\right) = \sum_{i}^{n-1} { {Q_{i,j} \Delta t} \over n }
 + \exp \left( -\frac{1}{2} \left( {z + h} \over \sigma_z \right)^2 \right) } \over { \sqrt{2\pi} \sigma_z } }
 ```
 
-where δt is Δt/n, and the σs are dispersion parameters correlated with the distance x. The `EquationSet` defines the set of correlations used to calculate the dispersion parameters and windspeed.
+where δt is Δt/n, and the σs are dispersion parameters correlated with the distance x. 
+The `EquationSet` defines the set of correlations used to calculate the dispersion 
+parameters and windspeed. The concentration returned is in volume fraction, assuming 
+the puff is a gas at ambient conditions.
 
 # Arguments
 - `n::Integer`: the number of discrete gaussian puffs, defaults to infinity
@@ -38,17 +42,21 @@ function puff(scenario::Scenario, ::Type{IntPuff}, eqs=DefaultSet; n::Number=Inf
 
     stab = _stability(scenario)
     ṁ = _mass_rate(scenario)
-    ρⱼ = _release_density(scenario)
-    Qi = ṁ/ρⱼ
     Δt = _duration(scenario)
     h = _release_height(scenario)
     u = _windspeed(scenario,h,eqs)
+
+    # jet at ambient conditions
+    Tₐ = _atmosphere_temperature(scenario)
+    Pₐ = _atmosphere_pressure(scenario)
+    ρₐ = _gas_density(scenario.substance,Tₐ,Pₐ)
 
     if n > 1
         return IntPuffSolution(
             scenario,  #scenario::Scenario
             :intpuff, #model::Symbol
-            Qi,    # massrate
+            ṁ,    # massrate
+            ρₐ,   # mass-to-vol
             Δt,   # duration
             h,    # release height
             u,    # windspeed
@@ -60,7 +68,8 @@ function puff(scenario::Scenario, ::Type{IntPuff}, eqs=DefaultSet; n::Number=Inf
         return GaussianPuffSolution(
             scenario,  #scenario::Scenario
             :gaussian, #model::Symbol
-            Qi*Δt, # mass
+            ṁ*Δt, # mass
+            ρₐ,   # mass_to_vol
             h,    # release height
             u,    # windspeed
             stab, # stability class
@@ -72,10 +81,10 @@ function puff(scenario::Scenario, ::Type{IntPuff}, eqs=DefaultSet; n::Number=Inf
 end
 
 
-function (ip::IntPuffSolution{<:Number,<:Integer,S,E})(x,y,z,t) where {S<:StabilityClass,E<:EquationSet}
+function (ip::IntPuffSolution{F,<:Integer,S,E})(x,y,z,t) where {F<:Number,S<:StabilityClass,E<:EquationSet}
     # domain check
     if (x<0)||(z<0)||(t<0)
-        return 0.0
+        return zero(F)
     end
 
     Qi = ip.rate
@@ -107,22 +116,19 @@ function (ip::IntPuffSolution{<:Number,<:Integer,S,E})(x,y,z,t) where {S<:Stabil
         gz = ( exp(-0.5*((z-h)/σz)^2) + exp(-0.5*((z+h)/σz)^2) )/(√(2π)*σz)
 
         g = gx*gy*gz
-        ∑g += isnan(g) ? 0 : g
+        ∑g += isnan(g) ? zero(F) : g
     end
 
-    # Gaussian dispersion in the y and z directions
-
-
     # concentration
-    c = G*∑g
+    c = G*∑g/ip.mass_to_vol
 
-    return c
+    return min(c,one(F))
 end
 
-function (ip::IntPuffSolution{<:Number,<:AbstractFloat,S,E})(x,y,z,t) where {S<:StabilityClass,E<:EquationSet}
+function (ip::IntPuffSolution{F,<:AbstractFloat,S,E})(x,y,z,t) where {F<:Number,S<:StabilityClass,E<:EquationSet}
     # domain check
     if (x<0)||(z<0)||(t<0)
-        return 0.0
+        return zero(F)
     end
 
     Qi = ip.rate
@@ -149,7 +155,7 @@ function (ip::IntPuffSolution{<:Number,<:AbstractFloat,S,E})(x,y,z,t) where {S<:
     gz = ( exp((-1/2)*((z-h)/σz)^2) + exp((-1/2)*((z+h)/σz)^2) )/(√(2π)*σz)
 
     # concentration
-    c = Qi*∫gx*gy*gz
+    c = Qi*∫gx*gy*gz/ip.mass_to_vol
 
-    return c
+    return min(c,one(F))
 end
