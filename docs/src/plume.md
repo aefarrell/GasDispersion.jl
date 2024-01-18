@@ -21,21 +21,21 @@ The concentration is then given by:
 
 ```math
 
- c = {Q_i \over 2 \pi u \sigma_{y} \sigma_{z} }
+ c = {m_i \over 2 \pi u \sigma_{y} \sigma_{z} }
 \exp \left[ -\frac{1}{2} \left( y \over \sigma_{y} \right)^2 \right]
 \left\{ \exp \left[ -\frac{1}{2} \left( { z -h } \over \sigma_{z} \right)^2 \right] + \exp \left[ -\frac{1}{2} \left( { z + h } \over \sigma_{z} \right)^2 \right] \right\} 
 
 ```
 
 with
--  $c$  - concentration, volume fraction
--  $Q_i$  - volumetric emission rate of the species, m^3/s
+-  $c$  - concentration, kg/m^3
+-  $m_i$  - mass emission rate of the species, kg/s
 - *u* - windspeed, m/s
 -  $\sigma_y$  - crosswind dispersion, m
 -  $\sigma_z$  - vertical dispersion, m
 - *h* - release elevation, m
 
-Three important parameters are determined from correlations, which are functions of the atmospheric stability: the windspeed at the release point, the crosswind dispersion, and the vertical dispersion.
+Three important parameters are determined from correlations, which are functions of the atmospheric stability: the windspeed at the release point, the crosswind dispersion, and the vertical dispersion. The model converts the final concentration to volume fraction, assuming the plume is a gas at ambient conditions.
 
 ### Crosswind dispersion correlations
 
@@ -151,7 +151,7 @@ g = plume(scn, GaussianPlume)
 
 # output
 
-GasDispersion.GaussianPlumeSolution{Float64, GasDispersion.NoPlumeRise, ClassF, DefaultSet}(Scenario{Substance{String, GasDispersion.Antoine{Float64}, Float64, Float64, Float64, Int64, Int64, Int64}, HorizontalJet{Float64}, SimpleAtmosphere{Float64, ClassF}}(Substance{String, GasDispersion.Antoine{Float64}, Float64, Float64, Float64, Int64, Int64, Int64}("propane", 0.044096, GasDispersion.Antoine{Float64}(9.773719865868816, 2257.9247634130143, 0.0), 1.864931992847327, 526.13, 288.15, 101325.0, 1.142, 231.02, 425740, 1678, 2520), HorizontalJet{Float64}(0.08991798763471508, Inf, 0.01, 208.10961399327573, 3.5, 288765.2212333958, 278.3846872082166, 0.0), SimpleAtmosphere{Float64, ClassF}(101325.0, 298.15, 1.5, 10.0, 0.0, ClassF)), :gaussian, 0.9999999999999998, 0.01634489086156706, 1.150112899011524, 3.5, GasDispersion.NoPlumeRise(), ClassF, DefaultSet)
+GasDispersion.GaussianPlumeSolution{Float64, GasDispersion.NoPlumeRise, ClassF, DefaultSet}(Scenario{Substance{String, GasDispersion.Antoine{Float64}, Float64, Float64, Float64, Int64, Int64, Int64}, HorizontalJet{Float64}, SimpleAtmosphere{Float64, ClassF}}(Substance{String, GasDispersion.Antoine{Float64}, Float64, Float64, Float64, Int64, Int64, Int64}("propane", 0.044096, GasDispersion.Antoine{Float64}(9.773719865868816, 2257.9247634130143, 0.0), 1.864931992847327, 526.13, 288.15, 101325.0, 1.142, 231.02, 425740, 1678, 2520), HorizontalJet{Float64}(0.08991798763471508, Inf, 0.01, 208.10961399327573, 3.5, 288765.2212333958, 278.3846872082166, 0.0), SimpleAtmosphere{Float64, ClassF}(101325.0, 298.15, 1.5, 10.0, 0.0, ClassF)), :gaussian, 0.08991798763471508, 0.9999999999999998, 1.8023818673116125, 1.150112899011524, 3.5, GasDispersion.NoPlumeRise(), ClassF, DefaultSet)
 
 ```
 
@@ -162,11 +162,11 @@ g(100,0,2)
 
 # output
 
-0.0002006455298894473
+0.0006124169932080678
 
 ```
 
-Which is ~200ppm (vol). Beyond simply having a number, we may want a plan-view of the plume at a given height, say 2m.
+Which is ~612ppm (vol). Beyond simply having a number, we may want a plan-view of the plume at a given height, say 2m.
 
 ```@setup gaussplume
 using ..GasDispersion

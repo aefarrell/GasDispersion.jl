@@ -38,11 +38,11 @@ u0, z0 = 1, 1
 zs = 0:.1:10
 
 for class in [ClassA,ClassB,ClassC,ClassD,ClassE,ClassF]
-    p = plot(title="Windspeed for $class stability",ylabel="Relative Elevation (z/z_R)", xlabel="Relative Windspeed (u/u_R)")
+    p = plot(title="Windspeed for $class stability",xlabel="Relative Elevation (z/z_R)", ylabel="Relative Windspeed (u/u_R)")
 
     for eqn in [DefaultSet,CCPSRural,CCPSUrban,ISC3Rural,ISC3Urban]
         u = [ GasDispersion._windspeed(u0,z0,z,class,eqn) for z in zs ]
-        plot!(p,zs,u,label=eqn)
+        plot!(p,u,zs,label=eqn)
     end
 
     savefig(p,"$(class)_windspeed.svg")
