@@ -15,22 +15,22 @@ puff(::Scenario, ::Type{GaussianPuff})
 A gaussian puff model assumes the release is instantaneous, and all mass is concentrated in a single point. The cloud then disperses as it moves downwind with the concentration profile is given by a series of gaussians with dispersions $\sigma_x$, $\sigma_y$, and $\sigma_z$, which are found from correlations tabulated per stability class. Similarly to the plume model, a ground reflection term is included to correct for the fact that material cannot pass through the ground.
 
 ```math
-c_{puff} = { V_i \over { (2 \pi)^{3/2} \sigma_x \sigma_y \sigma_z } } 
+c_{puff} = { m_i \over { (2 \pi)^{3/2} \sigma_x \sigma_y \sigma_z } } 
 \exp \left( -\frac{1}{2} \left( {x - ut} \over \sigma_x \right)^2 \right) 
 \exp \left( -\frac{1}{2} \left( {y} \over \sigma_y \right)^2 \right)  \left[ \exp \left( -\frac{1}{2} \left( {z - h} \over \sigma_z \right)^2 \right) 
 + \exp \left( -\frac{1}{2} \left( {z + h} \over \sigma_z \right)^2 \right)\right]
 ```
 
 with
-- *c* - concentration, volume fraction
--  $V_i$ - volume of released material, m^3
+- *c* - concentration, kg/m^3
+-  $m_i$ - mass of released material, kg
 - *u* - windspeed, m/s
 -  $\sigma_x$  - downwind dispersion, m
 -  $\sigma_y$  - crosswind dispersion, m
 -  $\sigma_z$  - vertical dispersion, m
 - *h* - release elevation, m
 
-The model assumes the initial release is a single point, with no dimensions. Unlike the plume model, this concentration is a function of time.
+The model assumes the initial release is a single point, with no dimensions. Unlike the plume model, this concentration is a function of time. The model converts the final concentration to volume fraction, assuming the puff is a gas at ambient conditions.
 
 ### Downwind dispersion correlations
 
@@ -153,7 +153,7 @@ g = puff(scn, GaussianPuff)
 
 # output
 
-GasDispersion.GaussianPuffSolution{Float64, ClassF, DefaultSet}(Scenario{Substance{String, GasDispersion.Antoine{Float64}, Float64, Float64, Float64, Int64, Int64, Int64}, HorizontalJet{Float64}, SimpleAtmosphere{Float64, ClassF}}(Substance{String, GasDispersion.Antoine{Float64}, Float64, Float64, Float64, Int64, Int64, Int64}("propane", 0.044096, GasDispersion.Antoine{Float64}(9.773719865868816, 2257.9247634130143, 0.0), 1.864931992847327, 526.13, 288.15, 101325.0, 1.142, 231.02, 425740, 1678, 2520), HorizontalJet{Float64}(0.08991798763471508, 10.0, 0.01, 208.10961399327573, 3.5, 288765.2212333958, 278.3846872082166, 0.0), SimpleAtmosphere{Float64, ClassF}(101325.0, 298.15, 1.5, 10.0, 0.0, ClassF)), :gaussian, 0.16344890861567063, 3.5, 1.150112899011524, ClassF, DefaultSet)
+GasDispersion.GaussianPuffSolution{Float64, ClassF, DefaultSet}(Scenario{Substance{String, GasDispersion.Antoine{Float64}, Float64, Float64, Float64, Int64, Int64, Int64}, HorizontalJet{Float64}, SimpleAtmosphere{Float64, ClassF}}(Substance{String, GasDispersion.Antoine{Float64}, Float64, Float64, Float64, Int64, Int64, Int64}("propane", 0.044096, GasDispersion.Antoine{Float64}(9.773719865868816, 2257.9247634130143, 0.0), 1.864931992847327, 526.13, 288.15, 101325.0, 1.142, 231.02, 425740, 1678, 2520), HorizontalJet{Float64}(0.08991798763471508, 10.0, 0.01, 208.10961399327573, 3.5, 288765.2212333958, 278.3846872082166, 0.0), SimpleAtmosphere{Float64, ClassF}(101325.0, 298.15, 1.5, 10.0, 0.0, ClassF)), :gaussian, 0.8991798763471508, 1.8023818673116125, 3.5, 1.150112899011524, ClassF, DefaultSet)
 
 ```
 
@@ -164,7 +164,7 @@ g(100,0,2,86)
 
 # output
 
-0.0011119744194086872
+0.003394005492341503
 
 ```
 
@@ -211,7 +211,7 @@ t = 86
 
 @gif for t′ in range(0.85*t,1.15*t, length=50)
 
-plot(g, t′; xlims=(85,115), ylims=(-10,10), clims=(0,1.5e-3), aspect_ratio=:equal)
+plot(g, t′; xlims=(85,115), ylims=(-10,10), clims=(0,5e-3), aspect_ratio=:equal)
     
 end
 ```
@@ -226,19 +226,21 @@ puff(::Scenario, ::Type{IntPuff})
 The `IntPuff` model treats a release as a sequence of $n$ gaussian puffs, each one corresponding to $\frac{1}{n}$ of the total mass of the release.
 
 ```math
-c\left(x,y,z,t\right) = \sum_{i}^{n-1} { {Q_i \Delta t} \over n } { { \exp \left( -\frac{1}{2} \left( {x - u \left( t - i \delta t \right) } \over \sigma_x \right)^2 \right) } \over { \sqrt{2\pi} \sigma_x } } { { \exp \left( -\frac{1}{2} \left( {y} \over \sigma_y \right)^2 \right) } \over { \sqrt{2\pi} \sigma_y } }\\ \times { { \exp \left( -\frac{1}{2} \left( {z - h} \over \sigma_z \right)^2 \right) + \exp \left( -\frac{1}{2} \left( {z + h} \over \sigma_z \right)^2 \right) } \over { \sqrt{2\pi} \sigma_z } }
+c\left(x,y,z,t\right) = \sum_{i}^{n-1} { {m_i \Delta t} \over n } { { \exp \left( -\frac{1}{2} \left( {x - u \left( t - i \delta t \right) } \over \sigma_x \right)^2 \right) } \over { \sqrt{2\pi} \sigma_x } } { { \exp \left( -\frac{1}{2} \left( {y} \over \sigma_y \right)^2 \right) } \over { \sqrt{2\pi} \sigma_y } }\\ \times { { \exp \left( -\frac{1}{2} \left( {z - h} \over \sigma_z \right)^2 \right) + \exp \left( -\frac{1}{2} \left( {z + h} \over \sigma_z \right)^2 \right) } \over { \sqrt{2\pi} \sigma_z } }
 ```
 
 
 with 
-- *c* - concentration, volume fraction
--  $Q_i$ - emission rate, m^3/s
+- *c* - concentration, kg/m^3
+-  $m_i$ - emission rate, kg/s
 -  $\Delta t$ - total duration, s
 -  $ \delta t = {\Delta t \over n} $ - puff interval, s
 - *u* - windspeed, m/s
 -  $\sigma_x$ - downwind dispersion, m
 -  $\sigma_y$ - crosswind dispersion, m
 -  $\sigma_z$ - downwind dispersion, m
+
+The model assumes the initial release is a single point, with no dimensions. Additionally, model converts the final concentration to volume fraction, assuming the puff is a gas at ambient conditions.
 
 ### Dispersion Parameters
 
@@ -254,7 +256,7 @@ ig = puff(scn, IntPuff; n=100)
 
 # output
 
-GasDispersion.IntPuffSolution{Float64, Int64, ClassF, DefaultSet}(Scenario{Substance{String, GasDispersion.Antoine{Float64}, Float64, Float64, Float64, Int64, Int64, Int64}, HorizontalJet{Float64}, SimpleAtmosphere{Float64, ClassF}}(Substance{String, GasDispersion.Antoine{Float64}, Float64, Float64, Float64, Int64, Int64, Int64}("propane", 0.044096, GasDispersion.Antoine{Float64}(9.773719865868816, 2257.9247634130143, 0.0), 1.864931992847327, 526.13, 288.15, 101325.0, 1.142, 231.02, 425740, 1678, 2520), HorizontalJet{Float64}(0.08991798763471508, 10.0, 0.01, 208.10961399327573, 3.5, 288765.2212333958, 278.3846872082166, 0.0), SimpleAtmosphere{Float64, ClassF}(101325.0, 298.15, 1.5, 10.0, 0.0, ClassF)), :intpuff, 0.01634489086156706, 10.0, 3.5, 1.150112899011524, 100, ClassF, DefaultSet)
+GasDispersion.IntPuffSolution{Float64, Int64, ClassF, DefaultSet}(Scenario{Substance{String, GasDispersion.Antoine{Float64}, Float64, Float64, Float64, Int64, Int64, Int64}, HorizontalJet{Float64}, SimpleAtmosphere{Float64, ClassF}}(Substance{String, GasDispersion.Antoine{Float64}, Float64, Float64, Float64, Int64, Int64, Int64}("propane", 0.044096, GasDispersion.Antoine{Float64}(9.773719865868816, 2257.9247634130143, 0.0), 1.864931992847327, 526.13, 288.15, 101325.0, 1.142, 231.02, 425740, 1678, 2520), HorizontalJet{Float64}(0.08991798763471508, 10.0, 0.01, 208.10961399327573, 3.5, 288765.2212333958, 278.3846872082166, 0.0), SimpleAtmosphere{Float64, ClassF}(101325.0, 298.15, 1.5, 10.0, 0.0, ClassF)), :intpuff, 0.08991798763471508, 1.8023818673116125, 10.0, 3.5, 1.150112899011524, 100, ClassF, DefaultSet)
 ```
 
 At the same point as above the concentration has dropped
@@ -263,7 +265,7 @@ ig(100,0,2,86)
 
 # output
 
-8.260636961901386e-5
+0.0002521339225936648
 
 ```
 

@@ -36,7 +36,7 @@
     c₁ = 1/(√(2π)*π*σy^2*σz)/1.2268
 
     # test default behaviour and type inheritance
-    @test GasDispersion.GaussianPuffSolution(scn,:test_promotion,1.0,2,3,ClassA,DefaultSet) isa GasDispersion.GaussianPuffSolution{Float64, ClassA, DefaultSet}
+    @test GasDispersion.GaussianPuffSolution(scn,:test_promotion,1.0,2,3,4,ClassA,DefaultSet) isa GasDispersion.GaussianPuffSolution{Float64, ClassA, DefaultSet}
     @test pf isa GasDispersion.GaussianPuffSolution
     @test pf isa  Puff
     @test pf(x₁,0,0,-t₁) == 0.0
