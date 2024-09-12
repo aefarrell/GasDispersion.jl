@@ -1,7 +1,7 @@
 name = "GasDispersion"
 uuid = "ac6af613-5479-4178-853e-9d66de417193"
 authors = ["Allan Farrell <allanf@protonmail.com> and contributors"]
-version = "0.2.1"
+version = "0.2.2"
 
 [deps]
 DataInterpolations = "82cc6244-b520-54b8-b5a6-8a565e85f1d0"
@@ -10,7 +10,7 @@ RecipesBase = "3cdcf5f2-1ef4-517c-9805-6587b60abb01"
 SpecialFunctions = "276daf66-3868-5448-9aa4-cd146d93841b"
 
 [compat]
-DataInterpolations = "3.6, 4"
+DataInterpolations = "3.6, 4, 6"
 RecipesBase = "1"
 SpecialFunctions = "2"
 julia = "1"
