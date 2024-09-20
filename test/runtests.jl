@@ -1,8 +1,7 @@
 using Test, Documenter, GasDispersion
 using DelimitedFiles: readdlm
 
-# const GROUP = get(ENV,"GROUP","All")
-const GROUP = "Extensions"
+const GROUP = get(ENV,"GROUP","All")
 const VERSION = get(ENV,"VERSION","latest")
 
 if GROUP == "All" || GROUP == "Base"
