@@ -12,6 +12,9 @@ SpecialFunctions = "276daf66-3868-5448-9aa4-cd146d93841b"
 [weakdeps]
 Clapeyron = "7c7805af-46cc-48c9-995b-ed0ed2dc909a"
 
+[extras]
+Clapeyron = "7c7805af-46cc-48c9-995b-ed0ed2dc909a"
+
 [extensions]
 GasDispersionClapeyronExt = "Clapeyron"
 
@@ -19,4 +22,4 @@ GasDispersionClapeyronExt = "Clapeyron"
 DataInterpolations = "3.6, 4, 6"
 RecipesBase = "1"
 SpecialFunctions = "2"
-julia = "1"
+julia = "1.3"

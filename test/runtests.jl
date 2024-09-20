@@ -38,7 +38,7 @@ if GROUP == "All" || GROUP == "Model"
     include("models/slab_tests.jl")
 end
 
-if GROUP == "All" || GROUP == "Extensions"
+if GROUP == "All" || GROUP == "Ext"
     #test clapeyron extension
     include("exts/clapeyron_ext_tests.jl")
 end
