@@ -1,7 +1,8 @@
 using Test, Documenter, GasDispersion
 using DelimitedFiles: readdlm
 
-const GROUP = get(ENV,"GROUP","All")
+# const GROUP = get(ENV,"GROUP","All")
+const GROUP = "Extensions"
 const VERSION = get(ENV,"VERSION","latest")
 
 if GROUP == "All" || GROUP == "Base"
@@ -36,6 +37,11 @@ if GROUP == "All" || GROUP == "Model"
     include("models/britter_mcquaid_plume_tests.jl")
     include("models/britter_mcquaid_puff_tests.jl")
     include("models/slab_tests.jl")
+end
+
+if GROUP == "All" || GROUP == "Extensions"
+    #test clapeyron extension
+    include("exts/clapeyron_ext_tests.jl")
 end
 
 # some doc tests don't work with julia 1.3, because of Documenter
