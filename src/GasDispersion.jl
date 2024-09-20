@@ -11,7 +11,7 @@ using RecipesBase
 # releases
 export Atmosphere, SimpleAtmosphere
 export StabilityClass, ClassA, ClassB, ClassC, ClassD, ClassE, ClassF
-export Substance
+export AbstractSubstance, Substance
 export Release, HorizontalJet, VerticalJet
 export Scenario, scenario_builder
 
@@ -31,6 +31,7 @@ export EquationSet, DefaultSet
 export CCPSRural, CCPSUrban, TNO, Turner, ISC3Rural, ISC3Urban
 
 # abstract types
+abstract type AbstractSubstance end
 abstract type Atmosphere end
 abstract type StabilityClass end
 abstract type Release end

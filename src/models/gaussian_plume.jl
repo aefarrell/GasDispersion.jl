@@ -69,7 +69,7 @@ function plume(scenario::Scenario, ::Type{GaussianPlume}, eqs=DefaultSet; h_min=
 end
 
 @doc doc"""
-    plume(::Scenario{Substance,VerticalJet,Atmosphere}, GaussianPlume[, ::EquationSet]; kwargs...)
+    plume(::Scenario{AbstractSubstance,VerticalJet,Atmosphere}, GaussianPlume[, ::EquationSet]; kwargs...)
 
 Returns the solution to a Gaussian plume dispersion model for a vertical jet. By default the Briggs
 plume rise model is used.
@@ -95,7 +95,7 @@ is a gas at ambient conditions.
 + Briggs, Gary A. 1969. *Plume Rise* Oak Ridge: U.S. Atomic Energy Commission
 
 """
-function plume(scenario::Scenario{<:Substance,<:VerticalJet,<:Atmosphere}, ::Type{GaussianPlume}, eqs=DefaultSet; downwash::Bool=false, plumerise::Bool=true, h_min=1.0)  
+function plume(scenario::Scenario{<:AbstractSubstance,<:VerticalJet,<:Atmosphere}, ::Type{GaussianPlume}, eqs=DefaultSet; downwash::Bool=false, plumerise::Bool=true, h_min=1.0)  
     # parameters of the jet
     Dⱼ = _release_diameter(scenario)
     uⱼ = _release_velocity(scenario)
