@@ -54,7 +54,21 @@ scn = scenario_builder(propane, JetSource;
 ```
 
 This generates a `Scenario` defined for a gas jet discharging into dry air
-at standard conditions. Once we have this defined we can determine the
+at standard conditions. 
+
+An alternative to supplying all of the substance properties, which can get
+rather onerous, is to use the library of substances and equations of state
+provided in [Clapeyron.jl](https://github.com/ClapeyronThermo/Clapeyron.jl)
+
+```julia
+using GasDispersion, Clapeyron
+
+propane = Substance(PropaneRef()) # uses an empirical EoS for propane
+
+propane = Substance(PR("propane"; idealmodel=ReidIdeal)) # uses the Peng-Robinson EoS
+```
+
+Once we have this defined we can determine the
 concentration at any point downwind of the release point, assuming the release
 is a continuous plume, using
 
