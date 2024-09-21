@@ -38,8 +38,11 @@ if GROUP == "All" || GROUP == "Model"
     include("models/slab_tests.jl")
 end
 
-if GROUP == "All" || GROUP == "Ext"
-    #test clapeyron extension
+if GROUP ∈ ["All", "Ext"] && VERSION ∈ ["1","latest","nightly"]
+    # this feels kind of janky to me, but it stops versions <1.9
+    # from trying to run the Clapeyron extension
+    import Pkg; Pkg.add("Clapeyron")
+    using Clapeyron
     include("exts/clapeyron_ext_tests.jl")
 end
 

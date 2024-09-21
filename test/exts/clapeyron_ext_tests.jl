@@ -1,5 +1,3 @@
-using Clapeyron
-
 @testset "ClapeyronSubstance type" begin
 
     ethylene = PR("ethylene")

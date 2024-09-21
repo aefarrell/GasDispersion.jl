@@ -1,6 +1,6 @@
 [deps]
-Clapeyron = "7c7805af-46cc-48c9-995b-ed0ed2dc909a"
 DelimitedFiles = "8bb1440f-4735-579b-a4ab-409b98df4dab"
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
+Pkg = "44cfe95a-1eb2-52ea-b672-e2afdf69b78f"
 RecipesBase = "3cdcf5f2-1ef4-517c-9805-6587b60abb01"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
