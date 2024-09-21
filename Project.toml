@@ -16,6 +16,7 @@ Clapeyron = "7c7805af-46cc-48c9-995b-ed0ed2dc909a"
 GasDispersionClapeyronExt = "Clapeyron"
 
 [compat]
+Clapeyron = "0.6"
 DataInterpolations = "3.6, 4, 6"
 RecipesBase = "1"
 SpecialFunctions = "2"
