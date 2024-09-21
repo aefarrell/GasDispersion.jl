@@ -48,6 +48,26 @@ Substance: propane
 
 Note that the `Substance` has filled in some missing details. In particular it has calculateed the gas density `ρ_g`` at the reference point using the ideal gas law and has used the [Clausius-Clapeyron equation](https://en.wikipedia.org/wiki/Clausius%E2%80%93Clapeyron_relation) to derive a vapour pressure curve from the latent heat and the boiling temperature. It has also used a default value of 1.4 for [isentropic expansion factor](https://en.wikipedia.org/wiki/Heat_capacity_ratio)
 
+!!! note
+
+    A package extension exists for [Clapeyron.jl](https://github.com/ClapeyronThermo/Clapeyron.jl) that eliminates much of the hassle of creating `Substance`s. This requires julia >1.9 (it depends on the package extension feature) but allows one to create a `Substance` directly from a Clapeyron `EOSModel` object. For example, using the reference equation of state `PropaneRef()` from Clapeyron:
+
+    ```julia
+    using GasDispersion, Clapeyron
+
+    s = Substance(PropaneRef())
+
+    # output
+
+    GasDispersionClapeyronExt.ClapeyronSubstance: propane 
+        MW: 0.044095619999999995 kg/mol 
+        T_ref: 288.15 K 
+        P_ref: 101325.0 Pa 
+        k: 1.1416338312956256  
+        T_b: 231.03621464431782 K
+    ```
+    The other properties, such as vapor pressure and latent heat, are calculated on demand using the relevant routines from Clapeyron.
+
 In general several of the physical properties are functions of temperature and/or pressure, and they can be given as such. Since substances are re-usable, once defined they can be reused with many different scenarios, it may be worthwhile to find appropriate correlations for all of the physical and thermal properties of a substance. That said, it is not necessary.
 
 ### Vapor Pressure

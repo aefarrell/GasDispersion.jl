@@ -38,6 +38,14 @@ if GROUP == "All" || GROUP == "Model"
     include("models/slab_tests.jl")
 end
 
+if GROUP ∈ ["All", "Ext"] && VERSION ∈ ["1","latest","nightly"]
+    # this feels kind of janky to me, but it stops versions <1.9
+    # from trying to run the Clapeyron extension
+    import Pkg; Pkg.add("Clapeyron")
+    using Clapeyron
+    include("exts/clapeyron_ext_tests.jl")
+end
+
 # some doc tests don't work with julia 1.3, because of Documenter
 # but I still want to run them in the tests sometimes
 if GROUP == "Doc" && VERSION != "1.3"

@@ -14,6 +14,7 @@ jobs:
           - Base
           - Util
           - Model
+          - Ext
           - Doc
         version:
           - '1.3'

@@ -48,7 +48,7 @@ A simple container for the physical and thermal properties of substances.
 - `liquid_heat_capacity<:Union{Number,Function}`: the liquid heat capacity, J/kg/K.
 
 """
-struct Substance{N<:Union{AbstractString,Symbol},VAP<:CC,D_G<:CC,D_L<:CC,F<:Number,H<:CC,CP_G<:CC,CP_L<:CC}
+struct Substance{N<:Union{AbstractString,Symbol},VAP<:CC,D_G<:CC,D_L<:CC,F<:Number,H<:CC,CP_G<:CC,CP_L<:CC} <: AbstractSubstance
     name::N
     MW::F  # molar weight, kg/mol
     P_v::VAP    # vapour pressure, Pa
@@ -280,7 +280,7 @@ include("simple_atmosphere.jl")
 A chemical release scenario.
 
 """
-struct Scenario{S<:Substance,R<:Release,A<:Atmosphere}
+struct Scenario{S<:AbstractSubstance,R<:Release,A<:Atmosphere}
     substance::S
     release::R
     atmosphere::A
