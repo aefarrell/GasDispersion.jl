@@ -45,7 +45,7 @@ replstr(x, kv::Pair...) = sprint((io,x) -> show(IOContext(io, :limit => true, :d
     @test GasDispersion._liquid_density(propane) == GasDispersion._liquid_density(propane,288.15,101325) == ρl(288.15,101325) ≈ 506.61518872042035
     @test GasDispersion._gas_density(propane) == GasDispersion._gas_density(propane,288.15,101325) ≈ ρg
     @test GasDispersion._density(propane,0.5,288.15,101325) ≈ 2/(1/ρg + 1/506.61518872042035)
-    @test GasDispersion._latent_heat(propane) == GasDispersion._latent_heat(propane,288.15) == Δhv(288.15) ≈ 352233.34066640574
+    @test GasDispersion._latent_heat(propane) == GasDispersion._latent_heat(propane,231.02) == Δhv(231.02) ≈ 425139.0953430851
     @test GasDispersion._cp_gas(propane) == GasDispersion._cp_gas(propane,288.15) == cp_ig(288.15) ≈ 1618.86346283786
     @test GasDispersion._cp_liquid(propane) == GasDispersion._cp_liquid(propane,288.15) == cp_l(288.15) ≈ 2626.002694859999
 
@@ -65,7 +65,7 @@ replstr(x, kv::Pair...) = sprint((io,x) -> show(IOContext(io, :limit => true, :d
                         latent_heat=Δhv,
                         gas_heat_capacity=cp_ig,
                         liquid_heat_capacity=cp_l)
-    @test test_pv.P_v ≈ GasDispersion.Antoine(8.086226333190652, 1868.0800074937044, 0.0)
+    @test test_pv.P_v ≈ GasDispersion.Antoine(9.759924888223345, 2254.7378476773574, 0.0)
     
     test_pv2 = Substance(name="propane",
                          molar_weight=0.044096,

@@ -31,7 +31,7 @@
                   liquid_density=ρl,reference_temp=288.15,reference_pressure=101325,k=1.3,
                   boiling_temp=231.02,latent_heat=Δhv,gas_heat_capacity=cp_ig,
                   liquid_heat_capacity=cp_l)
-    @test GasDispersion._slab_antoine(Scenario(s,r,SimpleAtmosphere(temperature=288.15))) ≈ GasDispersion.Antoine(8.086226333190652, 1868.0800074937044, 0.0)
+    @test GasDispersion._slab_antoine(Scenario(s,r,SimpleAtmosphere(temperature=288.15))) ≈ GasDispersion.Antoine(9.759924888223345, 2254.7378476773574, 0.0)
 
 end
 
