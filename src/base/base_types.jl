@@ -77,7 +77,7 @@ function Substance(name,molar_weight,vapor_pressure,gas_density,liquid_density,
         if latent_heat isa Number
             Δh = latent_heat
         else
-            Δh = latent_heat(reference_temp)
+            Δh = latent_heat(boiling_temp)
         end
 
         B = Δh*molar_weight/R_GAS_CONST
@@ -131,7 +131,7 @@ _cp_liquid(s::Substance) = _cp_liquid(s, s.T_ref)
 _boiling_temperature(s::Substance) = s.T_b
 _latent_heat(s::Substance{<:Any,<:Any,<:Any,<:Any,<:Any,<:Number},T) = s.Δh_v
 _latent_heat(s::Substance{<:Any,<:Any,<:Any,<:Any,<:Any,<:CALLABLE},T) = s.Δh_v(T)
-_latent_heat(s::Substance) = _latent_heat(s, s.T_ref)
+_latent_heat(s::Substance) = _latent_heat(s, s.T_b)
 
 # density functions
 _liquid_density(s::Substance{<:Any,<:Any,<:Any,<:Number}, T::Number, P::Number) = s.ρ_l
