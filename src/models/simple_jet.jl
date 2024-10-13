@@ -65,6 +65,33 @@ function plume(scenario::Scenario, ::Type{SimpleJet}, eqs::EquationSet=DefaultSe
 
 end
 
+function plume(scenario::Scenario{<:AbstractSubstance,<:VerticalJet,<:Atmosphere}, ::Type{SimpleJet}, eqs::EquationSet=DefaultSet(); release_angle::Number=π/2, k2::Number=6.0, k3::Number=5.0)
+    # Density correction
+    ρj = _release_density(scenario)
+    ρa = _atmosphere_density(scenario)
+    kd = √(ρj/ρa)
+
+    # Initial concentration
+    m = _mass_rate(scenario)
+    d = _release_diameter(scenario)
+    Qt = _release_flowrate(scenario)
+    Qi = m/ρj
+    c0 = min(Qi/Qt,1.0)
+
+    return SimpleJetSolution(
+    scenario,      #scenario::Scenario
+    :simple_jet,   #model::Symbol
+    d,  # diameter
+    _release_height(scenario),  # height
+    -1*release_angle, # release angle
+    c0, # concentration
+    kd, # density_correction
+    k2,
+    k3
+    )
+
+end
+
 function (j::SimpleJetSolution)(x, y, z, t=0)
     d  = j.diameter
     h  = j.height
