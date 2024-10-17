@@ -82,7 +82,7 @@ function puff(scenario::Scenario, ::Type{SLAB}, eqs::EquationSet=DefaultSet();
     c_max = 1.0
     stab = _slab_stab( _stability(scenario) )
     antoine = _slab_antoine(scenario)
-    inp = SLAB_Input(;idspl = 2,
+    inp = SLAB_Input(;idspl = 2, # horizontal jet
                      ncalc = 1,
                      wms = _MW(scenario.substance),
                      cps = _cp_gas(scenario.substance),
@@ -119,6 +119,50 @@ function puff(scenario::Scenario, ::Type{SLAB}, eqs::EquationSet=DefaultSet();
                         AkimaInterpolation(out.cc.xc, out.cc.t),
                         AkimaInterpolation(out.cc.bx, out.cc.t),
                         AkimaInterpolation(out.cc.betax, out.cc.t))
+end
+
+function plume(scenario::Scenario{<:AbstractSubstance,<:VerticalJet,<:Atmosphere}, ::Type{SLAB}, eqs::EquationSet=DefaultSet(); release_angle::Number=π/2, k2::Number=6.0, k3::Number=5.0)
+    c_max = 1.0
+    stab = _slab_stab( _stability(scenario) )
+    antoine = _slab_antoine(scenario)
+    inp = SLAB_Input(;idspl = 3, # vertical jet
+                     ncalc = 1,
+                     wms = _MW(scenario.substance),
+                     cps = _cp_gas(scenario.substance),
+                     tbp = _boiling_temperature(scenario.substance),
+                     cmed0 = _release_liquid_fraction(scenario),
+                     dhe = _latent_heat(scenario.substance),
+                     cpsl = _cp_liquid(scenario.substance),
+                     rhosl = _liquid_density(scenario.substance),
+                     spb = antoine.B,
+                     spc = antoine.C,
+                     ts = _release_temperature(scenario),
+                     qs = _mass_rate(scenario),
+                     as = _release_area(scenario),
+                     tsd = _duration(scenario),
+                     qtis = 0.00,
+                     hs = _release_height(scenario),
+                     tav = t_av,
+                     xffm = x_max,
+                     zp = [0.0],
+                     z0 = _surface_roughness(scenario.atmosphere),
+                     za = _windspeed_height(scenario),
+                     ua = _windspeed(scenario),
+                     ta = _atmosphere_temperature(scenario),
+                     rh = _rel_humidity(scenario.atmosphere),
+                     stab = stab,
+                     ala = _slab_ala(scenario.atmosphere))
+    out = slab_main(inp)
+    return SLABSolution(scenario,:SLAB,inp,out,c_max,
+                        AkimaInterpolation(out.cc.cc, out.cc.x),
+                        AkimaInterpolation(out.cc.b, out.cc.x),
+                        AkimaInterpolation(out.cc.betac, out.cc.x),
+                        AkimaInterpolation(out.cc.zc, out.cc.x),
+                        AkimaInterpolation(out.cc.sig, out.cc.x),
+                        AkimaInterpolation(out.cc.xc, out.cc.t),
+                        AkimaInterpolation(out.cc.bx, out.cc.t),
+                        AkimaInterpolation(out.cc.betax, out.cc.t))
+
 end
 
 function (s::SLABSolution)(x,y,z,t)
