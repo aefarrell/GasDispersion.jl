@@ -72,7 +72,7 @@ bxs0 = 0.0
 _othr = SLAB_Other_Params(tgon,bse,hrf,urf,cf0,rcf,tau0,at0,afa)
 
 # c plume rise calculation
-hsu = max(hs,1.0)
+hsu = max(hs,1.0) # if (hs .lt. 1.0) hsu = 1.0
 uahs = (uastr/xk)*_slab_uafn(hsu,_wp)
 betu = 0.4 + 1.2*uahs/ws
 hprm = 1.0363*ws*bs/(betu*sqrt(uahs*uastr))
@@ -91,7 +91,7 @@ if rho > rhoa
     sgs = rho/rhoa
     rwus = ws/uahs
     hprd = 1.32*ds*((rwus*sgs*fr2)^0.3333)
-    hpr = hprm*hprd/sqrt(hprd*hprd + hprm*hprm)
+    hpr = hprm*hprd/sqrt(hprd^2 + hprm^2)
 
     if (hs + hpr) > hmx
         hpr = hmx - hs
@@ -101,7 +101,7 @@ if rho > rhoa
     cvpk = 1.69*rwus/((hpr/ds)^1.85)
     cvpk = max(0.99,cvpk)
     cv = (0.5236*(1.0 - cvpk) + cvpk)*cvpk
-    cm = wms*cv/(_met.wmae+(wms-_met.wmae)*cv)
+    cm = wms*cv/(_met.wmae + (wms - _met.wmae)*cv)
     r0 = 0.5*qs
     r = r0/cm
     cm0 = 1.0
@@ -212,8 +212,8 @@ if rho > rhoa
         zcmx = hmx - 0.5*vecs.h[i]
         vecs.zc[i] = min(vecs.zc[i], zcmx) # if (zcp(i) .gt. zcmx) zcp(i) = zcmx
         
-        vecs.bb[i] = bs + (bb-bs)*xir
-        vecs.b[i] = bsm + (b-bsm)*xir
+        vecs.bb[i] = bs + (bb - bs)*xir
+        vecs.b[i] = bsm + (b - bsm)*xir
         vecs.beta[i] = sqrt(vecs.bb[i]^2 - vecs.b[i]^2)/√(3)
 
         vecs.tccp[i] = 2.0*(vecs.x[i] - 1.0)/u

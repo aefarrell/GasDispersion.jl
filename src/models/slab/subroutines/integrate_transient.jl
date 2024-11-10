@@ -49,7 +49,7 @@ function _slab_int_transient!(vecs::SLAB_Vecs{F,A},vars::SLAB_Loop_Init{I,F},
     gam = vars.gam
 
     # initial state variable location
-    n = max(1, nxi-1)
+    n = max(1, nxtr)
 
     # initialize state variables
     x = vecs.x[n]

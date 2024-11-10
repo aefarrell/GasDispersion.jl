@@ -56,7 +56,7 @@ function _slab_int_steady_state!(vecs::SLAB_Vecs{F,A},vars::SLAB_Loop_Init{I,F},
     dx = (gam - 1) * (xffm - vecs.x[msfm])/((gam^nstp) - 1)
     
     # initial state variable location
-    n = max(1, nxi-1)
+    n = max(1, nxi)
 
     # initialize state variables
     x = vecs.x[n]
