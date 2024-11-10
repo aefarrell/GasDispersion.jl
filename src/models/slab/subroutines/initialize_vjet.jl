@@ -68,7 +68,7 @@ bse = 1.0
 qtis = 0.0
 xcc0 = 1.0
 bxs0 = 0.0
-#tim = tsd
+tim = tsd
 _othr = SLAB_Other_Params(tgon,bse,hrf,urf,cf0,rcf,tau0,at0,afa)
 
 # c plume rise calculation
@@ -99,7 +99,7 @@ if rho > rhoa
 
     xpr = 0.435*hpr^3/(sgs*(ds*rwus)^2)
     cvpk = 1.69*rwus/((hpr/ds)^1.85)
-    cvpk = max(0.99,cvpk)
+    cvpk = min(0.99,cvpk) # if (cvpk .gt. .99) cvpk = .99
     cv = (0.5236*(1.0 - cvpk) + cvpk)*cvpk
     cm = wms*cv/(_met.wmae + (wms - _met.wmae)*cv)
     r0 = 0.5*qs
@@ -322,6 +322,11 @@ if rho > rhoa
         bx, bbx, bbvx0, bvx0 = zeros(F,4)
         vars = SLAB_Loop_Init(nxi,msfm,mnfm,mffm,gam,ft,fu,fv,fw,fug,bbv0,bv0,r0,cp0,alfg,sru0,
                             htp0,ubs20,rmi,bx,bbx,bbvx0,bvx0,xcc0,bxs0)
+
+        # store the initial state of the system
+        beta, betax, vx = zeros(F,3)
+        _slab_sub_store!(vecs,nxi,x,bb0,b0,vg0,cm0,t0,rho0,u,h0,cv,beta,w,v,_met.cmdaa,cmw0,cmwv0,cmev0,uab,wc0,
+          zc0,qint,tim,bbx,bx,betax,ug0,vx)
 
         return idpf,nxtr,vecs,vars,params,dt
     else

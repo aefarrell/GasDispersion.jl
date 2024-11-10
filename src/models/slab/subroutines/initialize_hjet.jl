@@ -105,16 +105,16 @@ function _slab_init_hjet_400!(vecs::SLAB_Vecs, _met::SLAB_Ambient_Met_Props, _wp
     vx = zero(F)
     # vecs.vx[1] = 0.0 # handled by the store! call
 
-    cmdaa, betax = zeros(F,2)
+    betax = zero(F)
     _slab_sub_store!(vecs,1,x,bb,b,vg,cm0,t0,rho,u,h,cv0,
-        beta,w,v,cmdaa,cmw0,cmwv0,cmev0,uab,wc,zc,qint,tim,bbx,bx,betax,
+        beta,w,v,_met.cmdaa,cmw0,cmwv0,cmev0,uab,wc,zc,qint,tim,bbx,bx,betax,
         ug,vx)
     
     # this stores the initial state for the integration step to retrieve
     # the fortran code has all the program state variables as globals
     # to avoid that, they are stored at the starting position of the integration
     _slab_sub_store!(vecs,2,x,bb,b,vg,cm0,t0,rho,u,h,cv0,
-        beta,w,v,cmdaa,cmw0,cmwv0,cmev0,uab,wc,zc,qint,tim,bbx,bx,betax,
+        beta,w,v,_met.cmdaa,cmw0,cmwv0,cmev0,uab,wc,zc,qint,tim,bbx,bx,betax,
         ug,vx)
     
     return (msfm,mnfm,ft,fu,fv,fw,fug,bbv0,bv0,r0,sru0,
