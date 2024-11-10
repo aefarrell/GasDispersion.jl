@@ -18,3 +18,4 @@ include("subroutines/integrate_transient.jl")
 # intialize parameters
 include("subroutines/initialize_common.jl")
 include("subroutines/initialize_hjet.jl")
+include("subroutines/initialize_vjet.jl")

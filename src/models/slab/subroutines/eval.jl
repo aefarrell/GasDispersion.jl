@@ -132,16 +132,17 @@ function _slab_sub_eval(p::SLAB_Params,xn,alfg,sru0,zc,h0,u0,uab0,b0,bb0,r,r0,bv
     end
 
     # dbbx = 0.0 assigned but never used
-
-    if utc3 > utm3
-        if keval == 4
-            # utst = 3.0 assigned but never used
-            ru3 = (27.0/4.0)*utg3/(ut0*ut0*ut0)
-            bb = ru3*bb
-            b = ru3*b
-            # dbbx = bb*(ru3 - 1)/ru3 assigned but never used
-        end
-    end
+    
+    # only used for evaporating pool releases
+    # if utc3 > utm3
+    #     if keval == 4
+    #         # utst = 3.0 assigned but never used
+    #         ru3 = (27.0/4.0)*utg3/(ut0*ut0*ut0)
+    #         bb = ru3*bb
+    #         b = ru3*b
+    #         # dbbx = bb*(ru3 - 1)/ru3 assigned but never used
+    #     end
+    # end
 
     beta = sqrt(bb*bb-b*b)/√(3)
 

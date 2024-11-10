@@ -5,17 +5,17 @@ function _slab_init_rgps(wms::F,cps::F,tbp::F,cmed0::F,dhe::F,cpsl::F,rhosl::F,s
 
 # c  saturation pressure constant default
 if spb < zero(F)
-spb = dhe*wms/rr
-spc = 0.0
+    spb = dhe*wms/rr
+    spc = 0.0
 end
 
 #c  boiling point temperature check
 spa = spb/(tbp+spc)
 if ts < tbp
-ts = tbp
+    ts = tbp
 end
 if cmed0 > zero(F)
-ts = tbp
+    ts = tbp
 end
 
 rhos = wms*pa/(rr*ts)
@@ -30,11 +30,11 @@ function _slab_init_met(z0::F,za::F,ua::F,ta::F,rh::F,stab::F,ala::F) where F <:
 #c ================================
 al1 = 0.0081/(z0^0.3044)
 if z0 > 0.0111
-al2 = 0.0385/(z0^0.1715)
-al3 = 0.0875/(z0^0.1028)
+    al2 = 0.0385/(z0^0.1715)
+    al3 = 0.0875/(z0^0.1028)
 else
-al2 = al1 + 0.0137/(z0^0.1715) + 0.0218
-al3 = al2 + 0.0557
+    al2 = al1 + 0.0137/(z0^0.1715) + 0.0218
+    al3 = al2 + 0.0557
 end
 
 en2 = log(al2/al1)/log(2.)
@@ -44,42 +44,44 @@ dln = en2 - eni
 alm = al1*(3.5^( eni + dln/3.25 ))
 
 if stab == zero(F)
-aal = abs(ala)       
-if aal < al2
-astb = (aal/al1)^(1/en2)
-elseif aal < alm
-ral = (aal-al2)/(al3-al2)
-en = eni + dln/(1+ral*ral)
-astb = (aal/al1)^(1/en)
-else
-astb = 3.5
-end
+    aal = abs(ala)
 
-if ala >= zero(F)
-stb = astb
-else
-stb = -astb
-end
+    if aal < al2
+        astb = (aal/al1)^(1/en2)
+    elseif aal < alm
+        ral = (aal-al2)/(al3-al2)
+        en = eni + dln/(1+ral*ral)
+        astb = (aal/al1)^(1/en)
+    else
+        astb = 3.5
+    end
 
-stab = 4.0 + stb
+    if ala >= zero(F)
+        stb = astb
+    else
+        stb = -astb
+    end
+
+    stab = 4.0 + stb
 
 else
-stb = stab - 4.0
-astb = abs(stb)
-if astb < 2.0
-aal = al1*(astb^en2)
-elseif astb < 3.5
-en = eni + dln/(1+(astb-2)*(astb-2))
-aal = al1*(astb^en)
-else
-aal = alm
-end
+    stb = stab - 4.0
+    astb = abs(stb)
 
-if stb >= zero(F)
-ala = aal
-else
-ala = -aal
-end
+    if astb < 2.0
+        aal = al1*(astb^en2)
+    elseif astb < 3.5
+        en = eni + dln/(1+(astb-2)*(astb-2))
+        aal = al1*(astb^en)
+    else
+        aal = alm
+    end
+
+    if stb >= zero(F)
+        ala = aal
+    else
+        ala = -aal
+    end
 end
 
 #c  atmospheric and physical constants
@@ -93,15 +95,15 @@ wmae = wma*wmw/(wmw+(wma-wmw)*cmwa)
 rhoa = wmae*pa/(rr*ta)
 
 if stb < zero(F)
-zl = exp(-0.8*stb)
+    zl = exp(-0.8*stb)
 else
-zl = 1.0 + 0.8*stb
+    zl = 1.0 + 0.8*stb
 end
 
 if za > 3.0
-z = za
+    z = za
 else
-z = 3.0
+    z = 3.0
 end
 
 ala0 = ala*(1 + z/zl)
@@ -109,8 +111,8 @@ hmx = 130.0*(2.0^(3.0 - stb))
 
 phimi, phgam = 0.0, 0.0
 if stb < zero(F)
-phimi = 1.0/sqrt(sqrt(1.0 - 16.0*zl*ala0))
-phgam = -8.0*ala0/(1.0 - phimi)
+    phimi = 1.0/sqrt(sqrt(1.0 - 16.0*zl*ala0))
+    phgam = -8.0*ala0/(1.0 - phimi)
 end
 
 #c  initialize velocity function
@@ -120,11 +122,11 @@ cu2 = 0.0
 uf = _slab_uafn(zt,z0,ala0,zl,hmx,zt,cu1,cu2)
 
 if ala0 < zero(F)
-phmi = 1/sqrt(sqrt(1 - 16*zl*ala0))
-gu = -8*ala0/(1 - phmi)
-phm = phmi + (1 - phmi)/sqrt(1 + gu*zt)
+    phmi = 1/sqrt(sqrt(1 - 16*zl*ala0))
+    gu = -8*ala0/(1 - phmi)
+    phm = phmi + (1 - phmi)/sqrt(1 + gu*zt)
 else
-phm = 1 + 5*ala0*zt/(1 + zt/zl)
+    phm = 1 + 5*ala0*zt/(1 + zt/zl)
 end
 
 ufp = phm*(1 - zt/hmx)/zt

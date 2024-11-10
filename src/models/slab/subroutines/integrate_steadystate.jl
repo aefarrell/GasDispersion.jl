@@ -55,30 +55,33 @@ function _slab_int_steady_state!(vecs::SLAB_Vecs{F,A},vars::SLAB_Loop_Init{I,F},
     nstp = nssm*mnfm
     dx = (gam - 1) * (xffm - vecs.x[msfm])/((gam^nstp) - 1)
     
+    # initial state variable location
+    n = max(1, nxi-1)
+
     # initialize state variables
-    x = vecs.x[1]
-    zc = zc0 = vecs.zc[1]
-    h = h0 = vecs.h[1]
-    bb = bb0 = vecs.bb[1]
-    b = b0 = vecs.b[1]
-    cv = vecs.cv[1]
-    rho = rho0 = vecs.rho[1]
-    t = t0 = vecs.t[1]
-    u = u0 = vecs.u[1]
-    uab = uab0 = vecs.uab[1]
-    cm = cm0 = vecs.cm[1]
-    cmev = cmev0 = vecs.cmev[1]
-    cmw = cmw0 = vecs.cmw[1]
-    cmwv = cmwv0 = vecs.cmwv[1]
-    wc = wc0 = vecs.wc[1]
-    vg = vg0 = vecs.vg[1]
-    ug = ug0 = vecs.ug[1]
-    w = vecs.w[1]
-    v = vecs.v[1]
-    vx = vecs.vx[1]
-    tim = vecs.tim[1]
-    beta = vecs.beta[1]
-    qint = qint0 = vecs.qint[1]
+    x = vecs.x[n]
+    zc = zc0 = vecs.zc[n]
+    h = h0 = vecs.h[n]
+    bb = bb0 = vecs.bb[n]
+    b = b0 = vecs.b[n]
+    cv = vecs.cv[n]
+    rho = rho0 = vecs.rho[n]
+    t = t0 = vecs.t[n]
+    u = u0 = vecs.u[n]
+    uab = uab0 = vecs.uab[n]
+    cm = cm0 = vecs.cm[n]
+    cmev = cmev0 = vecs.cmev[n]
+    cmw = cmw0 = vecs.cmw[n]
+    cmwv = cmwv0 = vecs.cmwv[n]
+    wc = wc0 = vecs.wc[n]
+    vg = vg0 = vecs.vg[n]
+    ug = ug0 = vecs.ug[n]
+    w = vecs.w[n]
+    v = vecs.v[n]
+    vx = vecs.vx[n]
+    tim = vecs.tim[n]
+    beta = vecs.beta[n]
+    qint = qint0 = vecs.qint[n]
 
     # initializing arrays for integration
     dxxi = zeros(F,3)
@@ -245,7 +248,6 @@ function _slab_int_steady_state!(vecs::SLAB_Vecs{F,A},vars::SLAB_Loop_Init{I,F},
     end
 
     #c   steady state calc of timp
-
     if nxtr > length(vecs.x)
         xptr = (0.5*params.spl.qtcs/qint)*(vecs.x[end]-vecs.x[1]) + vecs.x[1]
         bxtr = bxs0 + xptr - xcc0
@@ -255,7 +257,7 @@ function _slab_int_steady_state!(vecs::SLAB_Vecs{F,A},vars::SLAB_Loop_Init{I,F},
         bxtr = vecs.bbx[nxtr]
         itr = nxtr - 1
     end
-
+    
     if itr > 0
         txt = xptr - xcc0 - xcc0
         txb = txt + xptr
