@@ -196,4 +196,45 @@ end
     
 end
 
+@testset "INPR4 Vertical Jet" begin
+    inp = GasDispersion.SLAB_Input(idspl =  3,
+                                   ncalc =  1,
+                                   wms   =  0.070906,
+                                   cps   =  498.1,
+                                   tbp   =  239.1,
+                                   cmed0 =  0.88,
+                                   dhe   =  287840.0,
+                                   cpsl  =  926.3,
+                                   rhosl =  1574.0,
+                                   spb   =  1978.34,
+                                   spc   =  -27.01,
+                                   ts    =  239.1,
+                                   qs    =  3.33,
+                                   as    =  0.02,
+                                   tsd   =  300.0,
+                                   qtis  =  0.0,
+                                   hs    =  1.0,
+                                   tav   =  1.0,
+                                   xffm  =  10000.0,
+                                   zp    =  [1.00, 0.00, 0.00, 0.00],
+                                   z0    =  0.1,
+                                   za    =  10.0,
+                                   ua    =  1.0,
+                                   ta    =  276.0,
+                                   rh    =  30.0,
+                                   stab  =  4.0,
+                                   ala   =  0.0)
+
+    res = GasDispersion.slab.slab_main(inp)
+    out = readdlm("test_data/slab_inpr4_out.txt", Float64; header=false);
+
+    # instantaneous spatially averaged cloud parameters
+    result = [res.s.x res.s.zc res.s.h res.s.bb res.s.b res.s.bbx res.s.bx res.s.cv res.s.rho res.s.t res.s.u res.s.uab res.s.cm res.s.cmev res.s.cmda res.s.cmw res.s.cmwv res.s.wc res.s.vg res.s.ug res.s.w res.s.v res.s.vx ]
+    @test result ≈ out[:, 1:23]
+
+    #averaged cloud parameters
+    # result = [res.cc.cc res.cc.betac res.cc.sig res.cc.t res.cc.xc res.cc.betax res.cc.tim res.cc.tcld res.cc.bbc]
+    # @test result ≈ out[:, 24:32]
+end
+
 end
