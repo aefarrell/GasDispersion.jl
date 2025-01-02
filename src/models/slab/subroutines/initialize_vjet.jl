@@ -377,92 +377,93 @@ if rho > rhoa
         return idpf,nxtr,vecs,vars,params,dt
     end
 else
+    @error "positive buoyancy vertical jets have not been implemented yet"
     #c momentum or buoyant jet plume rise
-    hprb = 1.7254*grav*(rhoa-rho)*ws*bs*bs/(rhoa*uahs*uastr*uastr)
-    h35 = hprb^0.6
+    # hprb = 1.7254*grav*(rhoa-rho)*ws*bs*bs/(rhoa*uahs*uastr*uastr)
+    # h35 = hprb^0.6
     
-    for i in 1:3
-        hprt = h35*((hs + hprb)^0.4)
-        hprb = (hs + 0.6*hprb)*hprt/(hs + hprb - 0.4*hprt)
-    end
+    # for i in 1:3
+    #     hprt = h35*((hs + hprb)^0.4)
+    #     hprb = (hs + 0.6*hprb)*hprt/(hs + hprb - 0.4*hprt)
+    # end
     
-    hpr = sqrt(hprb*hprb + hprm*hprm)
-    hs = hs + hpr
-    hs = min(hs, hmx - bs) # if (hs .gt. (hmx-bs))  hs = hmx-bs
+    # hpr = sqrt(hprb*hprb + hprm*hprm)
+    # hs = hs + hpr
+    # hs = min(hs, hmx - bs) # if (hs .gt. (hmx-bs))  hs = hmx-bs
 
-    us = (uastr/xk)*_slab_uafn(hs,_wp)
-    ws = 0.0
-    rho = rhoa
-    rhos = rhoa # need to update rhos in _rgps
-    as = qs/(rho*us)
-    alfg = 0.0
-    bb = 0.5*sqrt(as)
-    bb = max(bb, bs) # if (bb .lt. bs) bb = bs
-    h = as/(bb+bb)
-    hh = .5*h
-    htp = hs+hh
+    # us = (uastr/xk)*_slab_uafn(hs,_wp)
+    # ws = 0.0
+    # rho = rhoa
+    # rhos = rhoa # need to update rhos in _rgps
+    # as = qs/(rho*us)
+    # alfg = 0.0
+    # bb = 0.5*sqrt(as)
+    # bb = max(bb, bs) # if (bb .lt. bs) bb = bs
+    # h = as/(bb+bb)
+    # hh = .5*h
+    # htp = hs+hh
     
-    if (hs < hh)
-        alfg = .25
-        bb = h*bb/htp
-        h = htp
-    end
+    # if (hs < hh)
+    #     alfg = .25
+    #     bb = h*bb/htp
+    #     h = htp
+    # end
 
-    htp = min(htp, hmx) # if (htp .gt. hmx) htp=hmx
+    # htp = min(htp, hmx) # if (htp .gt. hmx) htp=hmx
          
-    if (h > hmx)
-        bb = h*bb/hmx
-        h = hmx
-    end
+    # if (h > hmx)
+    #     bb = h*bb/hmx
+    #     h = hmx
+    # end
 
-    # intialize main storage arrays
-    vecs = SLAB_Vecs(F,mffm)
+    # # intialize main storage arrays
+    # vecs = SLAB_Vecs(F,mffm)
 
-    ts = (wms/_met.wmae)*ta
-    t0 = ts
-    vecs.t[1] = t0
+    # ts = (wms/_met.wmae)*ta
+    # t0 = ts
+    # vecs.t[1] = t0
 
-    # this is deranged, it redefines basic material properties
-    # I don't understand what this is supposed to be doing.
-    # tbp = 0.99*min(ts,ta) # wtf? redefining the boiling point!?
-    # spa = spb/(tbp+spc) # !?
-    # spaw = spbw/tbp # wtf? this is a material constant!
+    # # this is deranged, it redefines basic material properties
+    # # I don't understand what this is supposed to be doing.
+    # # tbp = 0.99*min(ts,ta) # wtf? redefining the boiling point!?
+    # # spa = spb/(tbp+spc) # !?
+    # # spaw = spbw/tbp # wtf? this is a material constant!
 
-    vecs.cm[1] = 1.0
-    vecs.cv[1] = 1.0
-    vecs.cmw[1] = 0.0
-    vecs.cmwv[1] = 0.0
-    vecs.cmev[1] = 1.0
-    vecs.cmda[1] = 0.0
-    cp0 = (_met.wmae/wms)*cpa
+    # vecs.cm[1] = 1.0
+    # vecs.cv[1] = 1.0
+    # vecs.cmw[1] = 0.0
+    # vecs.cmwv[1] = 0.0
+    # vecs.cmev[1] = 1.0
+    # vecs.cmda[1] = 0.0
+    # cp0 = (_met.wmae/wms)*cpa
 
-    zc = hs
-    zcmx = hmx - 0.5*h
-    zc = min(zc, zcmx) # if (zc .gt. zcmx) zc = zcmx
-    vecs.zc[1] = zc
+    # zc = hs
+    # zcmx = hmx - 0.5*h
+    # zc = min(zc, zcmx) # if (zc .gt. zcmx) zc = zcmx
+    # vecs.zc[1] = zc
 
-    tgon = 0.
+    # tgon = 0.
 
-    _spl = SLAB_Spill_Chars(idspl,qs,tsd,qtcs,qtis,as,ws,bs,hs,us)
+    # _spl = SLAB_Spill_Chars(idspl,qs,tsd,qtcs,qtis,as,ws,bs,hs,us)
        
-    # go to horizontal jet - line 400
-    msfm,mnfm,ft,fu,fv,fw,fug,bbv0,bv0,r0,sru0,htp0,ubs20,bx,bbx,bbvx0,bvx0 = _slab_init_hjet_400!(vecs,_met,_wp,_othr,_spl,mffm,bb,rho,rhoa,h,htp,alfg)
+    # # go to horizontal jet - line 400
+    # msfm,mnfm,ft,fu,fv,fw,fug,bbv0,bv0,r0,sru0,htp0,ubs20,bx,bbx,bbvx0,bvx0 = _slab_init_hjet_400!(vecs,_met,_wp,_othr,_spl,mffm,bb,rho,rhoa,h,htp,alfg)
 
-    # go to near field region calculation - line 600
-    nxi = msfm + 1
-    dt = 1.0 # this does nothing
+    # # go to near field region calculation - line 600
+    # nxi = msfm + 1
+    # dt = 1.0 # this does nothing
 
-    angam = log10((xffm/vecs.x[msfm]) - 1) + 1
-    nstp = nssm*mnfm
-    anstp = nstp
-    gam = 10^(angam/anstp)
+    # angam = log10((xffm/vecs.x[msfm]) - 1) + 1
+    # nstp = nssm*mnfm
+    # anstp = nstp
+    # gam = 10^(angam/anstp)
 
-    vars = SLAB_Loop_Init(nxi,msfm,mnfm,mffm,gam,ft,fu,fv,fw,fug,bbv0,bv0,r0,cp0,alfg,sru0,
-                          htp0,ubs20,rmi,bx,bbx,bbvx0,bvx0,xcc0,bxs0)
+    # vars = SLAB_Loop_Init(nxi,msfm,mnfm,mffm,gam,ft,fu,fv,fw,fug,bbv0,bv0,r0,cp0,alfg,sru0,
+    #                       htp0,ubs20,rmi,bx,bbx,bbvx0,bvx0,xcc0,bxs0)
 
-    params = SLAB_Params(_rgps,_spl,_fld,_met,_aps,_wp,_othr)
+    # params = SLAB_Params(_rgps,_spl,_fld,_met,_aps,_wp,_othr)
 
-    return idpf,nxtr,vecs,vars,params,dt
+    # return idpf,nxtr,vecs,vars,params,dt
 
 end
 
