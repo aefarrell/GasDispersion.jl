@@ -45,17 +45,28 @@ function slab_main(idspl::I,ncalc::I,wms::F,cps::F,tbp::F,cmed0::F,dhe::F,cpsl::
     #     end
     # end
 
-    nxtr = mffm + 1
-    idpf = 0
-    
-    # initialize horizontal jet
-    # TODO add other options using a switch statement based on idspl
-    vecs,vars,params = _slab_init_hjet(idspl,ncalc,msfm,mnfm,mffm,wms,cps,tbp,cmed0,
-                                       dhe,cpsl,rhosl,spb,spc,ts,qs,as,tsd,qtis,hs,tav,
-                                       xffm,zp,z0,za,ua,ta,rh,stab,ala)
-    
-        
-    _slab_int_steady_state!(vecs,vars,params,idpf,nxtr)
+   # select appropriate release type
+    if idspl == 3
+        # vertical jet
+        idpf,nxtr,vecs,vars,params,dt = _slab_init_vjet(3,ncalc,msfm,mnfm,mffm,wms,cps,tbp,cmed0,
+                                                    dhe,cpsl,rhosl,spb,spc,ts,qs,as,tsd,qtis,hs,tav,
+                                                    xffm,zp,z0,za,ua,ta,rh,stab,ala)
+        if idpf < 2
+            _slab_int_steady_state!(vecs,vars,params,idpf,nxtr)
+        else
+            _slab_int_transient!(vecs,vars,params,idpf,nxtr,dt)
+        end
+    else
+        # default is a horizontal jet
+        idpf,nxtr,vecs,vars,params,dt = _slab_init_hjet(2,ncalc,msfm,mnfm,mffm,wms,cps,tbp,cmed0,
+                                                    dhe,cpsl,rhosl,spb,spc,ts,qs,as,tsd,qtis,hs,tav,
+                                                    xffm,zp,z0,za,ua,ta,rh,stab,ala)
+        if idpf < 2
+            _slab_int_steady_state!(vecs,vars,params,idpf,nxtr)
+        else
+            _slab_int_transient!(vecs,vars,params,idpf,nxtr,dt)
+        end
+    end
 
     cc_vecs = editcc(vecs,params,mffm)
 
