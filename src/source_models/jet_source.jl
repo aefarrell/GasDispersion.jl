@@ -18,10 +18,12 @@ gas and the jet is isentropic).
 - `pressure::Number`: the pressure upstream of the jet, Pa
 - `temperature::Number`: the temperature upstream of the jet, K
 - `duration::Number`: the duration of the leak, s
+- `jet=:horizontal`: the type of jet, either :horizontal or :vertical
 
 """
 function scenario_builder(substance::AbstractSubstance, ::Type{JetSource}, atmosphere::Atmosphere;
-                          phase=:liquid,dischargecoef=0.63,diameter,pressure,temperature,height,duration=Inf)
+                          phase=:liquid,dischargecoef=0.63,diameter,pressure,temperature,height,duration=Inf,
+                          jet=:horizontal)
     cd = dischargecoef
     d  = diameter
     T₁ = temperature
@@ -58,13 +60,27 @@ function scenario_builder(substance::AbstractSubstance, ::Type{JetSource}, atmos
         error("$phase is not a valid phase, try either :liquid or :gas")
     end
 
-    r = HorizontalJet(; mass_rate=m,
-                        duration=duration,
-                        diameter=d,
-                        velocity=uⱼ,
-                        height=h,
-                        pressure=Pⱼ,
-                        temperature=Tⱼ,
-                        fraction_liquid=f_l)
+    if jet == :horizontal
+        r = HorizontalJet(; mass_rate=m,
+                            duration=duration,
+                            diameter=d,
+                            velocity=uⱼ,
+                            height=h,
+                            pressure=Pⱼ,
+                            temperature=Tⱼ,
+                            fraction_liquid=f_l)
+    elseif jet == :vertical
+        r = VerticalJet(; mass_rate=m,
+                          duration=duration,
+                          diameter=d,
+                          velocity=uⱼ,
+                          height=h,
+                          pressure=Pⱼ,
+                          temperature=Tⱼ,
+                          fraction_liquid=f_l)
+    else
+        error("$jet is not a valid release type, try either :horizontal or :vertical")
+    end
+
     return Scenario(substance,r,atmosphere)
 end

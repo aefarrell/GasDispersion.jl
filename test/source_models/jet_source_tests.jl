@@ -29,5 +29,15 @@
 
     # testing default behaviour
     @test ljet ≈ scenario_builder(s1,JetSource;phase=:liquid,dischargecoef=0.63,diameter=0.01,pressure=120935.0368,temperature=298.15,height=1)
+
+    # testing VerticalJet
+    vjet = Scenario(s2, VerticalJet(mass_rate=0.09002799947040846,duration=Inf,
+            diameter=0.01,velocity=208.58711308961637,height=1,
+            pressure=287766.01316878956,temperature=277.2093023255814,
+            fraction_liquid = 0),a)
+    @test vjet ≈ scenario_builder(s2,JetSource,a;phase=:gas,dischargecoef=0.85,diameter=0.01,pressure=501e3,temperature=298,height=1,jet=:vertical)
+
+    # testing invalid jet type
+    @test_throws ErrorException scenario_builder(s2,JetSource,a;phase=:gas,dischargecoef=0.85,diameter=0.01,pressure=501e3,temperature=298,height=1,jet=:fake)
     
 end
