@@ -335,7 +335,7 @@ zs = 0:1:50
 p1 = plot(ylabel="Elevation, m", xlabel="Windspeed, m/s")
 
 for class in [ClassA,ClassB,ClassC,ClassD,ClassE,ClassF]
-    u = [ GasDispersion._windspeed(u0,z0,z,class,DefaultSet) for z in zs ]
+    u = [ GasDispersion._windspeed(u0,z0,z,class,GasDispersion.DefaultWind) for z in zs ]
     plot!(p1,u,zs,label=class)
 end
 

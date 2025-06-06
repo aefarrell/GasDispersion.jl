@@ -39,9 +39,9 @@ stability class, `z` is assumed to be in meters and `u` is in m/s
 - `k`  von Karman's constant, 0.40
 """
 function _windspeed(z::Number, u::Number, zR::Number, L::Number, ::Union{Type{ClassA},Type{ClassB},Type{ClassC}}, ::Type{TNOWind}; k=0.4)
-    a(x) = (1-16*(z/L))^0.25 # Bakkum calls this Ψ′ but that is awful notation
-    Ψ(x) = 2log((1+a(x))/2) + log((1+a(x)^2)/2) - 2atan(a(x)) + π/2
-    return (u/k)*(log(z/zR)*Ψ(z/L) + Ψ(zR/L)) # Bakkum, eqn 4.32
+    a(z) = (1-16*(z/L))^0.25 # Bakkum calls this Ψ′ but that is awful notation
+    Ψ(z) = 2log((1+a(z))/2) + log((1+a(z)^2)/2) - 2atan(a(z)) + π/2
+    return (u/k)*(log(z/zR) - Ψ(z) + Ψ(zR)) # Bakkum, eqn 4.32
 end
 
 function _windspeed(z::Number, u::Number, zR::Number, L::Number, ::Type{ClassD}, ::Type{TNOWind}; k=0.4)
