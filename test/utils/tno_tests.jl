@@ -10,8 +10,8 @@
                  (ClassE, 0.11551744100090941, 0.1713537324266559),
                  (ClassF, 0.07661871086795012, 0.135591567342651)]
         @testset "Plume dispersion, stability class $class" for (class,sy,sz) in known
-            @test GasDispersion.crosswind_dispersion(1.2, Plume, class, TNO) ≈ sy
-            @test GasDispersion.vertical_dispersion(1.2, Plume, class, TNO) ≈ sz
+            @test GasDispersion.crosswind_dispersion(1.2, class, TNOPlume()) ≈ sy
+            @test GasDispersion.vertical_dispersion(1.2, class, TNOPlume()) ≈ sz
         end
 
         # Puff dispersion
@@ -22,9 +22,9 @@
                  (ClassE, 0.057758720500454705, 0.18, 0.156),
                  (ClassF, 0.03830935543397506, 0.144, 0.156)]
        @testset "Puff dispersion, stability class $class" for (class,sy,sz,sx) in known
-            @test GasDispersion.downwind_dispersion(1.2, Puff, class, TNO) ≈ sx
-            @test GasDispersion.crosswind_dispersion(1.2, Puff, class, TNO) ≈ sy
-            @test GasDispersion.vertical_dispersion(1.2, Puff, class, TNO) ≈ sz
+            @test GasDispersion.downwind_dispersion(1.2, class, TNOPuff()) ≈ sx
+            @test GasDispersion.crosswind_dispersion(1.2, class, TNOPuff()) ≈ sy
+            @test GasDispersion.vertical_dispersion(1.2, class, TNOPuff()) ≈ sz
        end
     end
 

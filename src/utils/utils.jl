@@ -18,7 +18,7 @@ include("britter_mcquaid_correls.jl")
 include("equation_sets/briggs.jl")
 include("equation_sets/irwin.jl")
 include("equation_sets/ccps.jl")
-# include("equation_sets/tno.jl")
+include("equation_sets/tno.jl")
 include("equation_sets/turner.jl")
 include("equation_sets/isc3.jl")
 

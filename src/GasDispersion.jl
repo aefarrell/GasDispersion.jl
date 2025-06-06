@@ -28,8 +28,8 @@ export GaussianPuff, IntPuff, BritterMcQuaidPuff, SLAB
 
 # equation sets
 export EquationSet, DefaultSet, DefaultPuffSet
-export CCPSRural, CCPSUrban, TNO, Turner, ISC3Rural, ISC3Urban
-export CCPSPuffRural, CCPSPuffUrban
+export CCPSRural, CCPSUrban, TNOPlume, Turner, ISC3Rural, ISC3Urban
+export CCPSPuffRural, CCPSPuffUrban, TNOPuff
 
 # abstract types
 abstract type AbstractSubstance end
@@ -43,6 +43,7 @@ abstract type PuffModel end
 abstract type Puff end
 abstract type EquationSet end
 abstract type PowerLawWind end
+abstract type MoninObukhovWind end
 abstract type DispersionFunction end
 
 const R_GAS_CONST = 8.31446261815324 #Universal Gas Constant, J/mol/K

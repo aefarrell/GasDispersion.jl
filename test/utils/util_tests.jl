@@ -63,9 +63,9 @@ end
     a(z) = (1-15*(z/λ))^0.25
     Ψ(a) = 2*log((1+a)/2) + log((1+a^2)/2) - 2*atan(a) + π/2
 
-    @test GasDispersion._windspeed(10, ustar, zR, λ, ClassA) ≈ (ustar/k)*(log((10+zR)/zR) - Ψ(a(10)))
-    @test GasDispersion._windspeed(10, ustar, zR, λ, ClassD) ≈ (ustar/k)*(log((10+zR)/zR))
-    @test GasDispersion._windspeed(10, ustar, zR, λ, ClassE) ≈ (ustar/k)*(log((10+zR)/zR) - 4.7*(10/λ))
+    @test GasDispersion._windspeed(10, ustar, zR, λ, ClassA, GasDispersion.BusingerWind) ≈ (ustar/k)*(log(10/zR) - Ψ(a(10)))
+    @test GasDispersion._windspeed(10, ustar, zR, λ, ClassD, GasDispersion.BusingerWind) ≈ (ustar/k)*(log(10/zR))
+    @test GasDispersion._windspeed(10, ustar, zR, λ, ClassE, GasDispersion.BusingerWind) ≈ (ustar/k)*(log(10/zR) + 4.7*(10/λ))
 end
 
 @testset "Plume rise" begin
@@ -165,7 +165,7 @@ end
 @testset "Equation Sets" begin
     
     include("ccps_tests.jl")
-#    include("tno_tests.jl")
+    include("tno_tests.jl")
     include("turner_tests.jl")
     include("isc3_tests.jl")
 
