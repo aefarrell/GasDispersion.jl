@@ -109,16 +109,23 @@ function puff(scenario::Scenario, ::Type{SLAB}, eqs::EquationSet=DefaultSet();
                      rh = _rel_humidity(scenario.atmosphere),
                      stab = stab,
                      ala = _slab_ala(scenario.atmosphere))
+
+    # run SLAB and collect output
     out = slab_main(inp)
+
+    # SLAB can return results out of order
+    # since v8.0.1 this causes DataInterpolations to error
+    xperm = sortperm(out.cc.x)
+    tperm = sortperm(out.cc.t)
     return SLABSolution(scenario,:SLAB,inp,out,c_max,
-                        AkimaInterpolation(out.cc.cc, out.cc.x),
-                        AkimaInterpolation(out.cc.b, out.cc.x),
-                        AkimaInterpolation(out.cc.betac, out.cc.x),
-                        AkimaInterpolation(out.cc.zc, out.cc.x),
-                        AkimaInterpolation(out.cc.sig, out.cc.x),
-                        AkimaInterpolation(out.cc.xc, out.cc.t),
-                        AkimaInterpolation(out.cc.bx, out.cc.t),
-                        AkimaInterpolation(out.cc.betax, out.cc.t))
+                        AkimaInterpolation(out.cc.cc[xperm], out.cc.x[xperm]),
+                        AkimaInterpolation(out.cc.b[xperm], out.cc.x[xperm]),
+                        AkimaInterpolation(out.cc.betac[xperm], out.cc.x[xperm]),
+                        AkimaInterpolation(out.cc.zc[xperm], out.cc.x[xperm]),
+                        AkimaInterpolation(out.cc.sig[xperm], out.cc.x[xperm]),
+                        AkimaInterpolation(out.cc.xc[tperm], out.cc.t[tperm]),
+                        AkimaInterpolation(out.cc.bx[tperm], out.cc.t[tperm]),
+                        AkimaInterpolation(out.cc.betax[tperm], out.cc.t[tperm]))
 end
 
 function plume(scenario::Scenario{<:AbstractSubstance,<:VerticalJet,<:Atmosphere}, ::Type{SLAB}, eqs::EquationSet=DefaultSet(); release_angle::Number=π/2, k2::Number=6.0, k3::Number=5.0)
