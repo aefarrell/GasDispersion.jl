@@ -27,8 +27,9 @@ export PuffModel, Puff, puff
 export GaussianPuff, IntPuff, BritterMcQuaidPuff, SLAB
 
 # equation sets
-export EquationSet, DefaultSet
+export EquationSet, DefaultSet, DefaultPuffSet
 export CCPSRural, CCPSUrban, TNO, Turner, ISC3Rural, ISC3Urban
+export CCPSPuffRural, CCPSPuffUrban
 
 # abstract types
 abstract type AbstractSubstance end

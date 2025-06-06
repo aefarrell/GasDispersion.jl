@@ -10,8 +10,8 @@
                  (ClassE, 0.13196833140024, 0.09591371646531512),
                  (ClassF, 0.13196833140024, 0.09591371646531512)]
         @testset "Plume dispersion, urban terrain, stability class $class" for (class,cwind,vert) in urban
-            @test GasDispersion.crosswind_dispersion(1.2, Plume, class, ISC3Urban) ≈ cwind
-            @test GasDispersion.vertical_dispersion(1.2, Plume, class, ISC3Urban) ≈ vert
+            @test GasDispersion.crosswind_dispersion(1.2, class, ISC3Urban()) ≈ cwind
+            @test GasDispersion.vertical_dispersion(1.2, class, ISC3Urban()) ≈ vert
         end
 
         rural = [(ClassA, 0.48870396813625905, [(50, 7.246283645973222), (125, 17.6538512508938), (175, 25.32210358392127), (225, 33.46114450376929), (275, 42.49832115580982), (350, 58.955561122372494), (450, 87.22955507375895), (550, 128.0454080208172)]),
@@ -21,9 +21,9 @@
                  (ClassE, 0.09742134712173195, [(50, 1.979015073784176), (200, 6.23857638464594), (500, 12.80138815568348), (1500, 27.931190340632067), (3000, 42.22135548587303), (7500, 68.37414410048738), (15000, 95.55830909365176), (30000, 127.31152395989899), (50000, 151.5410717370677)]),
                  (ClassF, 0.0645858766834503, [(100, 2.3255231110829815), (500, 8.395558503802999), (800, 11.976175562087187), (1500, 18.030377292486545), (2500, 24.42448141869856), (5000, 34.207199596890135), (10000, 46.38392157098271), (20000, 60.29440210746138), (45000, 76.93568233551231), (75000, 87.38876819912205)])]
         @testset "Plume dispersion, rural terrain, stability class $class" for (class,cwind,verts) in rural
-            @test GasDispersion.crosswind_dispersion(1.2, Plume, class, ISC3Rural) ≈ cwind
+            @test GasDispersion.crosswind_dispersion(1.2, class, ISC3Rural()) ≈ cwind
             for (x,sz) in verts
-                @test GasDispersion.vertical_dispersion(x, Plume, class, ISC3Rural) ≈ sz
+                @test GasDispersion.vertical_dispersion(x, class, ISC3Rural()) ≈ sz
             end
         end
 
@@ -34,7 +34,7 @@
         u0, z0 = 3.0, 1.0
         a = SimpleAtmosphere(windspeed=u0, windspeed_height=z0, stability=ClassA)
         s = Scenario(Substance(:null,0,0,0,0,0,0,0,0,0,0,0),HorizontalJet(0,0,0,0,1.0,0,0,0),a)
-        @test GasDispersion._windspeed(s,10,ISC3Rural) == GasDispersion._windspeed(a,10,ISC3Rural) == GasDispersion._windspeed(u0,z0,10,ClassA,ISC3Rural)
+        @test GasDispersion._windspeed(s,10,ISC3Rural()) == GasDispersion._windspeed(a,10,ISC3Rural()) == GasDispersion._windspeed(u0,z0,10,ClassA,GasDispersion.IrwinRural)
 
         urban = [(ClassA, 4.237612633868263),
                  (ClassB, 4.237612633868263),
@@ -43,7 +43,8 @@
                  (ClassE, 5.985786944906638),
                  (ClassF, 5.985786944906638)]
         @testset "Windspeed, urban terrain, stability class $class" for (class, ans) in urban
-            @test  GasDispersion._windspeed(u0,z0,10,class,ISC3Urban) ≈ ans
+            a = SimpleAtmosphere(windspeed=u0, windspeed_height=z0, stability=class)
+            @test  GasDispersion._windspeed(a,10,ISC3Urban()) ≈ ans
         end
 
         rural = [(ClassA, 3.5246926648185886),
@@ -53,7 +54,8 @@
                  (ClassE, 6.716163415705019),
                  (ClassF, 10.644401677007265)]
         @testset "Windspeed, rural terrain, stability class $class" for (class, ans) in rural
-            @test  GasDispersion._windspeed(u0,z0,10,class,ISC3Rural) ≈ ans
+            a = SimpleAtmosphere(windspeed=u0, windspeed_height=z0, stability=class)
+            @test  GasDispersion._windspeed(a,10,ISC3Rural()) ≈ ans
         end
 
     end

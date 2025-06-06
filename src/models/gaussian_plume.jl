@@ -12,7 +12,7 @@ struct GaussianPlumeSolution{F<:Number,P<:PlumeRise,S<:StabilityClass,E<:Equatio
     effective_stack_height::F
     plumerise::P
     stability::Type{S}
-    equationset::Type{E}
+    equationset::E
 end
 GaussianPlumeSolution(s,m,Q,c,ρ,u,h_eff,pr,stab,es) = GaussianPlumeSolution(s,m,promote(Q,c,ρ,u,h_eff)...,pr,stab,es)
 
@@ -37,7 +37,7 @@ is a gas at ambient conditions.
 + AIChE/CCPS. 1999. *Guidelines for Consequence Analysis of Chemical Releases*. New York: American Institute of Chemical Engineers
 
 """
-function plume(scenario::Scenario, ::Type{GaussianPlume}, eqs=DefaultSet; h_min=1.0)
+function plume(scenario::Scenario, ::Type{GaussianPlume}, eqs=DefaultSet(); h_min=1.0)
     # parameters of the jet
     hᵣ = _release_height(scenario)
     m  = _mass_rate(scenario)
@@ -95,7 +95,7 @@ is a gas at ambient conditions.
 + Briggs, Gary A. 1969. *Plume Rise* Oak Ridge: U.S. Atomic Energy Commission
 
 """
-function plume(scenario::Scenario{<:AbstractSubstance,<:VerticalJet,<:Atmosphere}, ::Type{GaussianPlume}, eqs=DefaultSet; downwash::Bool=false, plumerise::Bool=true, h_min=1.0)  
+function plume(scenario::Scenario{<:AbstractSubstance,<:VerticalJet,<:Atmosphere}, ::Type{GaussianPlume}, eqs=DefaultSet(); downwash::Bool=false, plumerise::Bool=true, h_min=1.0)  
     # parameters of the jet
     Dⱼ = _release_diameter(scenario)
     uⱼ = _release_velocity(scenario)
@@ -160,8 +160,8 @@ function (g::GaussianPlumeSolution{F,NoPlumeRise,S,E})(x, y, z, t=0) where {F<:N
     else
         G = g.rate
         u = g.windspeed
-        σy = crosswind_dispersion(x,Plume,S,E)
-        σz = vertical_dispersion(x,Plume,S,E)
+        σy = crosswind_dispersion(x,S,g.equationset)
+        σz = vertical_dispersion(x,S,g.equationset)
 
         c = ( G/(2*π*u*σy*σz)
             * exp(-0.5*(y/σy)^2)
@@ -188,8 +188,8 @@ function (g::GaussianPlumeSolution{F,<:BriggsModel,S,E})(x, y, z, t=0) where {F<
         h = g.effective_stack_height
         m = g.plumerise
         Δh = plume_rise(x, m)
-        σy = crosswind_dispersion(x,Plume,S,E)
-        σz = vertical_dispersion(x,Plume,S,E)
+        σy = crosswind_dispersion(x,S,g.equationset)
+        σz = vertical_dispersion(x,S,g.equationset)
         hₑ  = h + Δh
         σyₑ = √( (Δh/3.5)^2 + σy^2 )
         σzₑ = √( (Δh/3.5)^2 + σz^2 )

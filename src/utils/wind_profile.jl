@@ -1,3 +1,5 @@
+struct DefaultWind <: PowerLawWind end
+
 # Power law correlations
 _windspeed(u0::Number,z0::Number,z::Number,::Type{ClassA},::Type{DefaultWind}) = u0*(z/z0)^0.108
 _windspeed(u0::Number,z0::Number,z::Number,::Type{ClassB},::Type{DefaultWind}) = u0*(z/z0)^0.112
@@ -16,7 +18,7 @@ stability class, `z` is assumed to be in meters and `u` is in m/s
 
 """
 function _windspeed(a::SimpleAtmosphere{F,S},z::Number,::BasicEquationSet{W,SX,SY,SZ}) where {
-                    F<:Number,S<:StabilityClass,W<:PowerLawWind,SX<:Any,SY<:Any,SZ<:Any}
+                    F<:Number,S<:StabilityClass,W<:PowerLawWind,SX,SY,SZ}
     u0 = _windspeed(a)
     z0 = _windspeed_height(a)
     return _windspeed(u0,z0,z,S,W)

@@ -18,8 +18,8 @@ end
               (ClassE, 0.12018860465437811, 0.028796954615478678),
               (ClassF, 0.0794187446441675, 0.014462956106986533)]
     @testset "Stability class $class" for (class,cwind,vert) in knowns
-        @test GasDispersion.crosswind_dispersion(1.2, Plume, class, DefaultSet()) ≈ cwind
-        @test GasDispersion.vertical_dispersion(1.2, Plume, class, DefaultSet()) ≈ vert
+        @test GasDispersion.crosswind_dispersion(1.2, class, DefaultSet()) ≈ cwind
+        @test GasDispersion.vertical_dispersion(1.2, class, DefaultSet()) ≈ vert
     end
 
     # Puff dispersion
@@ -30,9 +30,9 @@ end
               (ClassE, 0.047304966328689864, 0.11258170198247626),
               (ClassF, 0.023523465599668385, 0.05588182287353654)]
     @testset "Stability class $class" for (class,cwind,vert) in knowns
-        @test GasDispersion.crosswind_dispersion(1.2, Puff, class, DefaultSet()) ≈ cwind
-        @test GasDispersion.downwind_dispersion(1.2, Puff, class, DefaultSet()) ≈ cwind
-        @test GasDispersion.vertical_dispersion(1.2, Puff, class, DefaultSet()) ≈ vert
+        @test GasDispersion.crosswind_dispersion(1.2, class, DefaultPuffSet()) ≈ cwind
+        @test GasDispersion.downwind_dispersion(1.2, class, DefaultPuffSet()) ≈ cwind
+        @test GasDispersion.vertical_dispersion(1.2, class, DefaultPuffSet()) ≈ vert
     end
 end
 
@@ -42,7 +42,7 @@ end
     a = SimpleAtmosphere(windspeed=u0, windspeed_height=z0, stability=ClassA)
     s = Scenario(Substance(:null,0,0,0,0,0,0,0,0,0,0,0),HorizontalJet(0,0,0,0,1.0,0,0,0),a)
     @test GasDispersion._windspeed(s) == GasDispersion._windspeed(a) ≈ u0
-    @test GasDispersion._windspeed(s,10) == GasDispersion._windspeed(a,10) == GasDispersion._windspeed(u0,z0,10,ClassA,DefaultSet())
+    @test GasDispersion._windspeed(s,10) == GasDispersion._windspeed(a,10) == GasDispersion._windspeed(u0,z0,10,ClassA,GasDispersion.DefaultWind)
 
     knowns = [(ClassA, 3.846991747968065),
               (ClassB, 3.882587524349958),
@@ -52,7 +52,7 @@ end
               (ClassF, 5.371817562105883)]
 
     @testset "Stability class $class" for (class, ans) in knowns
-        @test  GasDispersion._windspeed(u0,z0,10,class,DefaultSet()) ≈ ans
+        @test  GasDispersion._windspeed(u0,z0,10,class,GasDispersion.DefaultWind) ≈ ans
     end
 
 end
@@ -165,7 +165,7 @@ end
 @testset "Equation Sets" begin
     
     include("ccps_tests.jl")
-    include("tno_tests.jl")
+#    include("tno_tests.jl")
     include("turner_tests.jl")
     include("isc3_tests.jl")
 

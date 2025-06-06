@@ -1,3 +1,10 @@
+struct Defaultσy <: DispersionFunction end
+struct Defaultσz <: DispersionFunction end
+
+downwind_dispersion(x::Number, s::Any, ::BasicEquationSet{W,SX,SY,SZ}) where {W,SX<:DispersionFunction,SY,SZ} = downwind_dispersion(x,s,SX)
+crosswind_dispersion(x::Number, s::Any, ::BasicEquationSet{W,SX,SY,SZ}) where {W,SX,SY<:DispersionFunction,SZ} = crosswind_dispersion(x,s,SY)
+vertical_dispersion(x::Number, s::Any, ::BasicEquationSet{W,SX,SY,SZ}) where {W,SX,SY,SZ<:DispersionFunction} = vertical_dispersion(x,s,SZ)
+
 """
     crosswind_dispersion(x, StabilityClass; avg_time=600.0)
 
@@ -123,7 +130,7 @@ References:
 + AIChE/CCPS. 1999. *Guidelines for Consequence Analysis of Chemical Releases*. New York: American Institute of Chemical Engineers
 """
 function downwind_dispersion(x::Number, stab::Any, ::Type{CCPSPuffσx})
-    return crosswind_dispersion(x, Puff, stab, CCPSPuffσy)
+    return crosswind_dispersion(x, stab, CCPSPuffσy)
 end
 
 
@@ -135,9 +142,9 @@ Puff vertical dispersion correlations
 References:
 + AIChE/CCPS. 1999. *Guidelines for Consequence Analysis of Chemical Releases*. New York: American Institute of Chemical Engineers
 """
-vertical_dispersion(x::Number, ::Type{ClassA}, ::Type{CCPSPuffσy}) = 0.60*x^0.75
-vertical_dispersion(x::Number, ::Type{ClassB}, ::Type{CCPSPuffσy}) = 0.53*x^0.73
-vertical_dispersion(x::Number, ::Type{ClassC}, ::Type{CCPSPuffσy}) = 0.34*x^0.71
-vertical_dispersion(x::Number, ::Type{ClassD}, ::Type{CCPSPuffσy}) = 0.15*x^0.70
-vertical_dispersion(x::Number, ::Type{ClassE}, ::Type{CCPSPuffσy}) = 0.10*x^0.65
-vertical_dispersion(x::Number, ::Type{ClassF}, ::Type{CCPSPuffσy}) = 0.05*x^0.61
+vertical_dispersion(x::Number, ::Type{ClassA}, ::Type{CCPSPuffσz}) = 0.60*x^0.75
+vertical_dispersion(x::Number, ::Type{ClassB}, ::Type{CCPSPuffσz}) = 0.53*x^0.73
+vertical_dispersion(x::Number, ::Type{ClassC}, ::Type{CCPSPuffσz}) = 0.34*x^0.71
+vertical_dispersion(x::Number, ::Type{ClassD}, ::Type{CCPSPuffσz}) = 0.15*x^0.70
+vertical_dispersion(x::Number, ::Type{ClassE}, ::Type{CCPSPuffσz}) = 0.10*x^0.65
+vertical_dispersion(x::Number, ::Type{ClassF}, ::Type{CCPSPuffσz}) = 0.05*x^0.61

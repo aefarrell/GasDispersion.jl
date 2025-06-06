@@ -323,10 +323,3 @@ _release_density(s::Scenario) = _density(s.substance, _release_liquid_fraction(s
 
 # Default equation set
 struct BasicEquationSet{WIND,SIGMAX,SIGMAY,SIGMAZ} <: EquationSet end
-
-# Default correlations
-struct DefaultWind <: PowerLawWind end
-struct Defaultσy <: DispersionFunction end
-struct Defaultσz <: DispersionFunction end
-
-DefaultSet = BasicEquationSet{DefaultWind,Nothing,Defaultσy,Defaultσz}

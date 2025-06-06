@@ -28,7 +28,7 @@ a default power-law wind profile is used.
 + Britter, Rex E. and J. McQuaid. 1988. *Workbook on the Dispersion of Dense Gases. HSE Contract Research Report No. 17/1988*
 + AIChE/CCPS. 1999. *Guidelines for Consequence Analysis of Chemical Releases*. New York: American Institute of Chemical Engineers
 """
-function plume(scenario::Scenario, ::Type{BritterMcQuaidPlume}, eqs=DefaultSet)
+function plume(scenario::Scenario, ::Type{BritterMcQuaidPlume}, eqs=DefaultSet())
 
     Q = _release_flowrate(scenario)
     ṁ = _mass_rate(scenario)
