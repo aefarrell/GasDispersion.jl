@@ -1,10 +1,10 @@
 # Power law correlations
-_windspeed(u0::Number,z0::Number,z::Number,::Type{ClassA},::Any) = u0*(z/z0)^0.108
-_windspeed(u0::Number,z0::Number,z::Number,::Type{ClassB},::Any) = u0*(z/z0)^0.112
-_windspeed(u0::Number,z0::Number,z::Number,::Type{ClassC},::Any) = u0*(z/z0)^0.120
-_windspeed(u0::Number,z0::Number,z::Number,::Type{ClassD},::Any) = u0*(z/z0)^0.142
-_windspeed(u0::Number,z0::Number,z::Number,::Type{ClassE},::Any) = u0*(z/z0)^0.203
-_windspeed(u0::Number,z0::Number,z::Number,::Type{ClassF},::Any) = u0*(z/z0)^0.253
+_windspeed(u0::Number,z0::Number,z::Number,::Type{ClassA},::Type{DefaultWind}) = u0*(z/z0)^0.108
+_windspeed(u0::Number,z0::Number,z::Number,::Type{ClassB},::Type{DefaultWind}) = u0*(z/z0)^0.112
+_windspeed(u0::Number,z0::Number,z::Number,::Type{ClassC},::Type{DefaultWind}) = u0*(z/z0)^0.120
+_windspeed(u0::Number,z0::Number,z::Number,::Type{ClassD},::Type{DefaultWind}) = u0*(z/z0)^0.142
+_windspeed(u0::Number,z0::Number,z::Number,::Type{ClassE},::Type{DefaultWind}) = u0*(z/z0)^0.203
+_windspeed(u0::Number,z0::Number,z::Number,::Type{ClassF},::Type{DefaultWind}) = u0*(z/z0)^0.253
 
 
 """
@@ -15,10 +15,11 @@ stability class, `z` is assumed to be in meters and `u` is in m/s
 # References
 
 """
-function _windspeed(a::SimpleAtmosphere{F,S},z::Number,es::Any) where {F<:Number,S<:StabilityClass}
+function _windspeed(a::SimpleAtmosphere{F,S},z::Number,::BasicEquationSet{W,SX,SY,SZ}) where {
+                    F<:Number,S<:StabilityClass,W<:PowerLawWind,SX<:Any,SY<:Any,SZ<:Any}
     u0 = _windspeed(a)
     z0 = _windspeed_height(a)
-    return _windspeed(u0,z0,z,S,es)
+    return _windspeed(u0,z0,z,S,W)
 end
 
 _windspeed(a::Atmosphere,z::Number) = _windspeed(a,z,DefaultSet())

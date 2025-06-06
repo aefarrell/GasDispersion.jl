@@ -315,12 +315,18 @@ _release_flowrate(s::Scenario) = _flowrate(s.release)
 _release_height(s::Scenario) = _height(s.release)
 _release_liquid_fraction(s::Scenario) = _liquid_fraction(s.release)
 _windspeed(s::Scenario) = _windspeed(s.atmosphere)
-_windspeed(s::Scenario, z::Number, es=DefaultSet) = _windspeed(s.atmosphere, z, es)
+_windspeed(s::Scenario, z::Number, es=DefaultSet()) = _windspeed(s.atmosphere, z, es)
 _windspeed_height(s::Scenario) = _windspeed_height(s.atmosphere)
 _stability(s::Scenario) = _stability(s.atmosphere)
 _atmosphere_density(s::Scenario) = _density(s.atmosphere)
 _release_density(s::Scenario) = _density(s.substance, _release_liquid_fraction(s), _release_temperature(s), _release_pressure(s))
 
 # Default equation set
-struct DefaultSet <: EquationSet end
+struct BasicEquationSet{WIND,SIGMAX,SIGMAY,SIGMAZ} <: EquationSet end
 
+# Default correlations
+struct DefaultWind <: PowerLawWind end
+struct Defaultσy <: DispersionFunction end
+struct Defaultσz <: DispersionFunction end
+
+DefaultSet = BasicEquationSet{DefaultWind,Nothing,Defaultσy,Defaultσz}

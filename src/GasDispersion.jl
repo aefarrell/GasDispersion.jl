@@ -41,6 +41,8 @@ abstract type Plume end
 abstract type PuffModel end
 abstract type Puff end
 abstract type EquationSet end
+abstract type PowerLawWind end
+abstract type DispersionFunction end
 
 const R_GAS_CONST = 8.31446261815324 #Universal Gas Constant, J/mol/K
 
