@@ -1,3 +1,9 @@
+function monin_obuknov(a::SimpleAtmosphere{F,S}, es::BasicEquationSet{W,SX,SY,SZ}) where{
+                       F,S<:StabilityClass,W,SX,SY,SZ}
+    zR = _surface_roughness(a)
+    return monin_obuknov(zR,S,W)
+end
+
 """
     monin_obuknov(roughness, StabilityClass, WindEquation)
 returns the Monin-Obukhov length for a given Pasquill-Gifford stability class

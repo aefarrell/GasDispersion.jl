@@ -7,7 +7,16 @@ struct TNOPlumeσz <: DispersionFunction end
 TNOPlume = BasicEquationSet{TNOWind,Nothing,TNOPlumeσy,TNOPlumeσz}
 
 # Default surface roughness for TNO models is 0.1
-_surface_roughness(a::SimpleAtmosphere,::Type{TNOWind}) = 0.1
+function windspeed(a::SimpleAtmosphere{F,S},z::Number,es::BasicEquationSet{<:TNOWind,SX,SY,SZ}; k=0.4) where {
+                   F,S<:StabilityClass,SX,SY,SZ}
+
+    zR = 0.1
+    L  = monin_obuknov(zR, S, TNOWind)
+    uₐ = windspeed(a)
+    zₐ = _windspeed_height(a)
+    u⁺ = k*uₐ/windspeed(zₐ,1,zR,L,S,TNOWind; k=1)
+    return windspeed(z, u⁺, zR, L, S, TNOWind; k=k)
+end
 
 """
     monin_obuknov(roughness, StabilityClass, TNOWind)

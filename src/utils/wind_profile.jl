@@ -17,10 +17,11 @@ stability class, `z` is assumed to be in meters and `u` is in m/s
 # References
 
 """
-function windspeed(a::SimpleAtmosphere{F,S},z::Number,::BasicEquationSet{W,SX,SY,SZ}) where {
-                    F<:Number,S<:StabilityClass,W<:PowerLawWind,SX,SY,SZ}
+function windspeed(a::Atmosphere,z::Number,es::BasicEquationSet{W,SX,SY,SZ}) where {
+                   W<:PowerLawWind,SX,SY,SZ}
     u0 = windspeed(a)
     z0 = _windspeed_height(a)
+    S = _stability(a)
     return windspeed(u0,z0,z,S,W)
 end
 
@@ -58,14 +59,13 @@ function windspeed(z::Number, u::Number, zR::Number, L::Number, ::Union{Type{Cla
     return (u/k)*(log(z/zR) + 4.7*(z/L)) # Businger, eqn 29
 end
 
-function windspeed(a::SimpleAtmosphere{F,S},z::Number,es::BasicEquationSet{W,SX,SY,SZ}; k=0.35) where {
-                    F<:Number,S<:StabilityClass,W<:MoninObukhovWind,SX,SY,SZ}
+function windspeed(a::Atmosphere,z::Number,es::BasicEquationSet{W,SX,SY,SZ}; k=0.35) where {
+                   W<:MoninObukhovWind,SX,SY,SZ}
 
-    uₐ = windspeed(a)
-    zₐ = _windspeed_height(a)
-    zR = _surface_roughness(a,W)
-    L  = monin_obuknov(zR,S,W)
-    u⁺ = k*uₐ/windspeed(zₐ,1,zR,L,S,W; k=1)
+    S  = _stability(a)
+    zR = _surface_roughness(a)
+    L  = monin_obuknov(a,es)
+    u⁺ = friction_velocity(a,es; k=k)
     return windspeed(z,u⁺,zR,L,S,W; k=k)
 end
 

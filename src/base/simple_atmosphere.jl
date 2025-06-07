@@ -54,7 +54,6 @@ _lapse_rate(a::SimpleAtmosphere{<:Number,ClassF}) = 0.035
 _lapse_rate(a::SimpleAtmosphere{<:Number,<:StabilityClass}) = nothing
 _rel_humidity(a::SimpleAtmosphere) = a.rh
 _surface_roughness(a::SimpleAtmosphere) = 1.0
-_surface_roughness(a::SimpleAtmosphere,W) = _surface_roughness(a)
 
 function _density(a::SimpleAtmosphere, T, P)
     ρ_a = _gas_density(DRYAIR,T,P)
