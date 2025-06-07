@@ -168,14 +168,14 @@ function puff(scenario::Scenario{<:AbstractSubstance,<:VerticalJet,<:Atmosphere}
     xperm = sortperm(out.cc.x)
     tperm = sortperm(out.cc.t)
     return SLABSolution(scenario,:SLAB,inp,out,c_max,
-                        AkimaInterpolation(out.cc.cc, out.cc.x),
-                        AkimaInterpolation(out.cc.b, out.cc.x),
-                        AkimaInterpolation(out.cc.betac, out.cc.x),
-                        AkimaInterpolation(out.cc.zc, out.cc.x),
-                        AkimaInterpolation(out.cc.sig, out.cc.x),
-                        AkimaInterpolation(out.cc.xc, out.cc.t),
-                        AkimaInterpolation(out.cc.bx, out.cc.t),
-                        AkimaInterpolation(out.cc.betax, out.cc.t))
+                        AkimaInterpolation(out.cc.cc[xperm], out.cc.x[xperm]),
+                        AkimaInterpolation(out.cc.b[xperm], out.cc.x[xperm]),
+                        AkimaInterpolation(out.cc.betac[xperm], out.cc.x[xperm]),
+                        AkimaInterpolation(out.cc.zc[xperm], out.cc.x[xperm]),
+                        AkimaInterpolation(out.cc.sig[xperm], out.cc.x[xperm]),
+                        AkimaInterpolation(out.cc.xc[tperm], out.cc.t[tperm]),
+                        AkimaInterpolation(out.cc.bx[tperm], out.cc.t[tperm]),
+                        AkimaInterpolation(out.cc.betax[tperm], out.cc.t[tperm]))
 
 end
 
