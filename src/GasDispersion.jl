@@ -27,9 +27,20 @@ export PuffModel, Puff, puff
 export GaussianPuff, IntPuff, BritterMcQuaidPuff, SLAB
 
 # equation sets
-export EquationSet, DefaultSet, DefaultPuffSet
+export EquationSet, BasicEquationSet, DefaultSet, DefaultPuffSet
 export CCPSRural, CCPSUrban, TNOPlume, Turner, ISC3Rural, ISC3Urban
 export CCPSPuffRural, CCPSPuffUrban, TNOPuff
+
+# windspeed correlations
+export DefaultWind,IrwinRural, IrwinUrban, ISC3UrbanWind
+export BusingerWind, TNOWind
+
+# dispersion correlations
+export Defaultσy, Defaultσz
+export BriggsRuralσy, BriggsUrbanσy, ISC3Ruralσy, TNOPlumeσy, Turnerσy
+export BriggsRuralσz, BriggsUrbanσz, ISC3Ruralσz, TNOPlumeσz, Turnerσz
+export CCPSPuffσx, CCPSPuffσy, CCPSPuffσz
+export TNOPuffσx, TNOPuffσy, TNOPuffσz
 
 # abstract types
 abstract type AbstractSubstance end

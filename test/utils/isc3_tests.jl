@@ -34,7 +34,7 @@
         u0, z0 = 3.0, 1.0
         a = SimpleAtmosphere(windspeed=u0, windspeed_height=z0, stability=ClassA)
         s = Scenario(Substance(:null,0,0,0,0,0,0,0,0,0,0,0),HorizontalJet(0,0,0,0,1.0,0,0,0),a)
-        @test GasDispersion._windspeed(s,10,ISC3Rural()) == GasDispersion._windspeed(a,10,ISC3Rural()) == GasDispersion._windspeed(u0,z0,10,ClassA,GasDispersion.IrwinRural)
+        @test GasDispersion.windspeed(s,10,ISC3Rural()) == GasDispersion.windspeed(a,10,ISC3Rural()) == GasDispersion.windspeed(u0,z0,10,ClassA,GasDispersion.IrwinRural)
 
         urban = [(ClassA, 4.237612633868263),
                  (ClassB, 4.237612633868263),
@@ -44,7 +44,7 @@
                  (ClassF, 5.985786944906638)]
         @testset "Windspeed, urban terrain, stability class $class" for (class, ans) in urban
             a = SimpleAtmosphere(windspeed=u0, windspeed_height=z0, stability=class)
-            @test  GasDispersion._windspeed(a,10,ISC3Urban()) ≈ ans
+            @test  GasDispersion.windspeed(a,10,ISC3Urban()) ≈ ans
         end
 
         rural = [(ClassA, 3.5246926648185886),
@@ -55,7 +55,7 @@
                  (ClassF, 10.644401677007265)]
         @testset "Windspeed, rural terrain, stability class $class" for (class, ans) in rural
             a = SimpleAtmosphere(windspeed=u0, windspeed_height=z0, stability=class)
-            @test  GasDispersion._windspeed(a,10,ISC3Rural()) ≈ ans
+            @test  GasDispersion.windspeed(a,10,ISC3Rural()) ≈ ans
         end
 
     end

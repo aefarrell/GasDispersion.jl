@@ -46,7 +46,7 @@ function puff(scenario::Scenario, ::Type{GaussianPuff}, eqs=DefaultPuffSet(); h_
     ρₐ = _gas_density(scenario.substance,Tₐ,Pₐ)
 
     h = _release_height(scenario)
-    u = _windspeed(scenario,max(h,h_min),eqs)
+    u = windspeed(scenario,max(h,h_min),eqs)
 
     return GaussianPuffSolution(
         scenario,  #scenario::Scenario

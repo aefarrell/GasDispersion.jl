@@ -163,7 +163,7 @@ end
     @test GasDispersion._release_height(scn) == GasDispersion._height(rel) == 2.0
     @test GasDispersion._release_liquid_fraction(scn) == GasDispersion._liquid_fraction(rel) == 0.67
 
-    @test GasDispersion._windspeed(scn) == GasDispersion._windspeed(atm) == 2.0
+    @test GasDispersion.windspeed(scn) == GasDispersion.windspeed(atm) == 2.0
     @test GasDispersion._windspeed_height(scn) == GasDispersion._windspeed_height(atm) == 5.0
     @test GasDispersion._stability(scn) == GasDispersion._stability(atm) == ClassA
 

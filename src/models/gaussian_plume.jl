@@ -60,7 +60,7 @@ function plume(scenario::Scenario, ::Type{GaussianPlume}, eqs=DefaultSet(); h_mi
     m,                                      # mass emission rate
     c_max,                                  # max_concentration
     ρₐ,                                      # mass concentration to vol concentration
-    _windspeed(scenario,max(hᵣ,h_min),eqs), # windspeed
+    windspeed(scenario,max(hᵣ,h_min),eqs), # windspeed
     hᵣ,                                     # effective_stack_height::Number
     NoPlumeRise(),                          # plume rise model
     _stability(scenario),                   # stability class
@@ -105,7 +105,7 @@ function plume(scenario::Scenario{<:AbstractSubstance,<:VerticalJet,<:Atmosphere
     ρⱼ = _release_density(scenario)
 
     # parameters of the environment
-    u = _windspeed(scenario,max(hᵣ,h_min),eqs)
+    u = windspeed(scenario,max(hᵣ,h_min),eqs)
     stab = _stability(scenario)
     Γ = _lapse_rate(scenario)
 

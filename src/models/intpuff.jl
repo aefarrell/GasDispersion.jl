@@ -44,7 +44,7 @@ function puff(scenario::Scenario, ::Type{IntPuff}, eqs=DefaultPuffSet(); n::Numb
     ṁ = _mass_rate(scenario)
     Δt = _duration(scenario)
     h = _release_height(scenario)
-    u = _windspeed(scenario,h,eqs)
+    u = windspeed(scenario,h,eqs)
 
     # jet at ambient conditions
     Tₐ = _atmosphere_temperature(scenario)

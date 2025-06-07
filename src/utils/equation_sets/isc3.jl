@@ -5,7 +5,7 @@ struct ISC3UrbanWind <: PowerLawWind end
 ISC3Urban = BasicEquationSet{ISC3UrbanWind,Nothing,BriggsUrbanσy,BriggsUrbanσz}
 
 """
-    _windspeed(u0::Number,z0::Number,z::Number, stability, ISC3UrbanWind)
+    windspeed(u0::Number,z0::Number,z::Number, stability, ISC3UrbanWind)
 returns the windspeed at height `z` for a given Pasquill-Gifford
 stability class, `z` is assumed to be in meters and `u` is in m/s
 
@@ -15,12 +15,12 @@ Assumes urban terrain.
 + Irwin, J. S. 1979. "A Theoretical Variation of the Wind Profile Power Law Exponent as a Function of Surface Roughness, and Stability," *Atmospheric Environment, 13: 191-194.
 + EPA. 1995. *User's Guide for the Industrial Source Complex (ISC3) Dispersion Models, vol 2*. United States Environmental Protection Agency EPA-454/B-95-003b
 """
-_windspeed(u0::Number,z0::Number,z::Number,::Type{ClassA},::Type{ISC3UrbanWind}) = u0*(z/z0)^0.15
-_windspeed(u0::Number,z0::Number,z::Number,::Type{ClassB},::Type{ISC3UrbanWind}) = u0*(z/z0)^0.15
-_windspeed(u0::Number,z0::Number,z::Number,::Type{ClassC},::Type{ISC3UrbanWind}) = u0*(z/z0)^0.20
-_windspeed(u0::Number,z0::Number,z::Number,::Type{ClassD},::Type{ISC3UrbanWind}) = u0*(z/z0)^0.25
-_windspeed(u0::Number,z0::Number,z::Number,::Type{ClassE},::Type{ISC3UrbanWind}) = u0*(z/z0)^0.30
-_windspeed(u0::Number,z0::Number,z::Number,::Type{ClassF},::Type{ISC3UrbanWind}) = u0*(z/z0)^0.30
+windspeed(u0::Number,z0::Number,z::Number,::Type{ClassA},::Type{ISC3UrbanWind}) = u0*(z/z0)^0.15
+windspeed(u0::Number,z0::Number,z::Number,::Type{ClassB},::Type{ISC3UrbanWind}) = u0*(z/z0)^0.15
+windspeed(u0::Number,z0::Number,z::Number,::Type{ClassC},::Type{ISC3UrbanWind}) = u0*(z/z0)^0.20
+windspeed(u0::Number,z0::Number,z::Number,::Type{ClassD},::Type{ISC3UrbanWind}) = u0*(z/z0)^0.25
+windspeed(u0::Number,z0::Number,z::Number,::Type{ClassE},::Type{ISC3UrbanWind}) = u0*(z/z0)^0.30
+windspeed(u0::Number,z0::Number,z::Number,::Type{ClassF},::Type{ISC3UrbanWind}) = u0*(z/z0)^0.30
 
 
 # Correlations for rural terrain
