@@ -128,7 +128,8 @@ function puff(scenario::Scenario, ::Type{SLAB}, eqs::EquationSet=DefaultSet();
                         AkimaInterpolation(out.cc.betax[tperm], out.cc.t[tperm]))
 end
 
-function puff(scenario::Scenario{<:AbstractSubstance,<:VerticalJet,<:Atmosphere}, ::Type{SLAB}, eqs::EquationSet=DefaultSet(); release_angle::Number=π/2, k2::Number=6.0, k3::Number=5.0)
+function puff(scenario::Scenario{<:AbstractSubstance,<:VerticalJet,<:Atmosphere}, ::Type{SLAB}, eqs::EquationSet=DefaultSet();
+              t_av=10, x_max=2000)
     c_max = 1.0
     stab = _slab_stab( _stability(scenario) )
     antoine = _slab_antoine(scenario)
@@ -167,14 +168,14 @@ function puff(scenario::Scenario{<:AbstractSubstance,<:VerticalJet,<:Atmosphere}
     xperm = sortperm(out.cc.x)
     tperm = sortperm(out.cc.t)
     return SLABSolution(scenario,:SLAB,inp,out,c_max,
-                        AkimaInterpolation(out.cc.cc, out.cc.x),
-                        AkimaInterpolation(out.cc.b, out.cc.x),
-                        AkimaInterpolation(out.cc.betac, out.cc.x),
-                        AkimaInterpolation(out.cc.zc, out.cc.x),
-                        AkimaInterpolation(out.cc.sig, out.cc.x),
-                        AkimaInterpolation(out.cc.xc, out.cc.t),
-                        AkimaInterpolation(out.cc.bx, out.cc.t),
-                        AkimaInterpolation(out.cc.betax, out.cc.t))
+                        AkimaInterpolation(out.cc.cc[xperm], out.cc.x[xperm]),
+                        AkimaInterpolation(out.cc.b[xperm], out.cc.x[xperm]),
+                        AkimaInterpolation(out.cc.betac[xperm], out.cc.x[xperm]),
+                        AkimaInterpolation(out.cc.zc[xperm], out.cc.x[xperm]),
+                        AkimaInterpolation(out.cc.sig[xperm], out.cc.x[xperm]),
+                        AkimaInterpolation(out.cc.xc[tperm], out.cc.t[tperm]),
+                        AkimaInterpolation(out.cc.bx[tperm], out.cc.t[tperm]),
+                        AkimaInterpolation(out.cc.betax[tperm], out.cc.t[tperm]))
 
 end
 
