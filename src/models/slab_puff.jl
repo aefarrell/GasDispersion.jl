@@ -104,7 +104,7 @@ function puff(scenario::Scenario, ::Type{SLAB}, eqs::EquationSet=DefaultSet();
                      zp = [0.0],
                      z0 = _surface_roughness(scenario.atmosphere),
                      za = _windspeed_height(scenario),
-                     ua = _windspeed(scenario),
+                     ua = windspeed(scenario),
                      ta = _atmosphere_temperature(scenario),
                      rh = _rel_humidity(scenario.atmosphere),
                      stab = stab,
@@ -128,7 +128,7 @@ function puff(scenario::Scenario, ::Type{SLAB}, eqs::EquationSet=DefaultSet();
                         AkimaInterpolation(out.cc.betax[tperm], out.cc.t[tperm]))
 end
 
-function plume(scenario::Scenario{<:AbstractSubstance,<:VerticalJet,<:Atmosphere}, ::Type{SLAB}, eqs::EquationSet=DefaultSet(); release_angle::Number=π/2, k2::Number=6.0, k3::Number=5.0)
+function puff(scenario::Scenario{<:AbstractSubstance,<:VerticalJet,<:Atmosphere}, ::Type{SLAB}, eqs::EquationSet=DefaultSet(); release_angle::Number=π/2, k2::Number=6.0, k3::Number=5.0)
     c_max = 1.0
     stab = _slab_stab( _stability(scenario) )
     antoine = _slab_antoine(scenario)
@@ -154,12 +154,18 @@ function plume(scenario::Scenario{<:AbstractSubstance,<:VerticalJet,<:Atmosphere
                      zp = [0.0],
                      z0 = _surface_roughness(scenario.atmosphere),
                      za = _windspeed_height(scenario),
-                     ua = _windspeed(scenario),
+                     ua = windspeed(scenario),
                      ta = _atmosphere_temperature(scenario),
                      rh = _rel_humidity(scenario.atmosphere),
                      stab = stab,
                      ala = _slab_ala(scenario.atmosphere))
+    # run SLAB and collect output
     out = slab_main(inp)
+
+    # SLAB can return results out of order
+    # since v8.0.1 this causes DataInterpolations to error
+    xperm = sortperm(out.cc.x)
+    tperm = sortperm(out.cc.t)
     return SLABSolution(scenario,:SLAB,inp,out,c_max,
                         AkimaInterpolation(out.cc.cc, out.cc.x),
                         AkimaInterpolation(out.cc.b, out.cc.x),

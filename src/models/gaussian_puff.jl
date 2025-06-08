@@ -10,7 +10,7 @@ struct GaussianPuffSolution{F<:Number,S<:StabilityClass,E<:EquationSet} <: Puff
     height::F
     windspeed::F
     stability::Type{S}
-    equationset::Type{E}
+    equationset::E
 end
 GaussianPuffSolution(s,m,q,ρ,h,u,stab,es) = GaussianPuffSolution(s,m,promote(q,ρ,h,u)...,stab,es)
 
@@ -35,7 +35,7 @@ is a gas at ambient conditions.
 # References
 + AIChE/CCPS. 1999. *Guidelines for Consequence Analysis of Chemical Releases*. New York: American Institute of Chemical Engineers
 """
-function puff(scenario::Scenario, ::Type{GaussianPuff}, eqs=DefaultSet; h_min=1.0)
+function puff(scenario::Scenario, ::Type{GaussianPuff}, eqs=DefaultPuffSet(); h_min=1.0)
 
     stab = _stability(scenario)
     m = _release_mass(scenario)
@@ -46,7 +46,7 @@ function puff(scenario::Scenario, ::Type{GaussianPuff}, eqs=DefaultSet; h_min=1.
     ρₐ = _gas_density(scenario.substance,Tₐ,Pₐ)
 
     h = _release_height(scenario)
-    u = _windspeed(scenario,max(h,h_min),eqs)
+    u = windspeed(scenario,max(h,h_min),eqs)
 
     return GaussianPuffSolution(
         scenario,  #scenario::Scenario
@@ -73,9 +73,9 @@ function (g::GaussianPuffSolution{F,S,E})(x,y,z,t) where {F<:Number,S<:Stability
     h = g.height
     u = g.windspeed
     xc = abs(u*t) # location of center of cloud
-    σx = downwind_dispersion(xc, Puff, S, E)
-    σy = crosswind_dispersion(xc, Puff, S, E)
-    σz = vertical_dispersion(xc, Puff, S, E)
+    σx = downwind_dispersion(xc, S, g.equationset)
+    σy = crosswind_dispersion(xc, S, g.equationset)
+    σz = vertical_dispersion(xc, S, g.equationset)
 
     c = ( G/((2*π)^(1.5)*σx*σy*σz)
         * exp(-0.5*((x-u*t)/σx)^2)

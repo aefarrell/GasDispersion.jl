@@ -1,11 +1,11 @@
 
 @testset "Monin-Obukhov length tests" begin
-    @test GasDispersion._monin_obukhov(1.2, ClassA) ≈ -11.609752888076077
-    @test GasDispersion._monin_obukhov(1.2, ClassB) ≈ -26.818480014823884
-    @test GasDispersion._monin_obukhov(1.2, ClassC) ≈ -129.91505611802876
-    @test GasDispersion._monin_obukhov(1.2, ClassD) == Inf
-    @test GasDispersion._monin_obukhov(1.2, ClassE) ≈ 129.91505611802876
-    @test GasDispersion._monin_obukhov(1.2, ClassF) ≈ 26.818480014823884
+    @test GasDispersion.monin_obuknov(1.2, ClassA) ≈ -11.609752888076077
+    @test GasDispersion.monin_obuknov(1.2, ClassB) ≈ -26.818480014823884
+    @test GasDispersion.monin_obuknov(1.2, ClassC) ≈ -129.91505611802876
+    @test GasDispersion.monin_obuknov(1.2, ClassD) == Inf
+    @test GasDispersion.monin_obuknov(1.2, ClassE) ≈ 129.91505611802876
+    @test GasDispersion.monin_obuknov(1.2, ClassF) ≈ 26.818480014823884
 end
 
 @testset "Pasquill-Gifford dispersion tests" begin
@@ -18,8 +18,8 @@ end
               (ClassE, 0.12018860465437811, 0.028796954615478678),
               (ClassF, 0.0794187446441675, 0.014462956106986533)]
     @testset "Stability class $class" for (class,cwind,vert) in knowns
-        @test GasDispersion.crosswind_dispersion(1.2, Plume, class, DefaultSet()) ≈ cwind
-        @test GasDispersion.vertical_dispersion(1.2, Plume, class, DefaultSet()) ≈ vert
+        @test GasDispersion.crosswind_dispersion(1.2, class, DefaultSet()) ≈ cwind
+        @test GasDispersion.vertical_dispersion(1.2, class, DefaultSet()) ≈ vert
     end
 
     # Puff dispersion
@@ -30,9 +30,9 @@ end
               (ClassE, 0.047304966328689864, 0.11258170198247626),
               (ClassF, 0.023523465599668385, 0.05588182287353654)]
     @testset "Stability class $class" for (class,cwind,vert) in knowns
-        @test GasDispersion.crosswind_dispersion(1.2, Puff, class, DefaultSet()) ≈ cwind
-        @test GasDispersion.downwind_dispersion(1.2, Puff, class, DefaultSet()) ≈ cwind
-        @test GasDispersion.vertical_dispersion(1.2, Puff, class, DefaultSet()) ≈ vert
+        @test GasDispersion.crosswind_dispersion(1.2, class, DefaultPuffSet()) ≈ cwind
+        @test GasDispersion.downwind_dispersion(1.2, class, DefaultPuffSet()) ≈ cwind
+        @test GasDispersion.vertical_dispersion(1.2, class, DefaultPuffSet()) ≈ vert
     end
 end
 
@@ -41,8 +41,8 @@ end
     u0, z0, p = 3.0, 1.0, 0.108
     a = SimpleAtmosphere(windspeed=u0, windspeed_height=z0, stability=ClassA)
     s = Scenario(Substance(:null,0,0,0,0,0,0,0,0,0,0,0),HorizontalJet(0,0,0,0,1.0,0,0,0),a)
-    @test GasDispersion._windspeed(s) == GasDispersion._windspeed(a) ≈ u0
-    @test GasDispersion._windspeed(s,10) == GasDispersion._windspeed(a,10) == GasDispersion._windspeed(u0,z0,10,ClassA,DefaultSet())
+    @test GasDispersion.windspeed(s) == GasDispersion.windspeed(a) ≈ u0
+    @test GasDispersion.windspeed(s,10) == GasDispersion.windspeed(a,10) == GasDispersion.windspeed(u0,z0,10,ClassA,GasDispersion.DefaultWind)
 
     knowns = [(ClassA, 3.846991747968065),
               (ClassB, 3.882587524349958),
@@ -52,20 +52,29 @@ end
               (ClassF, 5.371817562105883)]
 
     @testset "Stability class $class" for (class, ans) in knowns
-        @test  GasDispersion._windspeed(u0,z0,10,class,DefaultSet()) ≈ ans
+        @test  GasDispersion.windspeed(u0,z0,10,class,GasDispersion.DefaultWind) ≈ ans
     end
+
+    @test GasDispersion.friction_velocity(a) ≈ 0.1*GasDispersion.windspeed(a,10)
 
 end
 
 @testset "Windspeed by Monin-Obukhov length" begin
     ustar, zR, k = 3.0, 1.0, 0.35
-    λ = GasDispersion._monin_obukhov(zR, ClassA)
-    a(z) = (1-15*(z/λ))^0.25
-    Ψ(a) = 2*log((1+a)/2) + log((1+a^2)/2) - 2*atan(a) + π/2
+    λ = GasDispersion.monin_obuknov(zR, ClassA)
+    f(z) = (1-15*(z/λ))^0.25
+    Ψ(z) = 2*log((1+f(z))/2) + log((1+f(z)^2)/2) - 2*atan(f(z)) + π/2
 
-    @test GasDispersion._windspeed(10, ustar, zR, λ, ClassA) ≈ (ustar/k)*(log((10+zR)/zR) - Ψ(a(10)))
-    @test GasDispersion._windspeed(10, ustar, zR, λ, ClassD) ≈ (ustar/k)*(log((10+zR)/zR))
-    @test GasDispersion._windspeed(10, ustar, zR, λ, ClassE) ≈ (ustar/k)*(log((10+zR)/zR) - 4.7*(10/λ))
+    @test GasDispersion.windspeed(10, ustar, zR, λ, ClassA, GasDispersion.BusingerWind) ≈ (ustar/k)*(log(10/zR) - Ψ(10))
+    @test GasDispersion.windspeed(10, ustar, zR, λ, ClassD, GasDispersion.BusingerWind) ≈ (ustar/k)*(log(10/zR))
+    @test GasDispersion.windspeed(10, ustar, zR, λ, ClassE, GasDispersion.BusingerWind) ≈ (ustar/k)*(log(10/zR) + 4.7*(10/λ))
+
+    u0 = (ustar/k)*(log(10/zR))
+    atm = SimpleAtmosphere(;windspeed=u0,windspeed_height=10,stability=ClassD)
+    Businger = BasicEquationSet{BusingerWind,Nothing,Nothing,Nothing}
+    @test GasDispersion.windspeed(atm,15,Businger()) ≈ (ustar/k)*(log(15/zR))
+
+    @test GasDispersion.friction_velocity(atm,Businger()) ≈ ustar
 end
 
 @testset "Plume rise" begin

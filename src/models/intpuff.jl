@@ -11,7 +11,7 @@ struct IntPuffSolution{F<:Number,N<:Number,S<:StabilityClass,E<:EquationSet} <: 
     windspeed::F
     npuffs::N
     stability::Type{S}
-    equationset::Type{E}
+    equationset::E
 end
 IntPuffSolution(s,m,r,ρ,d,h,u,n,stab,es) = IntPuffSolution(s,m,promote(r,ρ,d,h,u,)...,n,stab,es)
 
@@ -38,13 +38,13 @@ the puff is a gas at ambient conditions.
 - `n::Integer`: the number of discrete gaussian puffs, defaults to infinity
 
 """
-function puff(scenario::Scenario, ::Type{IntPuff}, eqs=DefaultSet; n::Number=Inf)
+function puff(scenario::Scenario, ::Type{IntPuff}, eqs=DefaultPuffSet(); n::Number=Inf)
 
     stab = _stability(scenario)
     ṁ = _mass_rate(scenario)
     Δt = _duration(scenario)
     h = _release_height(scenario)
-    u = _windspeed(scenario,h,eqs)
+    u = windspeed(scenario,h,eqs)
 
     # jet at ambient conditions
     Tₐ = _atmosphere_temperature(scenario)
@@ -106,13 +106,13 @@ function (ip::IntPuffSolution{F,<:Integer,S,E})(x,y,z,t) where {F<:Number,S<:Sta
         t′ = t-i*δt
         xc = u*t′ # center of cloud
 
-        σx = downwind_dispersion(xc, Puff, S, E)
+        σx = downwind_dispersion(xc, S, ip.equationset)
         gx = t′>0 ? exp(-0.5*((x-u*t′)/σx)^2)/(√(2π)*σx) : 0
 
-        σy = crosswind_dispersion(xc, Puff, S, E)
+        σy = crosswind_dispersion(xc, S, ip.equationset)
         gy = exp(-0.5*(y/σy)^2)/(√(2π)*σy)
 
-        σz = vertical_dispersion(xc, Puff, S, E)
+        σz = vertical_dispersion(xc, S, ip.equationset)
         gz = ( exp(-0.5*((z-h)/σz)^2) + exp(-0.5*((z+h)/σz)^2) )/(√(2π)*σz)
 
         g = gx*gy*gz
@@ -140,18 +140,18 @@ function (ip::IntPuffSolution{F,<:AbstractFloat,S,E})(x,y,z,t) where {F<:Number,
     Δt = min(t,Δt)
 
     # Gaussian dispersion in the x direction
-    σx_a = downwind_dispersion(u*(t-Δt), Puff, S, E)
-    σx_b = downwind_dispersion(u*t, Puff, S, E)
+    σx_a = downwind_dispersion(u*(t-Δt), S, ip.equationset)
+    σx_b = downwind_dispersion(u*t, S, ip.equationset)
     a  = (x-u*(t-Δt))/(√2*σx_a)
     b  = (x-u*t)/(√2*σx_b)
     ∫gx = erf(b,a)/(2u)
 
     # Gaussian dispersion in the y direction
-    σy = crosswind_dispersion(x, Puff, S, E)
+    σy = crosswind_dispersion(x, S, ip.equationset)
     gy = exp((-1/2)*(y/σy)^2)/(√(2π)*σy)
 
     # Gaussian dispersion in the z direction
-    σz = vertical_dispersion(x, Puff, S, E)
+    σz = vertical_dispersion(x, S, ip.equationset)
     gz = ( exp((-1/2)*((z-h)/σz)^2) + exp((-1/2)*((z+h)/σz)^2) )/(√(2π)*σz)
 
     # concentration

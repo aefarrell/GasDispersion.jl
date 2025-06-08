@@ -267,7 +267,7 @@ end
 # Atmosphere property getters
 _temperature(a::Atmosphere) = a.T
 _pressure(a::Atmosphere) = a.P
-_windspeed(a::Atmosphere) = a.u
+windspeed(a::Atmosphere) = a.u
 _windspeed_height(a::Atmosphere) = a.h
 _stability(a::Atmosphere) = a.stability
 _density(a::Atmosphere) = _density(a, _temperature(a), _pressure(a))
@@ -314,13 +314,12 @@ _release_velocity(s::Scenario) = _velocity(s.release)
 _release_flowrate(s::Scenario) = _flowrate(s.release)
 _release_height(s::Scenario) = _height(s.release)
 _release_liquid_fraction(s::Scenario) = _liquid_fraction(s.release)
-_windspeed(s::Scenario) = _windspeed(s.atmosphere)
-_windspeed(s::Scenario, z::Number, es=DefaultSet) = _windspeed(s.atmosphere, z, es)
+windspeed(s::Scenario) = windspeed(s.atmosphere)
+windspeed(s::Scenario, z::Number, es=DefaultSet()) = windspeed(s.atmosphere, z, es)
 _windspeed_height(s::Scenario) = _windspeed_height(s.atmosphere)
 _stability(s::Scenario) = _stability(s.atmosphere)
 _atmosphere_density(s::Scenario) = _density(s.atmosphere)
 _release_density(s::Scenario) = _density(s.substance, _release_liquid_fraction(s), _release_temperature(s), _release_pressure(s))
 
 # Default equation set
-struct DefaultSet <: EquationSet end
-
+struct BasicEquationSet{WIND,SIGMAX,SIGMAY,SIGMAZ} <: EquationSet end

@@ -153,7 +153,7 @@ g = puff(scn, GaussianPuff)
 
 # output
 
-GasDispersion.GaussianPuffSolution{Float64, ClassF, DefaultSet}(Scenario{Substance{String, GasDispersion.Antoine{Float64}, Float64, Float64, Float64, Int64, Int64, Int64}, HorizontalJet{Float64}, SimpleAtmosphere{Float64, ClassF}}(Substance{String, GasDispersion.Antoine{Float64}, Float64, Float64, Float64, Int64, Int64, Int64}("propane", 0.044096, GasDispersion.Antoine{Float64}(9.773719865868816, 2257.9247634130143, 0.0), 1.864931992847327, 526.13, 288.15, 101325.0, 1.142, 231.02, 425740, 1678, 2520), HorizontalJet{Float64}(0.08991798763471508, 10.0, 0.01, 208.10961399327573, 3.5, 288765.2212333958, 278.3846872082166, 0.0), SimpleAtmosphere{Float64, ClassF}(101325.0, 298.15, 1.5, 10.0, 0.0, ClassF)), :gaussian, 0.8991798763471508, 1.8023818673116125, 3.5, 1.150112899011524, ClassF, DefaultSet)
+GasDispersion.GaussianPuffSolution{Float64, ClassF, BasicEquationSet{DefaultWind, CCPSPuffσx, CCPSPuffσy, CCPSPuffσz}}(Scenario{Substance{String, GasDispersion.Antoine{Float64}, Float64, Float64, Float64, Int64, Int64, Int64}, HorizontalJet{Float64}, SimpleAtmosphere{Float64, ClassF}}(Substance{String, GasDispersion.Antoine{Float64}, Float64, Float64, Float64, Int64, Int64, Int64}("propane", 0.044096, GasDispersion.Antoine{Float64}(9.773719865868816, 2257.9247634130143, 0.0), 1.864931992847327, 526.13, 288.15, 101325.0, 1.142, 231.02, 425740, 1678, 2520), HorizontalJet{Float64}(0.08991798763471508, 10.0, 0.01, 208.10961399327573, 3.5, 288765.2212333958, 278.3846872082166, 0.0), SimpleAtmosphere{Float64, ClassF}(101325.0, 298.15, 1.5, 10.0, 0.0, ClassF)), :gaussian, 0.8991798763471508, 1.8023818673116125, 3.5, 1.150112899011524, ClassF, BasicEquationSet{DefaultWind, CCPSPuffσx, CCPSPuffσy, CCPSPuffσz}())
 
 ```
 
@@ -244,7 +244,7 @@ The model assumes the initial release is a single point, with no dimensions. Add
 
 ### Dispersion Parameters
 
-The dispersion parameters are the same as used for the `GaussianPlume` model.
+The dispersion parameters are the same as used for the `GaussianPuff` model.
 
 
 ### Example
@@ -256,7 +256,7 @@ ig = puff(scn, IntPuff; n=100)
 
 # output
 
-GasDispersion.IntPuffSolution{Float64, Int64, ClassF, DefaultSet}(Scenario{Substance{String, GasDispersion.Antoine{Float64}, Float64, Float64, Float64, Int64, Int64, Int64}, HorizontalJet{Float64}, SimpleAtmosphere{Float64, ClassF}}(Substance{String, GasDispersion.Antoine{Float64}, Float64, Float64, Float64, Int64, Int64, Int64}("propane", 0.044096, GasDispersion.Antoine{Float64}(9.773719865868816, 2257.9247634130143, 0.0), 1.864931992847327, 526.13, 288.15, 101325.0, 1.142, 231.02, 425740, 1678, 2520), HorizontalJet{Float64}(0.08991798763471508, 10.0, 0.01, 208.10961399327573, 3.5, 288765.2212333958, 278.3846872082166, 0.0), SimpleAtmosphere{Float64, ClassF}(101325.0, 298.15, 1.5, 10.0, 0.0, ClassF)), :intpuff, 0.08991798763471508, 1.8023818673116125, 10.0, 3.5, 1.150112899011524, 100, ClassF, DefaultSet)
+GasDispersion.IntPuffSolution{Float64, Int64, ClassF, BasicEquationSet{DefaultWind, CCPSPuffσx, CCPSPuffσy, CCPSPuffσz}}(Scenario{Substance{String, GasDispersion.Antoine{Float64}, Float64, Float64, Float64, Int64, Int64, Int64}, HorizontalJet{Float64}, SimpleAtmosphere{Float64, ClassF}}(Substance{String, GasDispersion.Antoine{Float64}, Float64, Float64, Float64, Int64, Int64, Int64}("propane", 0.044096, GasDispersion.Antoine{Float64}(9.773719865868816, 2257.9247634130143, 0.0), 1.864931992847327, 526.13, 288.15, 101325.0, 1.142, 231.02, 425740, 1678, 2520), HorizontalJet{Float64}(0.08991798763471508, 10.0, 0.01, 208.10961399327573, 3.5, 288765.2212333958, 278.3846872082166, 0.0), SimpleAtmosphere{Float64, ClassF}(101325.0, 298.15, 1.5, 10.0, 0.0, ClassF)), :intpuff, 0.08991798763471508, 1.8023818673116125, 10.0, 3.5, 1.150112899011524, 100, ClassF, BasicEquationSet{DefaultWind, CCPSPuffσx, CCPSPuffσy, CCPSPuffσz}())
 ```
 
 At the same point as above the concentration has dropped
@@ -296,17 +296,18 @@ puff(::Scenario, ::Type{BritterMcQuaidPuff})
 
 The Britter-McQuaid model is an empirical correlation for dense cloud
 dispersion. The model generates an interpolation function for the average cloud
-concentration and the cloud is rendered as a cylinder.
+concentration and the cloud is rendered as a cylinder. The only correlations used
+in the provided equationset are for windspeed.
 
 
-## SLAB Horizontal Jet Model
+## SLAB Jet Model
 
 ```@docs
 puff(::Scenario, ::Type{SLAB})
 ```
 
-The SLAB horizontal jet model is derived from the SLAB software package developed
-by Donald L. Ermak at Lawrence Livermore National Laboratory. The model numerically
+The SLAB jet model is derived from the SLAB software package developed by 
+Donald L. Ermak at Lawrence Livermore National Laboratory. The model numerically
 integrates a set of conservation equations for the given domain, automatically
 transitioning from a steady-state plume model to a transient-state puff model as
 the release terminates. The result is a set of cloud parameters that are interpolated

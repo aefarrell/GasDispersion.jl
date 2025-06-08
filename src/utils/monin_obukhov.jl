@@ -1,5 +1,11 @@
+function monin_obuknov(a::SimpleAtmosphere{F,S}, es::BasicEquationSet{W,SX,SY,SZ}) where{
+                       F,S<:StabilityClass,W,SX,SY,SZ}
+    zR = _surface_roughness(a)
+    return monin_obuknov(zR,S,W)
+end
+
 """
-    _monin_obukhov(roughness, StabilityClass)
+    monin_obuknov(roughness, StabilityClass, WindEquation)
 returns the Monin-Obukhov length for a given Pasquill-Gifford stability class
 and surface roughness (in meters)
 
@@ -7,9 +13,11 @@ and surface roughness (in meters)
 + Pasquill, Frank. 1974. *Atmospheric Diffusion, 2nd Ed.* New York: Halstead Press, New York
 
 """
-_monin_obukhov(zR::Number, ::Type{ClassA}) = -11.4*zR^0.10
-_monin_obukhov(zR::Number, ::Type{ClassB}) = -26.0*zR^0.17
-_monin_obukhov(zR::Number, ::Type{ClassC}) = -123.0*zR^0.30
-_monin_obukhov(zR::Number, ::Type{ClassD}) = Inf
-_monin_obukhov(zR::Number, ::Type{ClassE}) = 123.0*zR^0.30
-_monin_obukhov(zR::Number, ::Type{ClassF}) = 26.0*zR^0.17
+monin_obuknov(zR::Number, ::Type{ClassA}, ::Any) = -11.4*zR^0.10
+monin_obuknov(zR::Number, ::Type{ClassB}, ::Any) = -26.0*zR^0.17
+monin_obuknov(zR::Number, ::Type{ClassC}, ::Any) = -123.0*zR^0.30
+monin_obuknov(zR::Number, ::Type{ClassD}, ::Any) = Inf
+monin_obuknov(zR::Number, ::Type{ClassE}, ::Any) = 123.0*zR^0.30
+monin_obuknov(zR::Number, ::Type{ClassF}, ::Any) = 26.0*zR^0.17
+
+monin_obuknov(zR::Number, s::Any) = monin_obuknov(zR, s, Nothing)
