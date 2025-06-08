@@ -1,5 +1,16 @@
 @testset "TNO Yellow Book Equation Sets" begin
 
+    @testset "Windspeed tests" begin
+        u0, z0 = 2.0, 10.0
+        known = [(ClassA, 15.0, 2.105802252736218),
+                 (ClassD, 15.0, 2.176091259055681),
+                 (ClassE, 15.0, 2.3401491268457204)]
+        @testset "Windspeed, stability class $class" for (class, za, ua) in known
+            atm = SimpleAtmosphere(;windspeed=u0,windspeed_height=z0,stability=class)
+            @test GasDispersion.windspeed(atm, za, TNOPlume()) ≈ ua
+        end
+    end
+
     @testset "Pasquill-Gifford dispersion tests" begin
 
         # Plume dispersion

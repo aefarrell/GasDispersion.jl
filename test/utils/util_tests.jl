@@ -55,17 +55,26 @@ end
         @test  GasDispersion.windspeed(u0,z0,10,class,GasDispersion.DefaultWind) ≈ ans
     end
 
+    @test GasDispersion.friction_velocity(a) ≈ 0.1*GasDispersion.windspeed(a,10)
+
 end
 
 @testset "Windspeed by Monin-Obukhov length" begin
     ustar, zR, k = 3.0, 1.0, 0.35
     λ = GasDispersion.monin_obuknov(zR, ClassA)
-    a(z) = (1-15*(z/λ))^0.25
-    Ψ(a) = 2*log((1+a)/2) + log((1+a^2)/2) - 2*atan(a) + π/2
+    f(z) = (1-15*(z/λ))^0.25
+    Ψ(z) = 2*log((1+f(z))/2) + log((1+f(z)^2)/2) - 2*atan(f(z)) + π/2
 
-    @test GasDispersion.windspeed(10, ustar, zR, λ, ClassA, GasDispersion.BusingerWind) ≈ (ustar/k)*(log(10/zR) - Ψ(a(10)))
+    @test GasDispersion.windspeed(10, ustar, zR, λ, ClassA, GasDispersion.BusingerWind) ≈ (ustar/k)*(log(10/zR) - Ψ(10))
     @test GasDispersion.windspeed(10, ustar, zR, λ, ClassD, GasDispersion.BusingerWind) ≈ (ustar/k)*(log(10/zR))
     @test GasDispersion.windspeed(10, ustar, zR, λ, ClassE, GasDispersion.BusingerWind) ≈ (ustar/k)*(log(10/zR) + 4.7*(10/λ))
+
+    u0 = (ustar/k)*(log(10/zR))
+    atm = SimpleAtmosphere(;windspeed=u0,windspeed_height=10,stability=ClassD)
+    Businger = BasicEquationSet{BusingerWind,Nothing,Nothing,Nothing}
+    @test GasDispersion.windspeed(atm,15,Businger()) ≈ (ustar/k)*(log(15/zR))
+
+    @test GasDispersion.friction_velocity(atm,Businger()) ≈ ustar
 end
 
 @testset "Plume rise" begin

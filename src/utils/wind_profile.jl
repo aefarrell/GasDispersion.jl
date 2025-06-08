@@ -70,7 +70,9 @@ function windspeed(a::Atmosphere,z::Number,es::BasicEquationSet{W,SX,SY,SZ}; k=0
 end
 
 # friction velocity
-function friction_velocity(a::SimpleAtmosphere{F,S},::BasicEquationSet{W,SX,SY,SZ}; k=0.35) where {
+friction_velocity(a::Atmosphere) = friction_velocity(a,DefaultSet())
+
+function friction_velocity(a::SimpleAtmosphere{F,S},es::BasicEquationSet{W,SX,SY,SZ}; k=0.35) where {
                             F<:Number,S<:StabilityClass,W<:PowerLawWind,SX,SY,SZ}
     return 0.1*windspeed(a,10,es)
 end
