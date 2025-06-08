@@ -273,4 +273,46 @@ end
     @test result ≈ out[:, 1:23]
 end
 
+@testset "INPR4 Vertical Jet - z0 = 1.0" begin
+    # this tests against the INPR4 test problem, but with the surface _surface_roughness
+    # at the default value for a SimpleAtmosphere type, z0=1.0
+
+    s = Substance(
+        name="inpr4",
+        molar_weight=0.070906,
+        gas_heat_capacity=498.1,
+        boiling_temp=239.1,
+        latent_heat=287840.0,
+        liquid_heat_capacity=926.3,
+        liquid_density=1574.0,
+        vapor_pressure=GasDispersion.Antoine(0,1978.34,-27.01)
+    )
+    r = VerticalJet(
+        fraction_liquid=0.88,
+        temperature=239.1,
+        mass_rate=3.33,
+        diameter=√(4*0.02/π),
+        duration=300.0,
+        height=1.0,
+        velocity=0.0,
+        pressure=101325
+    )
+
+    a = SimpleAtmosphere(
+        windspeed_height=10.0,
+        windspeed=1.0,
+        temperature=276.0,
+        rel_humidity=30.0,
+        stability=ClassD
+    )
+    tav = 1.0
+    xffm = 10000.0
+
+    inpr4 = Scenario(s,r,a)
+    rls = puff(inpr4, SLAB; t_av=tav, x_max=xffm)
+
+    @test rls.betax(17423.2) ≈ 4103.183379580039
+
+end
+
 end
