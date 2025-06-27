@@ -55,10 +55,8 @@ function puff(scenario::Scenario, ::Type{IntPuff}, eqs=DefaultPuffSet(); n::Numb
         return PalazziSolution(
             scenario,  #scenario::Scenario
             :intpuff, #model::Symbol
-            ṁ,    # massrate
-            ρₐ,   # mass-to-vol
+            plume(scenario, GaussianPlume, eqs),
             Δt,   # duration
-            h,    # release height
             u,    # windspeed
             stab, # stability class
             eqs   # equation set
