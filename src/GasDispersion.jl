@@ -24,7 +24,7 @@ export GaussianPlume, SimpleJet, BritterMcQuaidPlume
 
 # puff models
 export PuffModel, Puff, puff
-export GaussianPuff, IntPuff, BritterMcQuaidPuff, SLAB
+export GaussianPuff, Palazzi, IntPuff, BritterMcQuaidPuff, SLAB
 
 # equation sets
 export EquationSet, BasicEquationSet, DefaultSet, DefaultPuffSet
@@ -117,6 +117,7 @@ puff(s; kwargs...) = puff(s, GaussianPuff; kwargs...)
 
 # puff models
 include("models/gaussian_puff.jl")
+include("models/palazzi_puff.jl")
 include("models/intpuff.jl")
 include("models/britter_mcquaid_puff.jl")
 include("models/slab_puff.jl")

@@ -32,7 +32,7 @@
     @test GasDispersion.IntPuffSolution(scn,:test_promotion,1.0,2,3,4,5,6,ClassA,DefaultPuffSet()) isa GasDispersion.IntPuffSolution{Float64, Int64, ClassA, GasDispersion.BasicEquationSet{GasDispersion.DefaultWind, GasDispersion.CCPSPuffσx, GasDispersion.CCPSPuffσy, GasDispersion.CCPSPuffσz}}
     @test puff(scn, IntPuff;n=1) isa GasDispersion.GaussianPuffSolution
     @test puff(scn, IntPuff;n=3) isa GasDispersion.IntPuffSolution{<:Number,<:Integer,<:StabilityClass,<:EquationSet}
-    @test puff(scn, IntPuff) isa GasDispersion.IntPuffSolution{<:Number,<:Float64,<:StabilityClass,<:EquationSet}
+    @test puff(scn, IntPuff) isa GasDispersion.PalazziSolution{<:Number,<:StabilityClass,<:EquationSet}
     @test_throws ErrorException puff(scn, IntPuff; n=0)
 
     # testing 3 puffs
