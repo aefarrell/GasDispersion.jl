@@ -55,6 +55,7 @@ function puff(scenario::Scenario, ::Type{IntPuff}, eqs=DefaultPuffSet(); n::Numb
         return PalazziSolution(
             scenario,  #scenario::Scenario
             :intpuff, #model::Symbol
+            :intpuff, #disp::Symbol
             plume(scenario, GaussianPlume, eqs),
             Δt,   # duration
             u,    # windspeed
