@@ -32,6 +32,7 @@ if GROUP == "All" || GROUP == "Model"
     include("models/gaussian_plume_tests.jl")
     include("models/gaussian_puff_tests.jl")
     include("models/intpuff_tests.jl")
+    include("models/palazzi_tests.jl")
     include("models/simple_jet_tests.jl")
     include("models/britter_mcquaid_plume_tests.jl")
     include("models/britter_mcquaid_puff_tests.jl")

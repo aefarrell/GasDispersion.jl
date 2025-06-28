@@ -1,4 +1,4 @@
-@testset "Integrated Gaussian puff tests" begin
+@testset "Palazzi short duration puff tests" begin
     # Gaussian plume example, *Guidelines for Consequence Analysis of Chemical
     # Releases* CCPS, 1999, pg 101
     sub = Substance(name="test gas",
@@ -29,20 +29,16 @@
     x₁, t₁, Δt, h = 500, 250, 10, 10
 
     # testing default behaviour
-    @test GasDispersion.IntPuffSolution(scn,:test_promotion,1.0,2,3,4,5,6,ClassA,DefaultPuffSet()) isa GasDispersion.IntPuffSolution{Float64, Int64, ClassA, GasDispersion.BasicEquationSet{GasDispersion.DefaultWind, GasDispersion.CCPSPuffσx, GasDispersion.CCPSPuffσy, GasDispersion.CCPSPuffσz}}
-    @test puff(scn, IntPuff;n=1) isa GasDispersion.GaussianPuffSolution
-    @test puff(scn, IntPuff;n=3) isa GasDispersion.IntPuffSolution{<:Number,<:Integer,<:StabilityClass,<:EquationSet}
-    @test puff(scn, IntPuff) isa GasDispersion.PalazziSolution{<:Number,<:StabilityClass,<:EquationSet}
-    @test_throws ErrorException puff(scn, IntPuff; n=0)
+    @test puff(scn, Palazzi) isa GasDispersion.PalazziSolution{<:Number,<:StabilityClass,<:EquationSet}
+    pf = puff(scn, Palazzi; disp_method=:default)
+    @test pf(x₁,0,h,t₁) ≈ 1.6373715867403676e-5
+    @test pf(x₁,0,h,-t₁) == 0.0
 
-    # testing 3 puffs
-    gp = puff(scn, GaussianPuff)
-    ip = puff(scn, IntPuff;n=3)
-    @test ip(x₁,0,h,t₁) ≈ (1/3)*(gp(x₁,0,h,t₁) + gp(x₁,0,h,t₁-0.5*Δt) + gp(x₁,0,h,t₁-Δt))
-    @test ip(x₁,0,h,-t₁) == 0.0
+    pf1 = puff(scn, Palazzi, DefaultPuffSet(); disp_method=:intpuff)
+    @test pf1(x₁,0,h,t₁) ≈ 0.00035586710616021256/1.2268
 
-    # testing ∞ puffs
-    ip∞ = puff(scn,IntPuff)
-    @test ip∞(x₁,0,h,t₁) ≈ 0.00035586710616021256/1.2268
-    @test ip∞(x₁,0,h,-t₁) == 0.0
+    pf2 = puff(scn, Palazzi; disp_method=:tno)
+    @test pf2(10,0,10,5) ≈ 0.02846251120337852
+    @test pf2(x₁,0,h,t₁) ≈ 1.6373715867403676e-5
+    
 end

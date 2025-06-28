@@ -51,7 +51,18 @@ function puff(scenario::Scenario, ::Type{IntPuff}, eqs=DefaultPuffSet(); n::Numb
     Pₐ = _atmosphere_pressure(scenario)
     ρₐ = _gas_density(scenario.substance,Tₐ,Pₐ)
 
-    if n > 1
+    if n == Inf
+        return PalazziSolution(
+            scenario,  #scenario::Scenario
+            :intpuff, #model::Symbol
+            :intpuff, #disp::Symbol
+            plume(scenario, GaussianPlume, eqs),
+            Δt,   # duration
+            u,    # windspeed
+            stab, # stability class
+            eqs   # equation set
+        )
+    elseif n > 1
         return IntPuffSolution(
             scenario,  #scenario::Scenario
             :intpuff, #model::Symbol
@@ -121,41 +132,6 @@ function (ip::IntPuffSolution{F,<:Integer,S,E})(x,y,z,t) where {F<:Number,S<:Sta
 
     # concentration
     c = G*∑g/ip.mass_to_vol
-
-    return min(c,one(F))
-end
-
-function (ip::IntPuffSolution{F,<:AbstractFloat,S,E})(x,y,z,t) where {F<:Number,S<:StabilityClass,E<:EquationSet}
-    # domain check
-    if (x<0)||(z<0)||(t<0)
-        return zero(F)
-    end
-
-    Qi = ip.rate
-    Δt = ip.duration
-    h = ip.height
-    u = ip.windspeed
-
-    # Only account for puffs that have already been emitted
-    Δt = min(t,Δt)
-
-    # Gaussian dispersion in the x direction
-    σx_a = downwind_dispersion(u*(t-Δt), S, ip.equationset)
-    σx_b = downwind_dispersion(u*t, S, ip.equationset)
-    a  = (x-u*(t-Δt))/(√2*σx_a)
-    b  = (x-u*t)/(√2*σx_b)
-    ∫gx = erf(b,a)/(2u)
-
-    # Gaussian dispersion in the y direction
-    σy = crosswind_dispersion(x, S, ip.equationset)
-    gy = exp((-1/2)*(y/σy)^2)/(√(2π)*σy)
-
-    # Gaussian dispersion in the z direction
-    σz = vertical_dispersion(x, S, ip.equationset)
-    gz = ( exp((-1/2)*((z-h)/σz)^2) + exp((-1/2)*((z+h)/σz)^2) )/(√(2π)*σz)
-
-    # concentration
-    c = Qi*∫gx*gy*gz/ip.mass_to_vol
 
     return min(c,one(F))
 end
