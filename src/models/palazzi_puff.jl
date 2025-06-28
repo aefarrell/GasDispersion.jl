@@ -80,7 +80,7 @@ function (ps::PalazziSolution{F,S,E})(x,y,z,t) where {F<:Number,S<:StabilityClas
         xa = u*(t-Δt)
         xb = u*t
     elseif ps.disp == :tno
-        if t < Δt
+        if t < ps.duration
             xa = xb = x
         else
             xa = xb = u*t
