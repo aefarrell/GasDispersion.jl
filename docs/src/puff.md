@@ -6,13 +6,15 @@ Puff models are for "instantaneous" releases or other time-dependent releases.
 puff
 ```
 
-## Gaussian Puffs
+## Gaussian Puff Models
+
+### Simple Gaussial Puffs
 
 ```@docs
 puff(::Scenario, ::Type{GaussianPuff})
 ```
 
-A gaussian puff model assumes the release is instantaneous, and all mass is concentrated in a single point. The cloud then disperses as it moves downwind with the concentration profile is given by a series of gaussians with dispersions $\sigma_x$, $\sigma_y$, and $\sigma_z$, which are found from correlations tabulated per stability class. Similarly to the plume model, a ground reflection term is included to correct for the fact that material cannot pass through the ground.
+A simple gaussian puff model assumes the release is instantaneous, and all mass is concentrated in a single point. The cloud then disperses as it moves downwind with the concentration profile is given by a series of gaussians with dispersions $\sigma_x$, $\sigma_y$, and $\sigma_z$, which are found from correlations tabulated per stability class. Similarly to the plume model, a ground reflection term is included to correct for the fact that material cannot pass through the ground.
 
 ```math
 c_{puff} = { m_i \over { (2 \pi)^{3/2} \sigma_x \sigma_y \sigma_z } } 
@@ -32,7 +34,7 @@ with
 
 The model assumes the initial release is a single point, with no dimensions. Unlike the plume model, this concentration is a function of time. The model converts the final concentration to volume fraction, assuming the puff is a gas at ambient conditions.
 
-### Downwind dispersion correlations
+#### Downwind dispersion correlations
 
 The downwind dispersion, $\sigma_{x}$ is a function of downwind distance of the cloud center, $x_c$, as well as stability class
 
@@ -42,7 +44,7 @@ The downwind dispersion, $\sigma_{x}$ is a function of downwind distance of the 
 
 Where $\delta$ and $\beta$ are identical to those tabulated for the crosswind dispersion.
 
-### Crosswind dispersion correlations
+#### Crosswind dispersion correlations
 
 The crosswind dispersion, $\sigma_{y}$ is a function of downwind distance of the cloud center, $x_c$, as well as stability class
 
@@ -62,7 +64,7 @@ Where $\delta$, $\beta$, and $\gamma$ are tabulated based on stability class([AI
 |        F        |  0.02    |   0.89  |
 
 
-### Vertical dispersion correlations
+#### Vertical dispersion correlations
 
 The vertical dispersion, $\sigma_{z}$ is a function of downwind distance of the cloud center, $x_c$, as well as stability class
 
@@ -81,7 +83,7 @@ Where $\delta$ and $\beta$ are tabulated based on stability class([AIChE/CCPS 19
 |        E        |  0.10    |  0.65   |
 |        F        |  0.05    |  0.61   |
 
-### Example
+#### Example
 
 Suppose we wish to model the dispersion of gaseous propane from a leak from a storage tank, where the leak is from a 10mm hole that is 3.5m above the ground and the propane is at 25°C and 4barg. Assume the discharge coefficient $c_{D} = 0.85$. Assume the leak occurs for 10s. This scenario is adapted from CCPS *Guidelines for Consequence Analysis of Chemical Releases*([AIChE/CCPS 1999](references.md), 47)
 
@@ -216,8 +218,27 @@ plot(g, t′; xlims=(85,115), ylims=(-10,10), clims=(0,5e-3), aspect_ratio=:equa
 end
 ```
 
+### Palazzi Short Duration Puff Model
+```@docs
+    puff(::Scenario, ::Type{Palazzi})
+```
+The `Palazzi` model integrates over the Gaussian puff model for a short duration release ([Palazzi 1982](references.md)), where the dispersion parameters $\sigma$ are assumed to be independent time.
 
-## Integrated Gaussian Puffs
+```math
+c\left(x,y,z,t\right) = \chi\left(x,y,z\right) \frac{1}{2} \left( \mathrm{erf} \left( { {x - u (t-\Delta t)} \over \sqrt{2} \sigma_x } \right) - \mathrm{erf} \left( { {x - u t} \over \sqrt{2} \sigma_x } \right)  \right)
+```
+
+where $\chi$ is a Gaussian plume model and $\sigma_x$ is the downwind dispersion parameter. The model assumes the initial release is a single point, with no dimensions. Additionally, the model converts the final concentration to volume fraction, assuming the puff is a gas at ambient conditions.
+
+By default the Palazzi model assumes a simple Gaussian plume model, $\chi$, for which this is a "correction", and uses plume dispersion parameters with $\sigma_x \left( x \right) = \sigma_y \left( x \right)$. However the user is free to use *any* plume model which is a subtype of `Plume`, and any equation set that implements downwind dispersion.
+
+There are multiple variations of the Palazzi short duration model, depending on how the downwind dispersion, $\sigma_x$ , is calculated:
+- `:default` follows Palazzi and calculates $\sigma_x$  at the downwind distance *x*
+- `:intpuff` calculates $\sigma_x$  at the downwind distance to the cloud center at the start and end of the cloud, $ut$ and $u \left(t-\Delta t\right)$
+- `:tno` follows the TNO Yellow Book eqn 4.60b, using the distance *x* while the plume is still attached to the release point, and the distance to the cloud center, *ut*, afterwards
+
+
+### Integrated Gaussian Puff Model
 
 ```@docs
 puff(::Scenario, ::Type{IntPuff})
@@ -240,14 +261,9 @@ with
 -  $\sigma_y$ - crosswind dispersion, m
 -  $\sigma_z$ - downwind dispersion, m
 
-The model assumes the initial release is a single point, with no dimensions. Additionally, model converts the final concentration to volume fraction, assuming the puff is a gas at ambient conditions.
+The model assumes the initial release is a single point, with no dimensions. Additionally, model converts the final concentration to volume fraction, assuming the puff is a gas at ambient conditions. If no number, *n*, is specified the model defaults to an integral approximation similar to the [Palazzi Short Duration Puff Model](@ref).
 
-### Dispersion Parameters
-
-The dispersion parameters are the same as used for the `GaussianPuff` model.
-
-
-### Example
+#### Example
 
 Continuing with the propane leak example from above, we now model the release as a sequence of 100 gaussian puffs. Essentially chopping the 10s over which the release happens into 0.1s intervals and releasing one puff per interval at a time for 10s.
 
@@ -287,8 +303,8 @@ ig_inf = puff(scn, IntPuff)
 plot(ig_inf, 86; xlims=(90,110), ylims=(-10,10), aspect_ratio=:equal)
 ```
 
-
-## Britter-McQuaid Model
+## Box Models
+### Britter-McQuaid Model
 
 ```@docs
 puff(::Scenario, ::Type{BritterMcQuaidPuff})
@@ -300,7 +316,8 @@ concentration and the cloud is rendered as a cylinder. The only correlations use
 in the provided equationset are for windspeed.
 
 
-## SLAB Jet Model
+## Integral Models
+### SLAB Jet Model
 
 ```@docs
 puff(::Scenario, ::Type{SLAB})

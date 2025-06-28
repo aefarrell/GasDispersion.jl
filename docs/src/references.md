@@ -22,6 +22,8 @@ Lees, Frank P. 1996. *Loss Prevention in the Process Industries, 2nd ed*. Oxford
 
 Long, V.D. 1963. "Estimation of the Extent of Hazard Areas Round a Vent." *Chem. Process Hazard*. II:6
 
+Palazzi, E, M De Faveri, Giuseppe Fumarola, and G Ferraiolo. “Diffusion from a Steady Source of Short Duration.” *Atmospheric Environment*. 16, no. 12 (1982): 2785–90.
+
 Pasquill, Frank. 1974. *Atmospheric Diffusion, 2nd Ed.* New York: Halstead Press, New York
 
 Paulson, C. A. 1970. "The Mathematical Representation of Wind Speed and Temperature Profiles in the Unstable Atmospheric Surface Layer." *Journal of Applied Meteorology and Climatology*. 9(6): 857-861. [doi:10.1175/1520-0450(1970)009<0857:TMROWS>2.0.CO;2](https://doi.org/10.1175/1520-0450(1970)009<0857:TMROWS>2.0.CO;2)
