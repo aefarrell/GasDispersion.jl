@@ -65,6 +65,29 @@ function plume(scenario::Scenario, ::Type{SimpleJet}, eqs::EquationSet=DefaultSe
 
 end
 
+@doc doc"""
+    plume(::Scenario{Substance,VerticalJet,Atmosphere}, SimpleJet; kwargs...)
+
+Returns the solution to a simple turbulent jet dispersion model for a vertical jet.
+
+```math
+c\left(x,y,z\right) = k_2 c_0 \left( d \over z \right) \sqrt{ \rho_j \over \rho_a }
+\exp \left( - \left( k_3 { r \over z } \right)^2 \right)
+```
+
+where *r* is the radial distance from the jet centerline. Assumes a circular jet
+with diameter equal to the jet diameter. Ground-reflection is included by method
+of images.
+
+# References
++ Long, V.D. 1963. "Estimation of the Extent of Hazard Areas Round a Vent." *Chem. Process Hazard*. II:6
+
+# Arguments
+- `release_angle::Number=π/2`: the angle at which the jet is released, in radians
+- `k2::Number=6` parameter of the model, default value is recommended by Long
+- `k3::Number=5` parameter of the model, default value is recommended by Long
+
+"""
 function plume(scenario::Scenario{<:AbstractSubstance,<:VerticalJet,<:Atmosphere}, ::Type{SimpleJet}, eqs::EquationSet=DefaultSet(); release_angle::Number=π/2, k2::Number=6.0, k3::Number=5.0)
     # Density correction
     ρj = _release_density(scenario)

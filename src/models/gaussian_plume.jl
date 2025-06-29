@@ -84,7 +84,7 @@ function plume(scenario::Scenario, ::Type{GaussianPlume}, eqs=DefaultSet(); h_mi
 end
 
 @doc doc"""
-    plume(::Scenario{AbstractSubstance,VerticalJet,Atmosphere}, GaussianPlume[, ::EquationSet]; kwargs...)
+    plume(::Scenario{Substance,VerticalJet,Atmosphere}, GaussianPlume[, ::EquationSet]; kwargs...)
 
 Returns the solution to a Gaussian plume dispersion model for a vertical jet. By default the Briggs
 plume rise model is used.

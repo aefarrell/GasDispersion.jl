@@ -9,7 +9,7 @@ plume
 
 ## Gaussian Plume Models
 
-### Simple Gaussian Plumes
+### Simple Gaussian Plume
 
 ```@docs
 plume(::Scenario{Substance,VerticalJet,Atmosphere}, ::Type{GaussianPlume})
@@ -210,26 +210,26 @@ plot(g, xlims=(0,50), ylims=(-10,10), height=3.5, clims=(0,LEL),
      aspect_ratio=:equal)
 ```
 
-### Gaussian Plumes with Mixing Layers
+### Gaussian Plume within a Mixing Layer
 
 ```@docs
-plume(::Scenario, ::Type{GaussianMixingLayer})
+plume(::Scenario{Substance,VerticalJet,Atmosphere}, ::Type{GaussianMixingLayer})
 ```
 
 The gaussian mixing layer model allows for the plume to be contained entirely within a mixing layer of a given height. This can be done using either the method of images or a periodic boundary.
 
 ```math
-c(x, y, z) = \frac{m_i}{u} { \exp\left(-\frac{1}{2}\left(\frac{y}{\sigma_y}\right)^2\right) \over { \sqrt{2\pi} \sigma_y} } F_z
+c(x, y, z) = \frac{m_i}{u} \frac{1}{\sqrt{2\pi} \sigma_y} \exp\left(-\frac{1}{2}\left(\frac{y}{\sigma_y}\right)^2\right) F_z
 ```
 
 Where $F_z$ is the vertical dispersion term. For the method of images this takes the form of the infinite sum:
 
 ```math
-F_z = {\left( \exp \left[ -\frac{1}{2} \left( { z -h } \over \sigma_{z} \right)^2 \right]
-+ \exp \left[ -\frac{1}{2} \left( { z + h } \over \sigma_{z} \right)^2 \right] \right) \over {\sqrt{2\pi} \sigma_z} } 
+F_z = \frac{1}{\sqrt{2\pi} \sigma_z} \left( \exp \left( -\frac{1}{2} \left( { z -h } \over \sigma_{z} \right)^2 \right)
++ \exp \left( -\frac{1}{2} \left( { z + h } \over \sigma_{z} \right)^2 \right) \right) \\
 \sum_{i=1}^{n} \left[ \exp\left(-\frac{1}{2}\left(\frac{z - h + 2i h_m}{\sigma_z}\right)^2\right) 
-+ \exp\left(-\frac{1}{2}\left(\frac{z - h - 2i h_m}{\sigma_z}\right)^2\right) 
-+ \exp\left(-\frac{1}{2}\left(\frac{z + h + 2i h_m}{\sigma_z}\right)^2\right) 
++ \exp\left(-\frac{1}{2}\left(\frac{z - h - 2i h_m}{\sigma_z}\right)^2\right) \\
++ \exp\left(-\frac{1}{2}\left(\frac{z + h + 2i h_m}{\sigma_z}\right)^2\right) \\
 + \exp\left(-\frac{1}{2}\left(\frac{z + h - 2i h_m}{\sigma_z}\right)^2\right) \right]
 ```
 
@@ -239,10 +239,15 @@ For the periodic boundary it takes the form of another infinite sum:
 F_z = ...
 ```
 
-## Simple Jet Plumes
+As `SimpleAtmosphere`s do not define mixing height, one is calculated based on the following:
+- for stable atmospheres (class E and F) the mixing height is assumed to be infinite, and the model defaults back to a [Simple Gaussian Plume](@ref)
+- for unstable and neutral atmospheres (classes A through D) the mixing height is calculated from the friction velocity $u^{*}$ and the coriolis parameter $f$: $h_m = 0.3 \frac{u^{*}}{f}$ where $f$ is calculated at a default latitude of 40°N (consistent with [US EPA 1995](references.md)).
+
+## Jet Plumes
+### Simple Jet Model
 
 ```@docs
-plume(::Scenario, ::Type{SimpleJet})
+plume(::Scenario{Substance,VerticalJet,Atmosphere}, ::Type{SimpleJet})
 ```
 
 Simple jet dispersion models are a useful tool for evaluating dispersion near the region where a jet release is occurring. They are based on a simplified model where the air is stationary and all of the momentum needed to mix the release is supplied by the jet. This is in some ways the opposite assumptions than are used in the Gaussian Plume model -- where the release is assumed to have negligible velocity and the momentum is entirely supplied by the wind.
@@ -259,7 +264,7 @@ with
 +  $\rho_j$ - initial density of the jet material, kg/m^3
 +  $\rho_a$ - density of the ambient atmosphere, kg/m^3
 
-### Model Parameters
+#### Model Parameters
 
 The model parameters $k_2$ and $k_3$ are per [Long (1963)](references.md)
 
@@ -274,7 +279,7 @@ the initial concentration is calculated from the mass flowrate and volumetric fl
  c_0 = { Q_i \over Q } = { \dot{m} \over \rho Q } = { \dot{m} \over { \rho \frac{\pi}{4} d^2 u } } 
 ```
 
-### Example
+#### Example
 
 Suppose we wish to model the dispersion of gaseous propane using the same scenario, `scn`, worked out above.
 
@@ -294,7 +299,8 @@ plot(j, xlims=(0,100), ylims=(-10,10), height=2)
 ```
 
 
-## Britter-McQuaid Model
+## Top-Hat Models
+### Britter-McQuaid Model
 
 ```@docs
 plume(::Scenario, ::Type{BritterMcQuaidPlume})

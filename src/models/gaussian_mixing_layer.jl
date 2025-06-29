@@ -24,7 +24,7 @@ function vertical_term(z, h, σz, ml::SimpleMixingLayer)
 end
 
 @doc doc"""
-    plume(::Scenario, GaussianMixingLayer[, ::EquationSet]; h_min=1.0, n_terms=10)
+    plume(::Scenario, GaussianMixingLayer[, ::EquationSet]; **kwargs...)
 
 Returns the solution to a Gaussian plume dispersion model with a simple reflective mixing layer.
 
@@ -32,7 +32,7 @@ Returns the solution to a Gaussian plume dispersion model with a simple reflecti
 c(x, y, z) = \frac{m_i}{u} { \exp\left(-\frac{1}{2}\left(\frac{y}{\sigma_y}\right)^2\right) \over { \sqrt{2\pi} \sigma_y} } F_z
 ```
 
-where \(F_z\) is the vertical dispersion term, a function of the mixing height \(h_m\), \(n\) is the number of image terms, and other symbols are as defined for a Gaussian
+where $ Fz $ is the vertical dispersion term, a function of the mixing height $ h_m $, *n* is the number of image terms, and other symbols are as defined for a Gaussian
 plume model.
 
 # Keyword Arguments
@@ -95,7 +95,7 @@ function plume(scenario::Scenario, ::Type{GaussianMixingLayer}, eqs=DefaultSet()
 end
 
 @doc doc"""
-    plume(::Scenario{AbstractSubstance,VerticalJet,Atmosphere}, GaussianPlume[, ::EquationSet]; **kwargs...)
+    plume(::Scenario{Substance,VerticalJet,Atmosphere}, GaussianMixingLayer[, ::EquationSet]; **kwargs...)
 
 Returns the solution to a Gaussian plume dispersion model with a simple reflective mixing layer.
 
@@ -103,7 +103,7 @@ Returns the solution to a Gaussian plume dispersion model with a simple reflecti
 c(x, y, z) = \frac{m_i}{u} { \exp\left(-\frac{1}{2}\left(\frac{y}{\sigma_y}\right)^2\right) \over { \sqrt{2\pi} \sigma_y} } F_z
 ```
 
-where \(F_z\) is the vertical dispersion term, a function of the mixing height \(h_m\), \(n\) is the number of image terms, and other symbols are as defined for a Gaussian
+where $ Fz $ is the vertical dispersion term, a function of the mixing height $ h_m $, *n* is the number of image terms, and other symbols are as defined for a Gaussian
 plume model.
 
 # Keyword Arguments

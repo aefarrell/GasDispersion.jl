@@ -37,7 +37,7 @@ downwind dispersion, σx, is calculated:
 - `:tno` follows the TNO Yellow Book eqn 4.60b, using the distance *x* while the plume is still attached and the distance to the cloud center, *ut*, afterwards
 
 # Arguments
-- `plume_model::Type{Plume} = GaussianPlume` : the plume model $\Chi$
+- `plume_model::Type{Plume} = GaussianPlume` : the plume model $\chi$
 - `disp_method = :default` : the method for calculating the downwind dispersion
 
 # References
