@@ -1,8 +1,12 @@
+# for modularity and code re-use
+abstract type GaussianCrossTerm end
+abstract type GaussianVerticalTerm end
+
 # for dispatch
 struct GaussianPlume <: PlumeModel end
 
 # Solution to the gaussian plume
-struct GaussianPlumeSolution{F<:Number,P<:PlumeRise,S<:StabilityClass,E<:EquationSet} <: Plume
+struct GaussianPlumeSolution{F<:Number,C<:GaussianCrossTerm,V<:GaussianVerticalTerm,P<:PlumeRise,S<:StabilityClass,E<:EquationSet} <: Plume
     scenario::Scenario
     model::Symbol
     rate::F
@@ -10,11 +14,20 @@ struct GaussianPlumeSolution{F<:Number,P<:PlumeRise,S<:StabilityClass,E<:Equatio
     mass_to_vol::F
     windspeed::F
     effective_stack_height::F
+    crossterm::C
+    verticalterm::V
     plumerise::P
     stability::Type{S}
     equationset::E
 end
-GaussianPlumeSolution(s,m,Q,c,ρ,u,h_eff,pr,stab,es) = GaussianPlumeSolution(s,m,promote(Q,c,ρ,u,h_eff)...,pr,stab,es)
+GaussianPlumeSolution(s,m,Q,c,ρ,u,h_eff,cross,vert,pr,stab,es) = GaussianPlumeSolution(s,m,promote(Q,c,ρ,u,h_eff)...,cross,vert,pr,stab,es)
+
+struct SimpleCrossTerm <:  GaussianCrossTerm end
+cross_term(y, σy, ::SimpleCrossTerm) = exp(-0.5*(y/σy)^2)/(√(2π)*σy)
+
+struct SimpleVerticalTerm <: GaussianVerticalTerm end
+vertical_term(z, h, σz, ::SimpleVerticalTerm) = ( exp(-0.5*((z-h)/σz)^2) + exp(-0.5*((z+h)/σz)^2) )/(√(2π)*σz)
+
 
 @doc doc"""
     plume(::Scenario, GaussianPlume[, ::EquationSet]; kwargs...)
@@ -62,6 +75,8 @@ function plume(scenario::Scenario, ::Type{GaussianPlume}, eqs=DefaultSet(); h_mi
     ρₐ,                                      # mass concentration to vol concentration
     windspeed(scenario,max(hᵣ,h_min),eqs), # windspeed
     hᵣ,                                     # effective_stack_height::Number
+    SimpleCrossTerm(),
+    SimpleVerticalTerm(),
     NoPlumeRise(),                          # plume rise model
     _stability(scenario),                   # stability class
     eqs                                     # equation set 
@@ -144,13 +159,15 @@ function plume(scenario::Scenario{<:AbstractSubstance,<:VerticalJet,<:Atmosphere
     ρₐ,    #mass to vol, at ambient conditions
     u,     #windspeed
     hᵣ,    #effective_stack_height::Number
+    SimpleCrossTerm(),
+    SimpleVerticalTerm(),
     plume, #plume rise model
     stab,  #stability class
     eqs    #equation set 
     )
 end
 
-function (g::GaussianPlumeSolution{F,NoPlumeRise,S,E})(x, y, z, t=0) where {F<:Number,S<:StabilityClass,E<:EquationSet}
+function (g::GaussianPlumeSolution{F,C,V,NoPlumeRise,S,E})(x, y, z, t=0) where {F,C,V,S,E}
     # domain check
     h = g.effective_stack_height
     if (x==0)&&(y==0)&&(z==h)
@@ -163,9 +180,9 @@ function (g::GaussianPlumeSolution{F,NoPlumeRise,S,E})(x, y, z, t=0) where {F<:N
         σy = crosswind_dispersion(x,S,g.equationset)
         σz = vertical_dispersion(x,S,g.equationset)
 
-        c = ( G/(2*π*u*σy*σz)
-            * exp(-0.5*(y/σy)^2)
-            * ( exp(-0.5*((z-h)/σz)^2) + exp(-0.5*((z+h)/σz)^2) ) )
+        Fy = cross_term(y,σy,g.crossterm)
+        Fz = vertical_term(z,h,σz,g.verticalterm)
+        c = (G/u)*Fy*Fz
 
         # c is in kg/m^3
         # use density at ambient conditions to convert to vol pct
@@ -175,7 +192,7 @@ function (g::GaussianPlumeSolution{F,NoPlumeRise,S,E})(x, y, z, t=0) where {F<:N
     end
 end
 
-function (g::GaussianPlumeSolution{F,<:BriggsModel,S,E})(x, y, z, t=0) where {F<:Number,S<:StabilityClass,E<:EquationSet}
+function (g::GaussianPlumeSolution{F,C,V,<:BriggsModel,S,E})(x, y, z, t=0) where {F,C,V,S,E}
     # domain check
     h = g.effective_stack_height
     if (x==0)&&(y==0)&&(z==h)
@@ -194,9 +211,9 @@ function (g::GaussianPlumeSolution{F,<:BriggsModel,S,E})(x, y, z, t=0) where {F<
         σyₑ = √( (Δh/3.5)^2 + σy^2 )
         σzₑ = √( (Δh/3.5)^2 + σz^2 )
 
-        c = ( G/(2*π*u*σyₑ*σzₑ)
-            * exp(-0.5*(y/σyₑ)^2)
-            * ( exp(-0.5*((z-hₑ)/σzₑ)^2) + exp(-0.5*((z+hₑ)/σzₑ)^2) ) )
+        Fy = cross_term(y,σyₑ,g.crossterm)
+        Fz = vertical_term(z,hₑ,σzₑ,g.verticalterm)
+        c = (G/u)*Fy*Fz
 
         # c is in kg/m^3
         # use density at ambient conditions to convert to vol pct

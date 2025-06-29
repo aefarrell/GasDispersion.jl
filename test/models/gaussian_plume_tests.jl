@@ -30,7 +30,7 @@
     pl = plume(scn)
 
     # test default behaviour and type inheritance
-    @test GasDispersion.GaussianPlumeSolution(scn,:test,1.0,2,3,4,5,GasDispersion.NoPlumeRise(),ClassA,DefaultSet()) isa GasDispersion.GaussianPlumeSolution{Float64, GasDispersion.NoPlumeRise, ClassA, GasDispersion.BasicEquationSet{GasDispersion.DefaultWind, Nothing, GasDispersion.Defaultσy, GasDispersion.Defaultσz}}
+    @test GasDispersion.GaussianPlumeSolution(scn,:test,1.0,2,3,4,5,GasDispersion.SimpleCrossTerm(),GasDispersion.SimpleVerticalTerm(),GasDispersion.NoPlumeRise(),ClassA,DefaultSet()) isa GasDispersion.GaussianPlumeSolution{Float64, GasDispersion.SimpleCrossTerm, GasDispersion.SimpleVerticalTerm, GasDispersion.NoPlumeRise, ClassA, GasDispersion.BasicEquationSet{GasDispersion.DefaultWind, Nothing, GasDispersion.Defaultσy, GasDispersion.Defaultσz}}
     @test pl isa GasDispersion.GaussianPlumeSolution
     @test pl isa Plume
     @test pl(-1,0,0) == 0.0
