@@ -20,7 +20,7 @@ export SourceModel, JetSource
 
 # plume models
 export PlumeModel, Plume, plume
-export GaussianPlume, SimpleJet, BritterMcQuaidPlume
+export GaussianPlume, GaussianMixingLayer, SimpleJet, BritterMcQuaidPlume
 
 # puff models
 export PuffModel, Puff, puff
@@ -90,6 +90,7 @@ plume(s; kwargs...) = plume(s, GaussianPlume; kwargs...)
 
 # plume models
 include("models/gaussian_plume.jl")
+include("models/gaussian_mixing_layer.jl")
 include("models/simple_jet.jl")
 include("models/britter_mcquaid_plume.jl")
 

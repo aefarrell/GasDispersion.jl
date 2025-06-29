@@ -6,7 +6,7 @@ crosswind_dispersion(x::Number, s::Any, ::BasicEquationSet{W,SX,SY,SZ}) where {W
 vertical_dispersion(x::Number, s::Any, ::BasicEquationSet{W,SX,SY,SZ}) where {W,SX,SY,SZ<:DispersionFunction} = vertical_dispersion(x,s,SZ)
 
 """
-    crosswind_dispersion(x, StabilityClass; avg_time=600.0)
+    crosswind_dispersion(x, StabilityClass, Defaultσy; avg_time=600.0)
 
 Plume crosswind dispersion correlations
 
@@ -52,7 +52,7 @@ end
 
 
 """
-    vertical_dispersion(x, Plume, StabilityClass)
+    vertical_dispersion(x, StabilityClass, Defaultσz)
 
 Plume vertical dispersion correlations
 
@@ -106,7 +106,7 @@ struct CCPSPuffσy <: DispersionFunction end
 struct CCPSPuffσz <: DispersionFunction end
 
 """
-    crosswind_dispersion(x, Puff, StabilityClass)
+    crosswind_dispersion(x, StabilityClass, CCPSPuffσy)
 
 Puff crosswind dispersion correlations
 
@@ -122,7 +122,7 @@ crosswind_dispersion(x::Number, ::Type{ClassF}, ::Type{CCPSPuffσy}) = 0.02*x^0.
 
 
 """
-    downwind_dispersion(x, Puff, StabilityClass)
+    downwind_dispersion(x, StabilityClass, CCPSPuffσx)
 
 Puff downwind dispersion correlations
 
@@ -135,7 +135,7 @@ end
 
 
 """
-    vertical_dispersion(x, Puff, StabilityClass)
+    vertical_dispersion(x, StabilityClass, CCPSPuffσz)
 
 Puff vertical dispersion correlations
 

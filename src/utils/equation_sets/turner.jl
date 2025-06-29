@@ -4,7 +4,7 @@ struct Turnerσz <: DispersionFunction end
 Turner = BasicEquationSet{DefaultWind,Nothing,Turnerσy,Turnerσz}
 
 """
-    crosswind_dispersion(x, Plume, StabilityClass, Turner)
+    crosswind_dispersion(x, StabilityClass, Turnerσy)
 
 Plume crosswind dispersion correlations
 
@@ -20,7 +20,7 @@ crosswind_dispersion(x::Number, ::Type{ClassE}, ::Type{Turnerσy}) = 0.091x^0.91
 crosswind_dispersion(x::Number, ::Type{ClassF}, ::Type{Turnerσy}) = 0.067x^0.90
 
 """
-    vertical_dispersion(x, Plume, StabilityClass, Turner)
+    vertical_dispersion(x, StabilityClass, Turnerσz)
 
 Plume vertical dispersion correlations
 

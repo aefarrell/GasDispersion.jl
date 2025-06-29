@@ -65,7 +65,7 @@ function windspeed(z::Number, u::Number, zR::Number, L::Number, ::Union{Type{Cla
 end
 
 """
-    crosswind_dispersion(x, Plume, StabilityClass, TNO)
+    crosswind_dispersion(x, StabilityClass, TNOPlumeσy)
 
 Plume crosswind dispersion correlations
 
@@ -80,7 +80,7 @@ crosswind_dispersion(x::Number, ::Type{ClassE}, ::Type{TNOPlumeσy}) = 0.098x^0.
 crosswind_dispersion(x::Number, ::Type{ClassF}, ::Type{TNOPlumeσy}) = 0.065x^0.902
 
 """
-    vertical_dispersion(x, Plume, StabilityClass, TNO)
+    vertical_dispersion(x, StabilityClass, TNOPlumeσz)
 
 Plume vertical dispersion correlations
 
@@ -101,7 +101,7 @@ struct TNOPuffσz <: DispersionFunction end
 TNOPuff = BasicEquationSet{TNOWind,TNOPuffσx,TNOPuffσy,TNOPuffσz}
 
 """
-    crosswind_dispersion(x, Puff, StabilityClass, TNO)
+    crosswind_dispersion(x, StabilityClass, TNOPuffσy)
 
 Puff crosswind dispersion correlations
 
@@ -112,7 +112,7 @@ crosswind_dispersion(x::Number, stability::Any, ::Type{TNOPuffσy}) = 0.5*crossw
 
 
 """
-    vertical_dispersion(x, Puff, StabilityClass, TNO)
+    vertical_dispersion(x, StabilityClass, TNOPuffσz)
 
 Puff vertical dispersion correlations
 
@@ -127,7 +127,7 @@ vertical_dispersion(x::Number, ::Type{ClassE}, ::Type{TNOPuffσz}) = 0.15x
 vertical_dispersion(x::Number, ::Type{ClassF}, ::Type{TNOPuffσz}) = 0.12x
 
 """
-    downwind_dispersion(x, Puff, StabilityClass, TNO)
+    downwind_dispersion(x, StabilityClass, TNOPuffσx)
 
 Puff downwind dispersion correlations
 

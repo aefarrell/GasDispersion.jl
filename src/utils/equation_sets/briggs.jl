@@ -6,7 +6,7 @@ struct BriggsRuralσy <: DispersionFunction end
 struct BriggsRuralσz <: DispersionFunction end
 
 """
-    crosswind_dispersion(x, Plume, StabilityClass, Briggsσy)
+    crosswind_dispersion(x, StabilityClass, Briggsσy)
 
 Plume crosswind dispersion correlations, for rural terrain
 
@@ -24,7 +24,7 @@ crosswind_dispersion(x::Number, ::Type{ClassF}, ::Type{BriggsRuralσy}) = 0.04x/
 
 
 """
-    vertical_dispersion(x, Plume, StabilityClass, CCPSRural)
+    vertical_dispersion(x, StabilityClass, BriggsRuralσz)
 
 Plume vertical dispersion correlations, for rural terrain
 
@@ -46,7 +46,7 @@ struct BriggsUrbanσy <: DispersionFunction end
 struct BriggsUrbanσz <: DispersionFunction end
 
 """
-    crosswind_dispersion(x, Plume, StabilityClass, CCPSUrban)
+    crosswind_dispersion(x, StabilityClass, BriggsUrbanσy)
 
 Plume crosswind dispersion correlations, for urban terrain
 
@@ -64,7 +64,7 @@ crosswind_dispersion(x::Number, ::Type{ClassF}, ::Type{BriggsUrbanσy}) = 0.11x/
 
 
 """
-    vertical_dispersion(x, Plume, StabilityClass, CCPSUrban)
+    vertical_dispersion(x, StabilityClass, BriggsUrbanσz)
 
 Plume vertical dispersion correlations, for urban terrain
 
