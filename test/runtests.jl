@@ -30,6 +30,7 @@ if GROUP == "All" || GROUP == "Model"
 
     # testing dispersion models
     include("models/gaussian_plume_tests.jl")
+    include("models/gaussian_ml_tests.jl")
     include("models/gaussian_puff_tests.jl")
     include("models/intpuff_tests.jl")
     include("models/palazzi_tests.jl")

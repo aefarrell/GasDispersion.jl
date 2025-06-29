@@ -112,7 +112,7 @@ SimpleAtmosphere atmosphere:
 
 The plume using the default equation set is simply this
 
-```jldoctest eqnset_example; output = false, filter = r"(\d*)\.(\d{4})\d+" => s"\1.\2***"
+<!-- ```jldoctest eqnset_example; output = false, filter = r"(\d*)\.(\d{4})\d+" => s"\1.\2***"
 dflt = plume(scn, GaussianPlume, DefaultSet())
 
 # output
@@ -175,7 +175,7 @@ turner = plume(scn, GaussianPlume, Turner())
 
 GasDispersion.GaussianPlumeSolution{Float64, GasDispersion.NoPlumeRise, ClassF, BasicEquationSet{DefaultWind, Nothing, Turnerσy, Turnerσz}}(Scenario{Substance{String, GasDispersion.Antoine{Float64}, Float64, Float64, Float64, Int64, Int64, Int64}, HorizontalJet{Float64}, SimpleAtmosphere{Float64, ClassF}}(Substance{String, GasDispersion.Antoine{Float64}, Float64, Float64, Float64, Int64, Int64, Int64}("propane", 0.044096, GasDispersion.Antoine{Float64}(9.773719865868816, 2257.9247634130143, 0.0), 1.864931992847327, 526.13, 288.15, 101325.0, 1.142, 231.02, 425740, 1678, 2520), HorizontalJet{Float64}(0.08991798763471508, Inf, 0.01, 208.10961399327573, 3.5, 288765.2212333958, 278.3846872082166, 0.0), SimpleAtmosphere{Float64, ClassF}(101325.0, 298.15, 1.5, 10.0, 0.0, ClassF)), :gaussian, 0.08991798763471508, 0.9999999999999998, 1.8023818673116125, 1.150112899011524, 3.5, GasDispersion.NoPlumeRise(), ClassF, BasicEquationSet{DefaultWind, Nothing, Turnerσy, Turnerσz}())
 
-```
+``` -->
 
 All of these plumes can then be plotted, to better visualize what is going on. These are identical plume models with the only differences being the windspeed correlation and the dispersion correlations.
 

@@ -24,27 +24,33 @@ function vertical_term(z, h, σz, ml::SimpleMixingLayer)
 end
 
 @doc doc"""
-    plume(::Scenario, GaussianMixingLayer[, ::EquationSet]; kwargs...)
+    plume(::Scenario, GaussianMixingLayer[, ::EquationSet]; h_min=1.0, n_terms=10)
 
-Returns the solution to a Gaussian plume dispersion model for the given scenario.
+Returns the solution to a Gaussian plume dispersion model with a simple reflective mixing layer.
 
 ```math
-c\left(x,y,z\right) = {m_{i} \over { 2 \pi \sigma_{y} \sigma_{z} u } }
-\exp \left[ -\frac{1}{2} \left( y \over \sigma_{y} \right)^2 \right] \\
-\times \left\{ \exp \left[ -\frac{1}{2} \left( { z -h } \over \sigma_{z} \right)^2 \right]
-+ \exp \left[ -\frac{1}{2} \left( { z + h } \over \sigma_{z} \right)^2 \right] \right\}
+c(x, y, z) = \frac{m_i}{u} { \exp\left(-\frac{1}{2}\left(\frac{y}{\sigma_y}\right)^2\right) \over { \sqrt{2\pi} \sigma_y} } F_z
 ```
 
-where the σs are dispersion parameters correlated with the distance x. The 
-`EquationSet` defines the set of correlations used to calculate the dispersion 
-parameters. The concentration returned is in volume fraction, assuming the plume 
-is a gas at ambient conditions.
+where \(F_z\) is the vertical dispersion term, a function of the mixing height \(h_m\), \(n\) is the number of image terms, and other symbols are as defined for a Gaussian
+plume model.
+
+# Keyword Arguments
+- `h_min=1.0`:  Minimum height for windspeed calculations.
+- `method=:simplemixinglayer`: The method used for the mixing layer.
+- `n_terms=10`: Number of image terms for the mixing layer reflection.
+- `mixing_limit=10_000.0`: Limit for the mixing height, in meters. Mixing heights above this are treated as infinite.
 
 # References
-+ 
++ AIChE/CCPS. 1999. *Guidelines for Consequence Analysis of Chemical Releases*. New York: American Institute of Chemical Engineers
++ US EPA. 1995. *User's Guide for the Industrial Source Complex (ISC3) Dispersion Models EPA-454/B-95-003b, vol 2*. Research Triangle Park, NC: Office of Air Quality Planning and Standards
 
 """
-function plume(scenario::Scenario, ::Type{GaussianMixingLayer}, eqs=DefaultSet(); h_min=1.0, n_terms=10)
+function plume(scenario::Scenario, ::Type{GaussianMixingLayer}, eqs=DefaultSet(); 
+               method=:simplemixinglayer, 
+               h_min=1.0, 
+               n_terms=10,
+               mixing_limit=10_000.0)
     # parameters of the jet
     hᵣ = _release_height(scenario)
     m  = _mass_rate(scenario)
@@ -54,13 +60,23 @@ function plume(scenario::Scenario, ::Type{GaussianMixingLayer}, eqs=DefaultSet()
     # jet at ambient conditions
     Tₐ = _atmosphere_temperature(scenario)
     Pₐ = _atmosphere_pressure(scenario)
-    hₘ = _mixing_height(scenario)
+    hₘ = _mixing_height(scenario, eqs)
     ρₐ = _gas_density(scenario.substance,Tₐ,Pₐ)
     Qᵒ = Q*ρⱼ/ρₐ
 
     # max concentration
     c_max = m/Qᵒ
     c_max = c_max/ρₐ
+
+    # mixing layer
+    if hₘ > mixing_limit
+        # infinite mixing height
+        ml = SimpleVerticalTerm()
+    elseif method == :simplemixinglayer
+        ml = SimpleMixingLayer(n_terms, hₘ)
+    else
+        error("Unknown mixing layer method: $method")
+    end
 
     return GaussianPlumeSolution(
     scenario,                               # scenario::Scenario
@@ -71,7 +87,7 @@ function plume(scenario::Scenario, ::Type{GaussianMixingLayer}, eqs=DefaultSet()
     windspeed(scenario,max(hᵣ,h_min),eqs),  # windspeed
     hᵣ,                                     # effective_stack_height::Number
     SimpleCrossTerm(),
-    SimpleMixingLayer(n_terms,hₘ),
+    ml,
     NoPlumeRise(),                          # plume rise model
     _stability(scenario),                   # stability class
     eqs                                     # equation set 
@@ -79,33 +95,38 @@ function plume(scenario::Scenario, ::Type{GaussianMixingLayer}, eqs=DefaultSet()
 end
 
 @doc doc"""
-    plume(::Scenario{AbstractSubstance,VerticalJet,Atmosphere}, GaussianPlume[, ::EquationSet]; kwargs...)
+    plume(::Scenario{AbstractSubstance,VerticalJet,Atmosphere}, GaussianPlume[, ::EquationSet]; **kwargs...)
 
-Returns the solution to a Gaussian plume dispersion model for a vertical jet. By default the Briggs
-plume rise model is used.
+Returns the solution to a Gaussian plume dispersion model with a simple reflective mixing layer.
 
 ```math
-c\left(x,y,z\right) = {m_{i} \over { 2 \pi \sigma_{y} \sigma_{z} u } }
-\exp \left[ -\frac{1}{2} \left( y \over \sigma_{y} \right)^2 \right] \\
-\times \left\{ \exp \left[ -\frac{1}{2} \left( { z -h } \over \sigma_{z} \right)^2 \right]
-+ \exp \left[ -\frac{1}{2} \left( { z + h } \over \sigma_{z} \right)^2 \right] \right\}
+c(x, y, z) = \frac{m_i}{u} { \exp\left(-\frac{1}{2}\left(\frac{y}{\sigma_y}\right)^2\right) \over { \sqrt{2\pi} \sigma_y} } F_z
 ```
 
-where the σs are dispersion parameters correlated with the distance x. The 
-`EquationSet` defines the set of correlations used to calculate the dispersion 
-parameters. The concentration returned is in volume fraction, assuming the plume 
-is a gas at ambient conditions.
+where \(F_z\) is the vertical dispersion term, a function of the mixing height \(h_m\), \(n\) is the number of image terms, and other symbols are as defined for a Gaussian
+plume model.
 
-# Arguments
-- `downwash::Bool=false`: when true, includes stack-downwash effects
-- `plumerise::Bool=true`: when true, includes plume-rise effects using Briggs' model
+# Keyword Arguments
+- `downwash::Bool=false`: Include stack-downwash effects if true.
+- `plumerise::Bool=true`: Include plume-rise effects using Briggs' model if true.
+- `h_min=1.0`: Minimum height, in meters, for windspeed calculations.
+- `method=:simplemixinglayer`: The method used for the mixing layer.
+- `n_terms=10`: Number of image terms for the mixing layer reflection.
+- `mixing_limit=10_000.0`: Limit for the mixing height, in meters. Mixing heights above this are treated as infinite.
 
 # References
-+ AIChE/CCPS. 1999. *Guidelines for Consequence Analysis of Chemical Releases*. New York: American Institute of Chemical Engineers
-+ Briggs, Gary A. 1969. *Plume Rise* Oak Ridge: U.S. Atomic Energy Commission
+- AIChE/CCPS. 1999. *Guidelines for Consequence Analysis of Chemical Releases*. New York: American Institute of Chemical Engineers
+- Briggs, Gary A. 1969. *Plume Rise* Oak Ridge: U.S. Atomic Energy Commission
+- US EPA. 1995. *User's Guide for the Industrial Source Complex (ISC3) Dispersion Models EPA-454/B-95-003b, vol 2*. Research Triangle Park, NC: Office of Air Quality Planning and Standards
 
 """
-function plume(scenario::Scenario{<:AbstractSubstance,<:VerticalJet,<:Atmosphere}, ::Type{GaussianMixingLayer}, eqs=DefaultSet(); downwash::Bool=false, plumerise::Bool=true, h_min=1.0, n_terms=10)  
+function plume(scenario::Scenario{<:AbstractSubstance,<:VerticalJet,<:Atmosphere}, 
+               ::Type{GaussianMixingLayer}, eqs=DefaultSet(); 
+               downwash::Bool=false, plumerise::Bool=true,
+               method=:simplemixinglayer,
+               h_min=1.0, 
+               n_terms=10,
+               mixing_limit=10_000.0)  
     # parameters of the jet
     Dⱼ = _release_diameter(scenario)
     uⱼ = _release_velocity(scenario)
@@ -118,7 +139,7 @@ function plume(scenario::Scenario{<:AbstractSubstance,<:VerticalJet,<:Atmosphere
     u = windspeed(scenario,max(hᵣ,h_min),eqs)
     stab = _stability(scenario)
     Γ = _lapse_rate(scenario)
-    hₘ = _mixing_height(scenario)
+    hₘ = _mixing_height(scenario, eqs)
 
     # jet at ambient conditions
     Tₐ = _atmosphere_temperature(scenario)
@@ -147,6 +168,16 @@ function plume(scenario::Scenario{<:AbstractSubstance,<:VerticalJet,<:Atmosphere
         plume = NoPlumeRise()
     end
 
+    # mixing layer
+    if hₘ > mixing_limit
+        # infinite mixing height
+        ml = SimpleVerticalTerm()
+    elseif method == :simplemixinglayer
+        ml = SimpleMixingLayer(n_terms, hₘ)
+    else
+        error("Unknown mixing layer method: $method")
+    end
+
     return GaussianPlumeSolution(
     scenario, #scenario::Scenario
     :simplemixinglayer, #model::Symbol
@@ -156,7 +187,7 @@ function plume(scenario::Scenario{<:AbstractSubstance,<:VerticalJet,<:Atmosphere
     u,     #windspeed
     hᵣ,    #effective_stack_height::Number
     SimpleCrossTerm(),
-    SimpleMixingLayer(n_terms,hₘ),
+    ml,
     plume, #plume rise model
     stab,  #stability class
     eqs    #equation set 

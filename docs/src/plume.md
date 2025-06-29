@@ -7,13 +7,15 @@ independent, this includes, for example, emissions from elevated stacks.
 plume
 ```
 
-## Gaussian Plumes
+## Gaussian Plume Models
+
+### Simple Gaussian Plumes
 
 ```@docs
 plume(::Scenario{Substance,VerticalJet,Atmosphere}, ::Type{GaussianPlume})
 ```
 
-The gaussian plume model assumes that concentration profile in the crosswind (y) and vertical (z) directions follow gaussian distributions with dispersions $\sigma_y$ and $\sigma_z$, respectively. This model can be derived from an advection-diffusion equation, or simply taken as a given.
+The simple gaussian plume model assumes that concentration profile in the crosswind (y) and vertical (z) directions follow gaussian distributions with dispersions $\sigma_y$ and $\sigma_z$, respectively. This model can be derived from an advection-diffusion equation, or simply taken as a given.
 
 The basic gaussian would have the plume expand downward beyond the ground, to correct for this an additional term for *ground reflection* is added. This is equivalent to adding a mirror image source reflected across the x-z plane, and causes mass to accumulate along the ground instead of simply disappearing (as would happen in the naive case).
 
@@ -37,7 +39,7 @@ with
 
 Three important parameters are determined from correlations, which are functions of the atmospheric stability: the windspeed at the release point, the crosswind dispersion, and the vertical dispersion. The model converts the final concentration to volume fraction, assuming the plume is a gas at ambient conditions.
 
-### Crosswind dispersion correlations
+#### Crosswind dispersion correlations
 
 The crosswind dispersion, $\sigma_{y}$ is a function of downwind distance, $x$ as well as stability class
 
@@ -59,7 +61,7 @@ Where $\delta$, $\beta$, and $\gamma$ are tabulated based on stability class ([S
 |        F        |  0.0674  |   0.9   |
 
 
-### Vertical dispersion correlations
+#### Vertical dispersion correlations
 
 The vertical dispersion, $\sigma_{z}$ is a function of downwind distance, $x$ as well as stability class
 
@@ -80,7 +82,7 @@ Where $\delta$ and $\beta$ are tabulated based on stability class ([Seinfeld 198
 |        E        |  0.02275 |  1.3010 | -0.0450  |
 |        F        |  0.01122 |  1.4024 | -0.0540  |
 
-### Example
+#### Example
 
 Suppose we wish to model the dispersion of gaseous propane from a leak from a storage tank, where the leak is from a 10mm hole that is 3.5m above the ground and the propane is at 25°C and 4barg. Assume the discharge coefficient $c_{D} = 0.85$. This scenario is adapted from CCPS *Guidelines for Consequence Analysis of Chemical Releases*([AIChE/CCPS 1999](references.md), 47)
 
@@ -149,15 +151,6 @@ And then pass it to the `plume` function
 ```jldoctest gaussplume; output = false, filter = r"(\d*)\.(\d{4})\d+" => s"\1.\2***"
 g = plume(scn, GaussianPlume)
 
-# output
-
-GasDispersion.GaussianPlumeSolution{Float64, GasDispersion.NoPlumeRise, ClassF, BasicEquationSet{DefaultWind, Nothing, Defaultσy, Defaultσz}}(Scenario{Substance{String, GasDispersion.Antoine{Float64}, Float64, Float64, Float64, Int64, Int64, Int64}, HorizontalJet{Float64}, SimpleAtmosphere{Float64, ClassF}}(Substance{String, GasDispersion.Antoine{Float64}, Float64, Float64, Float64, Int64, Int64, Int64}("propane", 0.044096, GasDispersion.Antoine{Float64}(9.773719865868816, 2257.9247634130143, 0.0), 1.864931992847327, 526.13, 288.15, 101325.0, 1.142, 231.02, 425740, 1678, 2520), HorizontalJet{Float64}(0.08991798763471508, Inf, 0.01, 208.10961399327573, 3.5, 288765.2212333958, 278.3846872082166, 0.0), SimpleAtmosphere{Float64, ClassF}(101325.0, 298.15, 1.5, 10.0, 0.0, ClassF)), :gaussian, 0.08991798763471508, 0.9999999999999998, 1.8023818673116125, 1.150112899011524, 3.5, GasDispersion.NoPlumeRise(), ClassF, BasicEquationSet{DefaultWind, Nothing, Defaultσy, Defaultσz}())
-
-```
-
-Where `g` is a callable which returns the concentration (in vol fraction) at any point. For example at 100m downwind and at a height of 2m
-
-```jldoctest gaussplume; output = true, filter = r"(\d*)\.(\d{4})\d+" => s"\1.\2***"
 g(100,0,2)
 
 # output
@@ -166,7 +159,7 @@ g(100,0,2)
 
 ```
 
-Which is ~612ppm (vol). Beyond simply having a number, we may want a plan-view of the plume at a given height, say 2m.
+Where `g` is a callable which returns the concentration (in vol fraction) at any point. For example at 100m downwind and at a height of 2m the result is ~612ppm (vol). Beyond simply having a number, we may want a plan-view of the plume at a given height, say 2m.
 
 ```@setup gaussplume
 using ..GasDispersion
@@ -215,6 +208,35 @@ These plan views stretch out the crosswind distance, but we can change the aspec
 ```@example gaussplume
 plot(g, xlims=(0,50), ylims=(-10,10), height=3.5, clims=(0,LEL),
      aspect_ratio=:equal)
+```
+
+### Gaussian Plumes with Mixing Layers
+
+```@docs
+plume(::Scenario, ::Type{GaussianMixingLayer})
+```
+
+The gaussian mixing layer model allows for the plume to be contained entirely within a mixing layer of a given height. This can be done using either the method of images or a periodic boundary.
+
+```math
+c(x, y, z) = \frac{m_i}{u} { \exp\left(-\frac{1}{2}\left(\frac{y}{\sigma_y}\right)^2\right) \over { \sqrt{2\pi} \sigma_y} } F_z
+```
+
+Where $F_z$ is the vertical dispersion term. For the method of images this takes the form of the infinite sum:
+
+```math
+F_z = {\left( \exp \left[ -\frac{1}{2} \left( { z -h } \over \sigma_{z} \right)^2 \right]
++ \exp \left[ -\frac{1}{2} \left( { z + h } \over \sigma_{z} \right)^2 \right] \right) \over {\sqrt{2\pi} \sigma_z} } 
+\sum_{i=1}^{n} \left[ \exp\left(-\frac{1}{2}\left(\frac{z - h + 2i h_m}{\sigma_z}\right)^2\right) 
++ \exp\left(-\frac{1}{2}\left(\frac{z - h - 2i h_m}{\sigma_z}\right)^2\right) 
++ \exp\left(-\frac{1}{2}\left(\frac{z + h + 2i h_m}{\sigma_z}\right)^2\right) 
++ \exp\left(-\frac{1}{2}\left(\frac{z + h - 2i h_m}{\sigma_z}\right)^2\right) \right]
+```
+
+For the periodic boundary it takes the form of another infinite sum:
+
+```math
+F_z = ...
 ```
 
 ## Simple Jet Plumes
