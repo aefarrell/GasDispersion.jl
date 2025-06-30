@@ -37,14 +37,15 @@ downwind dispersion, σx, is calculated:
 - `:tno` follows the TNO Yellow Book eqn 4.60b, using the distance *x* while the plume is still attached and the distance to the cloud center, *ut*, afterwards
 
 # Arguments
-- `plume_model::Type{Plume} = GaussianPlume` : the plume model $\chi$
 - `disp_method = :default` : the method for calculating the downwind dispersion
+- `plume_model::Type{Plume} = GaussianPlume` : the plume model $\chi$
+- additional keyword arguments are passed to the plume model
 
 # References
 + Palazzi, E, M De Faveri, Giuseppe Fumarola, and G Ferraiolo. “Diffusion from a Steady Source of Short Duration.” *Atmospheric Environment*. 16, no. 12 (1982): 2785–90.
 
 """
-function puff(scenario::Scenario, ::Type{Palazzi}, eqs=PalazziDefaultSet(); plume_model=GaussianPlume, disp_method=:default)
+function puff(scenario::Scenario, ::Type{Palazzi}, eqs=PalazziDefaultSet(); plume_model=GaussianPlume, disp_method=:default, kwargs...)
 
     stab = _stability(scenario)
     Δt = _duration(scenario)
@@ -55,7 +56,7 @@ function puff(scenario::Scenario, ::Type{Palazzi}, eqs=PalazziDefaultSet(); plum
         scenario,  #scenario::Scenario
         :palazzi, #model::Symbol
         disp_method, #dispersion model::Symbol
-        plume(scenario, plume_model, eqs), # plume model
+        plume(scenario, plume_model, eqs; kwargs...), # plume model
         Δt,   # duration
         u,    # windspeed
         stab, # stability class

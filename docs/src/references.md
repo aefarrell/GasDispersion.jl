@@ -2,6 +2,8 @@
 
 AIChE/CCPS. 1999. *Guidelines for Consequence Analysis of Chemical Releases*. New York: American Institute of Chemical Engineers
 
+Beychok, Milton R. 1994. *Fundamentals of Stack Gas Dispersion* 3rd Ed. Irvine, CA: Milton R. Beychok.
+
 Bakkum, E.A. and N.J. Duijm. 2005. "Chapter 4 - Vapour Cloud Dispersion" in *Methods for the Calculation of Physical Effects, CPR 14E* (TNO Yellow Book) Edited by C.J.H. van den Bosch and R.A.P.M. Weterings. The Netherlands.
 
 Businger, J. A., J. C. Wyngaard, Y. Izumi, and E. F. Bradley. 1971. "Flux-Profile Relationships in the Atmospheric Surfaace Layer." *Journal of the Atmospheric Sciences*. 28, 181-189. [doi:10.1175/1520-0469(1971)028<0181:FPRITA>2.0.CO;2](https://doi.org/10.1175/1520-0469(1971)028<0181:FPRITA>2.0.CO;2)
@@ -30,7 +32,7 @@ Paulson, C. A. 1970. "The Mathematical Representation of Wind Speed and Temperat
 
 Spicer, Thomas O. and Jerry A. Havens. 1988. *Development of Vapor Dispersion Models for Non-Neutrally Buoyant Gas Mixtures--Analysis of TFI/NH3 Test Data*. Tyndall Air Force Base, FL: USAF Engineering & Services Laboratory
 
-Seinfeld, John H. 1986. *Atmospheric Chemistry and Physics of Air Pollution*. New York: John Wiley and Sons
+Seinfeld, John H. and Spyros N. Pandis. 2006. *Atmospheric Chemistry and Physics* 2nd Ed. New York: John Wiley and Sons.
 
 Turner, D. Bruce. 1970. *Workbook of Atmospheric Dispersion Estimates*. United States Environmental Protection Agency.
 

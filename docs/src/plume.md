@@ -222,22 +222,24 @@ The gaussian mixing layer model allows for the plume to be contained entirely wi
 c(x, y, z) = \frac{m_i}{u} \frac{1}{\sqrt{2\pi} \sigma_y} \exp\left(-\frac{1}{2}\left(\frac{y}{\sigma_y}\right)^2\right) F_z
 ```
 
-Where $F_z$ is the vertical dispersion term. For the method of images this takes the form of the infinite sum:
+Where $F_z$ is the vertical dispersion term. For the method of images this takes the form of the infinite sum ([Beychok 1994](references.md) p 123)
 
 ```math
 F_z = \frac{1}{\sqrt{2\pi} \sigma_z} \left( \exp \left( -\frac{1}{2} \left( { z -h } \over \sigma_{z} \right)^2 \right)
 + \exp \left( -\frac{1}{2} \left( { z + h } \over \sigma_{z} \right)^2 \right) \right) \\
-\sum_{i=1}^{n} \left[ \exp\left(-\frac{1}{2}\left(\frac{z - h + 2i h_m}{\sigma_z}\right)^2\right) 
-+ \exp\left(-\frac{1}{2}\left(\frac{z - h - 2i h_m}{\sigma_z}\right)^2\right) \\
-+ \exp\left(-\frac{1}{2}\left(\frac{z + h + 2i h_m}{\sigma_z}\right)^2\right) \\
-+ \exp\left(-\frac{1}{2}\left(\frac{z + h - 2i h_m}{\sigma_z}\right)^2\right) \right]
+\sum_{n=1}^{\infty} \left[ \exp\left(-\frac{1}{2}\left(\frac{z - h + 2n h_m}{\sigma_z}\right)^2\right) 
++ \exp\left(-\frac{1}{2}\left(\frac{z - h - 2n h_m}{\sigma_z}\right)^2\right) \\
++ \exp\left(-\frac{1}{2}\left(\frac{z + h + 2n h_m}{\sigma_z}\right)^2\right) \\
++ \exp\left(-\frac{1}{2}\left(\frac{z + h - 2n h_m}{\sigma_z}\right)^2\right) \right]
 ```
 
-For the periodic boundary it takes the form of another infinite sum:
+For the periodic boundary it takes the form of another infinite sum ([Seinfeld and Pandis 2006](references.md) p 858)
 
 ```math
-F_z = ...
+F_z = \frac{2}{h_m} \left( \frac{1}{2} + \sum_{n=1}^{\infty} cos\left( {n\pi z} \over h_m \right) cos\left( {n\pi h} \over h_m \right) \exp\left(-\frac{1}{2}\left(\frac{n\pi \sigma_z}{h_m}\right)^2\right) \right)
 ```
+
+The periodic boundary layer approach can be very slow to converge, in which case the number of terms given by the keyword argument `n_terms` should be increased. By default the sums terminate early if the solution converges, e.g. if `n_terms=100_000_000` or some other huge number but the sum converges after 5 terms, only 5 terms will be calculated. The simple mixing layer approach converges much more quickly, and typically 10 terms are more than enough.
 
 As `SimpleAtmosphere`s do not define mixing height, one is calculated based on the following:
 - for stable atmospheres (class E and F) the mixing height is assumed to be infinite, and the model defaults back to a [Simple Gaussian Plume](@ref)

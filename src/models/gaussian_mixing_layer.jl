@@ -1,7 +1,7 @@
 # for dispatch
 struct GaussianMixingLayer <: PlumeModel end
 
-# new vertical term
+# mixing layer vertical term -- method of images
 struct SimpleMixingLayer{N<:Integer,F<:Number} <: GaussianVerticalTerm
     nterms::N
     mixing_height::F
@@ -23,27 +23,50 @@ function vertical_term(z, h, σz, ml::SimpleMixingLayer)
     return Fz/(√(2π)*σz)
 end
 
+# mixing layer vertical term -- periodic
+struct PeriodicMixingLayer{N<:Integer,F<:Number} <: GaussianVerticalTerm
+    nterms::N
+    mixing_height::F
+end
+
+function vertical_term(z, h, σz, ml::PeriodicMixingLayer) 
+    Fz = 1/2
+    for n=1:ml.nterms
+        next_term = cos(n*π*z/ml.mixing_height)*cos(n*π*h/ml.mixing_height)*exp(-0.5*(n*π*σz/ml.mixing_height)^2)
+        Fz += next_term
+        if next_term ≈ 0
+            break
+        end
+    end
+    return 2*Fz/ml.mixing_height
+end
+
 @doc doc"""
     plume(::Scenario, GaussianMixingLayer[, ::EquationSet]; **kwargs...)
 
 Returns the solution to a Gaussian plume dispersion model with a simple reflective mixing layer.
 
 ```math
-c(x, y, z) = \frac{m_i}{u} { \exp\left(-\frac{1}{2}\left(\frac{y}{\sigma_y}\right)^2\right) \over { \sqrt{2\pi} \sigma_y} } F_z
+c(x, y, z) = \frac{m_i}{u} \frac{1}{ \sqrt{2\pi} \sigma_y} \exp\left(-\frac{1}{2}\left(\frac{y}{\sigma_y}\right)^2\right) F_z
 ```
 
-where $ Fz $ is the vertical dispersion term, a function of the mixing height $ h_m $, *n* is the number of image terms, and other symbols are as defined for a Gaussian
+where $ F\_z $ is the vertical dispersion term, a function of the mixing height $ h\_m $, and other symbols are as defined for a Gaussian
 plume model.
+
+There are two methods for the mixing layer:
+- `:simplemixinglayer` uses a simple method of images, a series of reflections off of the mixing height
+- `:periodicmixinglayer` uses an infinite series of cosine terms to calculate the vertical dispersion, which is more accurate for large mixing heights
 
 # Keyword Arguments
 - `h_min=1.0`:  Minimum height for windspeed calculations.
 - `method=:simplemixinglayer`: The method used for the mixing layer.
-- `n_terms=10`: Number of image terms for the mixing layer reflection.
+- `n_terms=10`: Number terms in the series calculation of $ F_z $.
 - `mixing_limit=10_000.0`: Limit for the mixing height, in meters. Mixing heights above this are treated as infinite.
 
 # References
 + AIChE/CCPS. 1999. *Guidelines for Consequence Analysis of Chemical Releases*. New York: American Institute of Chemical Engineers
 + US EPA. 1995. *User's Guide for the Industrial Source Complex (ISC3) Dispersion Models EPA-454/B-95-003b, vol 2*. Research Triangle Park, NC: Office of Air Quality Planning and Standards
++ Seinfeld, John H. and Spyros N. Pandis. 2006. *Atmospheric Chemistry and Physics* 2nd Ed. New York: John Wiley and Sons.
 
 """
 function plume(scenario::Scenario, ::Type{GaussianMixingLayer}, eqs=DefaultSet(); 
@@ -63,6 +86,9 @@ function plume(scenario::Scenario, ::Type{GaussianMixingLayer}, eqs=DefaultSet()
     hₘ = _mixing_height(scenario, eqs)
     ρₐ = _gas_density(scenario.substance,Tₐ,Pₐ)
     Qᵒ = Q*ρⱼ/ρₐ
+    if hᵣ>hₘ
+        error("Release height $hᵣ exceeds mixing height $hₘ. This is not supported by the Gaussian mixing layer model.")
+    end
 
     # max concentration
     c_max = m/Qᵒ
@@ -71,9 +97,12 @@ function plume(scenario::Scenario, ::Type{GaussianMixingLayer}, eqs=DefaultSet()
     # mixing layer
     if hₘ > mixing_limit
         # infinite mixing height
+        @warn "Mixing height $hₘ exceeds limit $mixing_limit, using infinite mixing height."
         ml = SimpleVerticalTerm()
     elseif method == :simplemixinglayer
         ml = SimpleMixingLayer(n_terms, hₘ)
+    elseif method == :periodicmixinglayer
+        ml = PeriodicMixingLayer(n_terms, hₘ)
     else
         error("Unknown mixing layer method: $method")
     end
@@ -100,24 +129,28 @@ end
 Returns the solution to a Gaussian plume dispersion model with a simple reflective mixing layer.
 
 ```math
-c(x, y, z) = \frac{m_i}{u} { \exp\left(-\frac{1}{2}\left(\frac{y}{\sigma_y}\right)^2\right) \over { \sqrt{2\pi} \sigma_y} } F_z
+c(x, y, z) = \frac{m_i}{u} \frac{1}{ \sqrt{2\pi} \sigma_y} \exp\left(-\frac{1}{2}\left(\frac{y}{\sigma_y}\right)^2\right) F_z
 ```
-
-where $ Fz $ is the vertical dispersion term, a function of the mixing height $ h_m $, *n* is the number of image terms, and other symbols are as defined for a Gaussian
+where $ F\_z $ is the vertical dispersion term, a function of the mixing height $ h\_m $, and other symbols are as defined for a Gaussian
 plume model.
+
+There are two methods for the mixing layer:
+- `:simplemixinglayer` uses a simple method of images, a series of reflections off of the mixing height
+- `:periodicmixinglayer` uses an infinite series of cosine terms to calculate the vertical dispersion, which is more accurate for large mixing heights
 
 # Keyword Arguments
 - `downwash::Bool=false`: Include stack-downwash effects if true.
 - `plumerise::Bool=true`: Include plume-rise effects using Briggs' model if true.
 - `h_min=1.0`: Minimum height, in meters, for windspeed calculations.
 - `method=:simplemixinglayer`: The method used for the mixing layer.
-- `n_terms=10`: Number of image terms for the mixing layer reflection.
+- `n_terms=10`: Number terms in the series calculation of $ F_z $.
 - `mixing_limit=10_000.0`: Limit for the mixing height, in meters. Mixing heights above this are treated as infinite.
 
 # References
 - AIChE/CCPS. 1999. *Guidelines for Consequence Analysis of Chemical Releases*. New York: American Institute of Chemical Engineers
 - Briggs, Gary A. 1969. *Plume Rise* Oak Ridge: U.S. Atomic Energy Commission
 - US EPA. 1995. *User's Guide for the Industrial Source Complex (ISC3) Dispersion Models EPA-454/B-95-003b, vol 2*. Research Triangle Park, NC: Office of Air Quality Planning and Standards
+- Seinfeld, John H. and Spyros N. Pandis. 2006. *Atmospheric Chemistry and Physics* 2nd Ed. New York: John Wiley and Sons.
 
 """
 function plume(scenario::Scenario{<:AbstractSubstance,<:VerticalJet,<:Atmosphere}, 
@@ -140,6 +173,9 @@ function plume(scenario::Scenario{<:AbstractSubstance,<:VerticalJet,<:Atmosphere
     stab = _stability(scenario)
     Γ = _lapse_rate(scenario)
     hₘ = _mixing_height(scenario, eqs)
+    if hᵣ>hₘ
+        error("Release height $hᵣ exceeds mixing height $hₘ. This is not supported by the Gaussian mixing layer model.")
+    end
 
     # jet at ambient conditions
     Tₐ = _atmosphere_temperature(scenario)
@@ -171,9 +207,12 @@ function plume(scenario::Scenario{<:AbstractSubstance,<:VerticalJet,<:Atmosphere
     # mixing layer
     if hₘ > mixing_limit
         # infinite mixing height
+        @warn "Mixing height $hₘ exceeds limit $mixing_limit, using infinite mixing height."
         ml = SimpleVerticalTerm()
     elseif method == :simplemixinglayer
         ml = SimpleMixingLayer(n_terms, hₘ)
+    elseif method == :periodicmixinglayer
+        ml = PeriodicMixingLayer(n_terms, hₘ)
     else
         error("Unknown mixing layer method: $method")
     end

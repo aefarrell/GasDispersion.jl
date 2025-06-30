@@ -13,7 +13,7 @@
                     latent_heat=1,
                     gas_heat_capacity=1,
                     liquid_heat_capacity=1)
-    rel = HorizontalJet(mass_rate=0.1,
+    hj = HorizontalJet(mass_rate=0.1,
                   duration=Inf,
                   diameter=1,
                   velocity=1,
@@ -21,29 +21,17 @@
                   temperature=298.,
                   pressure=101325.,
                   fraction_liquid=0)
-    atm1 = SimpleAtmosphere(temperature=298,
-                 pressure=101325,
-                 windspeed=2,
-                 windspeed_height=1,
-                 stability=ClassF)
 
-    atm2 = SimpleAtmosphere(temperature=298,
-                 pressure=101325,
-                 windspeed=2,
-                 windspeed_height=1,
-                 stability=ClassD)
-    scn = Scenario(sub,rel,atm1)
+    hj_toohigh = HorizontalJet(mass_rate=0.1,
+                  duration=Inf,
+                  diameter=1,
+                  velocity=1,
+                  height=10_000,  # too high for the mixing layer
+                  temperature=298.,
+                  pressure=101325.,
+                  fraction_liquid=0)
     
-    # test default behaviour and type inheritance
-    pl1 = plume(scn, GaussianMixingLayer)
-    @test pl1.verticalterm isa GasDispersion.SimpleVerticalTerm
-    
-    scn2 = Scenario(sub,rel,atm2)
-    pl2 = plume(scn2, GaussianMixingLayer)
-    @test pl2.verticalterm isa GasDispersion.SimpleMixingLayer
-
-    # test vertical jet with mixing layer
-    rel = VerticalJet(mass_rate=0.1,
+    vj = VerticalJet(mass_rate=0.1,
                   duration=Inf,
                   diameter=1,
                   velocity=1,
@@ -51,19 +39,51 @@
                   temperature=298.,
                   pressure=101325.,
                   fraction_liquid=0)
-    scn3 = Scenario(sub,rel,atm1)
-    pl3 = plume(scn3, GaussianMixingLayer)
-    @test pl3.verticalterm isa GasDispersion.SimpleVerticalTerm
+
+    vj_toohigh = VerticalJet(mass_rate=0.1,
+                  duration=Inf,
+                  diameter=1,
+                  velocity=1,
+                  height=10_000,  # too high for the mixing layer
+                  temperature=298.,
+                  pressure=101325.,
+                  fraction_liquid=0)
+
+    stbl = SimpleAtmosphere(temperature=298,
+                 pressure=101325,
+                 windspeed=2,
+                 windspeed_height=10,
+                 stability=ClassF)
+
+    neut = SimpleAtmosphere(temperature=298,
+                 pressure=101325,
+                 windspeed=2,
+                 windspeed_height=10,
+                 stability=ClassD)
+
     
-    atm3 = SimpleAtmosphere(temperature=298,
-                  pressure=101325,
-                  windspeed=2,
-                  windspeed_height=10,
-                  stability=ClassD)
-    scn4 = Scenario(sub,rel,atm3)
-    pl4 = plume(scn4, GaussianMixingLayer; downwash=true, plumerise=true)
-    @test pl4.verticalterm isa GasDispersion.SimpleMixingLayer
-    @test pl4.verticalterm.mixing_height ≈ 640.0311954829524
-    @test pl4(500, 0, 0) ≈ 1.7194314353343084e-5
+    # horizontal jet test default behaviour and type inheritance
+    @test plume(Scenario(sub,hj,stbl), GaussianMixingLayer).verticalterm isa GasDispersion.SimpleVerticalTerm
+    @test plume(Scenario(sub,hj,neut), GaussianMixingLayer).verticalterm isa GasDispersion.SimpleMixingLayer
+    @test plume(Scenario(sub,hj,neut), GaussianMixingLayer; method=:periodicmixinglayer).verticalterm isa GasDispersion.PeriodicMixingLayer
+    @test_throws ErrorException plume(Scenario(sub,hj,neut), GaussianMixingLayer; method=:someothermethod)
+    @test_throws ErrorException plume(Scenario(sub,hj_toohigh,neut), GaussianMixingLayer)
+    
+    # vertical jet test default behaviour and type inheritance
+    @test plume(Scenario(sub,vj,stbl), GaussianMixingLayer).verticalterm isa GasDispersion.SimpleVerticalTerm
+    @test plume(Scenario(sub,vj,neut), GaussianMixingLayer).verticalterm isa GasDispersion.SimpleMixingLayer
+    @test plume(Scenario(sub,vj,neut), GaussianMixingLayer; method=:periodicmixinglayer).verticalterm isa GasDispersion.PeriodicMixingLayer
+    @test_throws ErrorException plume(Scenario(sub,vj,neut), GaussianMixingLayer; method=:someothermethod)
+    @test_throws ErrorException plume(Scenario(sub,vj_toohigh,neut), GaussianMixingLayer)
+    
+    # integration test with a scenario -- simple mixing layer
+    pl_smpl = plume(Scenario(sub,vj,neut), GaussianMixingLayer; downwash=true, plumerise=true)
+    @test pl_smpl.verticalterm.mixing_height ≈ 640.0311954829524
+    @test pl_smpl(500, 0, 0) ≈ 1.7194314353343084e-5
+
+    # integration test with a scenario -- periodic mixing layer
+    pl_per = plume(Scenario(sub,vj,neut), GaussianMixingLayer; downwash=true, plumerise=true, method=:periodicmixinglayer, n_terms=100_000_000)
+    @test pl_per.verticalterm.mixing_height ≈ 640.0311954829524
+    @test pl_per(500, 0, 0) ≈ 1.7194314353343084e-5
 
 end
