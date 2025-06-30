@@ -48,6 +48,15 @@
                   temperature=298.,
                   pressure=101325.,
                   fraction_liquid=0)
+    
+    vj_rh_high = VerticalJet(mass_rate=0.1,
+                  duration=Inf,
+                  diameter=1,
+                  velocity=100,
+                  height=630,  # plume rise will be too high
+                  temperature=500.,
+                  pressure=101325.,
+                  fraction_liquid=0)
 
     stbl = SimpleAtmosphere(temperature=298,
                  pressure=101325,
@@ -73,8 +82,13 @@
     @test plume(Scenario(sub,vj,stbl), GaussianMixingLayer).verticalterm isa GasDispersion.SimpleVerticalTerm
     @test plume(Scenario(sub,vj,neut), GaussianMixingLayer).verticalterm isa GasDispersion.SimpleMixingLayer
     @test plume(Scenario(sub,vj,neut), GaussianMixingLayer; method=:periodicmixinglayer).verticalterm isa GasDispersion.PeriodicMixingLayer
+    @test plume(Scenario(sub,vj,neut), GaussianMixingLayer; plumerise=false).plumerise isa GasDispersion.NoPlumeRise
     @test_throws ErrorException plume(Scenario(sub,vj,neut), GaussianMixingLayer; method=:someothermethod)
     @test_throws ErrorException plume(Scenario(sub,vj_toohigh,neut), GaussianMixingLayer)
+
+    # testing limit on plume rise
+    pl_rise = plume(Scenario(sub,vj_rh_high,neut), GaussianMixingLayer; downwash=false, plumerise=true)
+    @test pl_rise.plumerise.final_rise ≈ pl_rise.verticalterm.mixing_height
     
     # integration test with a scenario -- simple mixing layer
     pl_smpl = plume(Scenario(sub,vj,neut), GaussianMixingLayer; downwash=true, plumerise=true)
