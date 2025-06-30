@@ -107,6 +107,9 @@ function plume(scenario::Scenario, ::Type{GaussianMixingLayer}, eqs=DefaultSet()
         error("Unknown mixing layer method: $method")
     end
 
+    # domain
+    dom = ProblemDomain(0.0, Inf, -Inf, Inf, 0.0, hₘ)
+
     return GaussianPlumeSolution(
     scenario,                               # scenario::Scenario
     :simplemixinglayer,                     # model::Symbol
@@ -119,8 +122,8 @@ function plume(scenario::Scenario, ::Type{GaussianMixingLayer}, eqs=DefaultSet()
     ml,
     NoPlumeRise(),                          # plume rise model
     _stability(scenario),                   # stability class
-    eqs                                     # equation set 
-    )
+    eqs,                                    # equation set 
+    dom)                                    # problem domain
 end
 
 @doc doc"""
@@ -200,6 +203,10 @@ function plume(scenario::Scenario{<:AbstractSubstance,<:VerticalJet,<:Atmosphere
     if plumerise == true
         Tᵣ = _release_temperature(scenario)
         plume = plume_rise(Dⱼ,uⱼ,Tᵣ,u,Tₐ,Γ,stab)
+        if plume.final_rise > hₘ-hᵣ
+            @warn "Plume rise $(plume.final_rise) exceeds mixing height $hₘ, plume rise is limited to the mixing height."
+            plume = _new_plume_rise(plume, hₘ)
+        end
     else
         plume = NoPlumeRise()
     end
@@ -217,6 +224,9 @@ function plume(scenario::Scenario{<:AbstractSubstance,<:VerticalJet,<:Atmosphere
         error("Unknown mixing layer method: $method")
     end
 
+    # domain
+    dom = ProblemDomain(0.0, Inf, -Inf, Inf, 0.0, hₘ)
+
     return GaussianPlumeSolution(
     scenario, #scenario::Scenario
     :simplemixinglayer, #model::Symbol
@@ -229,6 +239,6 @@ function plume(scenario::Scenario{<:AbstractSubstance,<:VerticalJet,<:Atmosphere
     ml,
     plume, #plume rise model
     stab,  #stability class
-    eqs    #equation set 
-    )
+    eqs,   #equation set 
+    dom)   #problem domain
 end

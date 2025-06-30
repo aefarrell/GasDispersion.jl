@@ -6,7 +6,7 @@ abstract type GaussianVerticalTerm end
 struct GaussianPlume <: PlumeModel end
 
 # Solution to the gaussian plume
-struct GaussianPlumeSolution{F<:Number,C<:GaussianCrossTerm,V<:GaussianVerticalTerm,P<:PlumeRise,S<:StabilityClass,E<:EquationSet} <: Plume
+struct GaussianPlumeSolution{F<:Number,C<:GaussianCrossTerm,V<:GaussianVerticalTerm,P<:PlumeRise,S<:StabilityClass,E<:EquationSet,D<:ProblemDomain} <: Plume
     scenario::Scenario
     model::Symbol
     rate::F
@@ -19,8 +19,9 @@ struct GaussianPlumeSolution{F<:Number,C<:GaussianCrossTerm,V<:GaussianVerticalT
     plumerise::P
     stability::Type{S}
     equationset::E
+    domain::D
 end
-GaussianPlumeSolution(s,m,Q,c,ρ,u,h_eff,cross,vert,pr,stab,es) = GaussianPlumeSolution(s,m,promote(Q,c,ρ,u,h_eff)...,cross,vert,pr,stab,es)
+GaussianPlumeSolution(s,m,Q,c,ρ,u,h_eff,cross,vert,pr,stab,es,dom) = GaussianPlumeSolution(s,m,promote(Q,c,ρ,u,h_eff)...,cross,vert,pr,stab,es,dom)
 
 struct SimpleCrossTerm <:  GaussianCrossTerm end
 cross_term(y, σy, ::SimpleCrossTerm) = exp(-0.5*(y/σy)^2)/(√(2π)*σy)
@@ -67,20 +68,23 @@ function plume(scenario::Scenario, ::Type{GaussianPlume}, eqs=DefaultSet(); h_mi
     c_max = m/Qᵒ
     c_max = c_max/ρₐ
 
+    # domain
+    dom = ProblemDomain(0.0, Inf, -Inf, Inf, 0.0, Inf)
+
     return GaussianPlumeSolution(
     scenario,                               # scenario::Scenario
     :gaussian,                              # model::Symbol
     m,                                      # mass emission rate
     c_max,                                  # max_concentration
-    ρₐ,                                      # mass concentration to vol concentration
-    windspeed(scenario,max(hᵣ,h_min),eqs), # windspeed
+    ρₐ,                                     # mass concentration to vol concentration
+    windspeed(scenario,max(hᵣ,h_min),eqs),  # windspeed
     hᵣ,                                     # effective_stack_height::Number
     SimpleCrossTerm(),
     SimpleVerticalTerm(),
     NoPlumeRise(),                          # plume rise model
     _stability(scenario),                   # stability class
-    eqs                                     # equation set 
-    )
+    eqs,                                    # equation set 
+    dom)                                    # problem domain
 end
 
 @doc doc"""
@@ -151,6 +155,9 @@ function plume(scenario::Scenario{<:AbstractSubstance,<:VerticalJet,<:Atmosphere
         plume = NoPlumeRise()
     end
 
+    # domain
+    dom = ProblemDomain(0.0, Inf, -Inf, Inf, 0.0, Inf)
+
     return GaussianPlumeSolution(
     scenario, #scenario::Scenario
     :gaussian, #model::Symbol
@@ -163,8 +170,8 @@ function plume(scenario::Scenario{<:AbstractSubstance,<:VerticalJet,<:Atmosphere
     SimpleVerticalTerm(),
     plume, #plume rise model
     stab,  #stability class
-    eqs    #equation set 
-    )
+    eqs,   #equation set 
+    dom)   #problem domain
 end
 
 function (g::GaussianPlumeSolution{F,C,V,NoPlumeRise,S,E})(x, y, z, t=0) where {F,C,V,S,E}
@@ -172,7 +179,7 @@ function (g::GaussianPlumeSolution{F,C,V,NoPlumeRise,S,E})(x, y, z, t=0) where {
     h = g.effective_stack_height
     if (x==0)&&(y==0)&&(z==h)
         return g.max_concentration
-    elseif (x≤0)||(z<0)
+    elseif _in_domain(x,y,z,g.domain) == false
         return zero(F)
     else
         G = g.rate
@@ -197,7 +204,7 @@ function (g::GaussianPlumeSolution{F,C,V,<:BriggsModel,S,E})(x, y, z, t=0) where
     h = g.effective_stack_height
     if (x==0)&&(y==0)&&(z==h)
         return g.max_concentration
-    elseif (x≤0)||(z<0)
+    elseif _in_domain(x,y,z,g.domain) == false
         return zero(F)
     else
         G = g.rate
