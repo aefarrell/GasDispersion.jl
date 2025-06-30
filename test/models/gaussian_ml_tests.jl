@@ -89,6 +89,8 @@
     # testing limit on plume rise
     pl_rise = plume(Scenario(sub,vj_rh_high,neut), GaussianMixingLayer; downwash=false, plumerise=true)
     @test pl_rise.plumerise.final_rise ≈ pl_rise.verticalterm.mixing_height
+    pl_low_terms = plume(Scenario(sub,vj_rh_high,neut), GaussianMixingLayer; downwash=false, plumerise=true, n_terms=1)
+    @test pl_low_terms(pl_rise.plumerise.xf,0,0.9*pl_rise.verticalterm.mixing_height) < pl_rise(pl_rise.plumerise.xf,0,0.9*pl_rise.verticalterm.mixing_height)
     
     # integration test with a scenario -- simple mixing layer
     pl_smpl = plume(Scenario(sub,vj,neut), GaussianMixingLayer; downwash=true, plumerise=true)
