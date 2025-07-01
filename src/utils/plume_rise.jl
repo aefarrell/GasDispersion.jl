@@ -31,6 +31,16 @@ Base.isapprox(a::MomentumPlume, b::MomentumPlume) = all([
     if typeof(getproperty(a,k))<:Number ])
 
 
+# some helper functions to limit the plume rise, e.g. when a mixing layer prevents the plume from rising too high
+"""
+    _new_plume_rise(plume::BriggsModel, max_rise::Number)
+Creates a new plume rise model with the same parameters as `plume`, but limits the final
+rise to `max_rise`. This is useful when the plume rise exceeds the mixing height or
+other constraints in the model.
+"""
+_new_plume_rise(plume::BuoyantPlume, max_rise::Number) = BuoyantPlume(plume.Fb, plume.xf, plume.u, max_rise)
+_new_plume_rise(plume::MomentumPlume, max_rise::Number) = MomentumPlume(plume.Fm, plume.xf, plume.β, plume.u, plume.s, max_rise, plume.stab)
+
 """
     plume_rise(Dⱼ,uⱼ,Tᵣ,a::Atmosphere)
 Implements the Briggs plume rise equations for buoyancy and momentum driven

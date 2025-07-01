@@ -30,7 +30,7 @@ ISC3Rural = BasicEquationSet{IrwinRural,Nothing,ISC3Ruralσy,ISC3Ruralσz}
 
 
 """
-    crosswind_dispersion(x, Plume, StabilityClass, ISC3Rural)
+    crosswind_dispersion(x, StabilityClass, ISC3Ruralσy)
 
 Plume crosswind dispersion correlations, for rural terrain
 
@@ -46,7 +46,7 @@ crosswind_dispersion(x::Number, ::Type{ClassF}, ::Type{ISC3Ruralσy}) = 465.1162
 
 
 """
-    vertical_dispersion(x, Plume, StabilityClass, ISC3Rural)
+    vertical_dispersion(x, StabilityClass, ISC3Ruralσz)
 
 Plume vertical dispersion correlations, for rural terrain
 

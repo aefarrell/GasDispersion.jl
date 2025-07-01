@@ -19,7 +19,8 @@ A simple gaussian puff model assumes the release is instantaneous, and all mass 
 ```math
 c_{puff} = { m_i \over { (2 \pi)^{3/2} \sigma_x \sigma_y \sigma_z } } 
 \exp \left( -\frac{1}{2} \left( {x - ut} \over \sigma_x \right)^2 \right) 
-\exp \left( -\frac{1}{2} \left( {y} \over \sigma_y \right)^2 \right)  \left[ \exp \left( -\frac{1}{2} \left( {z - h} \over \sigma_z \right)^2 \right) 
+\exp \left( -\frac{1}{2} \left( {y} \over \sigma_y \right)^2 \right)  \\
+\left[ \exp \left( -\frac{1}{2} \left( {z - h} \over \sigma_z \right)^2 \right) 
 + \exp \left( -\frac{1}{2} \left( {z + h} \over \sigma_z \right)^2 \right)\right]
 ```
 
@@ -320,7 +321,7 @@ in the provided equationset are for windspeed.
 ### SLAB Jet Model
 
 ```@docs
-puff(::Scenario, ::Type{SLAB})
+puff(::Scenario{Substance,VerticalJet,Atmosphere}, ::Type{SLAB})
 ```
 
 The SLAB jet model is derived from the SLAB software package developed by 

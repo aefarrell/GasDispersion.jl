@@ -81,6 +81,8 @@ end
 
     # test null case
     @test isa(GasDispersion.NoPlumeRise(),GasDispersion.PlumeRise)
+    @test GasDispersion._new_plume_rise(GasDispersion.BuoyantPlume(50, 100, 10, 20), 200) == GasDispersion.BuoyantPlume(50, 100, 10, 200)
+    @test GasDispersion._new_plume_rise(GasDispersion.MomentumPlume(50, 100, 1.5, 10, 0.1, 20, ClassA), 200) == GasDispersion.MomentumPlume(50, 100, 1.5, 10, 0.1, 200, ClassA)
 
     # test Briggs model of plume rise
     g = 9.80616 # m/s^2

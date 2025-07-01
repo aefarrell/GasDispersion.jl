@@ -128,6 +128,21 @@ function puff(scenario::Scenario, ::Type{SLAB}, eqs::EquationSet=DefaultSet();
                         AkimaInterpolation(out.cc.betax[tperm], out.cc.t[tperm]))
 end
 
+
+@doc doc"""
+    puff(::Scenario{Substance,VerticalJet,Atmosphere}, SLAB; kwargs...)
+
+Returns the solution to the SLAB vertical jet dispersion model for the given
+scenario.
+
+# References
++ Ermak, Donald L. 1990. *User's Manual for SLAB: An Atmospheric Dispersion Model For Denser-Than-Air Releases* Lawrence Livermore National Laboratory
+
+# Arguments
+- `t_av::Number=10`: averaging time, seconds
+- `x_max::Number=2000`: maximum downwind distance, meters, this defines the problem domain
+
+"""
 function puff(scenario::Scenario{<:AbstractSubstance,<:VerticalJet,<:Atmosphere}, ::Type{SLAB}, eqs::EquationSet=DefaultSet();
               t_av=10, x_max=2000)
     c_max = 1.0
