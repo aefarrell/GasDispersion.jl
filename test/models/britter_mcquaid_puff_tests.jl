@@ -39,7 +39,7 @@ end
                  pressure = 101325,
                  temperature = (273.15-33.316),   # Ammonia, NIST Webbook
                  fraction_liquid = 0)
-    a = SimpleAtmosphere(windspeed=2, temperature=293.15, stability=ClassF)
+    a = SimpleAtmosphere(windspeed=2, temperature=293.15, stability=ClassF())
     scn = Scenario(s,r,a)
     # known answers
     # initial concentration
@@ -52,7 +52,7 @@ end
     x₃, t₃, c₃ = 3133, 3000, 0.0004464242323595325
 
     # test overall solution
-    pf = puff(scn, BritterMcQuaidPuff)
+    pf = puff(scn, BritterMcQuaidPuff())
     @test isa(pf, GasDispersion.BritterMcQuaidPuffSolution)
     @test isa(pf, Puff)
     @test pf(x₁,0,0,t₁) ≈ c₁

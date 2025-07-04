@@ -15,7 +15,7 @@ struct BritterMcQuaidPuffSolution{F<:Number,I} <: Puff
 end
 
 """
-    puff(scenario::Scenario, BritterMcQuaidPuff[, equationset::EquationSet])
+    puff(scenario::Scenario, ::BritterMcQuaidPuff[, equationset::EquationSet])
 
 Returns the solution to the Britter-McQuaid instantaneous ground level release
 model for the given scenario.
@@ -28,7 +28,7 @@ a default power-law wind profile is used.
 + Britter, Rex E. and J. McQuaid. 1988. *Workbook on the Dispersion of Dense Gases. HSE Contract Research Report No. 17/1988*
 + AIChE/CCPS. 1999. *Guidelines for Consequence Analysis of Chemical Releases*. New York: American Institute of Chemical Engineers
 """
-function puff(scenario::Scenario, ::Type{BritterMcQuaidPuff}, eqs=DefaultSet())
+function puff(scenario::Scenario, ::BritterMcQuaidPuff, eqs=DefaultSet())
 
     Q = _release_flowrate(scenario)
     ṁ = _mass_rate(scenario)
@@ -88,7 +88,7 @@ function puff(scenario::Scenario, ::Type{BritterMcQuaidPuff}, eqs=DefaultSet())
 
 end
 
-function (pf::BritterMcQuaidPuffSolution)(x,y,z,t)
+function (pf::BritterMcQuaidPuffSolution{F,I})(x,y,z,t) where{F,I}
 
     R₀ = cbrt(3*pf.V₀/4π)
     xc = 0.4*pf.u₁₀*t

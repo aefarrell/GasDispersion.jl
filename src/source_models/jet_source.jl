@@ -2,7 +2,7 @@
 struct JetSource <: SourceModel end
 
 @doc doc"""
-    scenario_builder(substance::AbstractSubstance, JetSource, atmosphere::Atmosphere; kwargs...)
+    scenario_builder(substance::AbstractSubstance, ::JetSource, atmosphere::Atmosphere; kwargs...)
 Returns returns a scenario for a simple jet from a circular hole. The
 jet can either be a liquid or a gas (in which case it is assumed to be an ideal
 gas and the jet is isentropic).
@@ -21,7 +21,7 @@ gas and the jet is isentropic).
 - `jet=:horizontal`: the type of jet, either :horizontal or :vertical
 
 """
-function scenario_builder(substance::AbstractSubstance, ::Type{JetSource}, atmosphere::Atmosphere;
+function scenario_builder(substance::AbstractSubstance, ::JetSource, atmosphere::Atmosphere;
                           phase=:liquid,dischargecoef=0.63,diameter,pressure,temperature,height,duration=Inf,
                           jet=:horizontal)
     cd = dischargecoef

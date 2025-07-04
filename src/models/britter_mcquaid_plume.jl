@@ -15,7 +15,7 @@ end
 BritterMcQuaidPlumeSolution(s,m,c0,T,D,lb,xnf,xff,A,itp)=BritterMcQuaidPlumeSolution(s,m,promote(c0,T,D,lb,xnf,xff,A)...,itp)
 
 """
-    plume(::Scenario, BritterMcQuaidPlume[, equationset::EquationSet])
+    plume(::Scenario, ::BritterMcQuaidPlume[, equationset::EquationSet])
 
 Returns the solution to the Britter-McQuaid continuous ground level release
 model for the given scenario.
@@ -28,7 +28,7 @@ a default power-law wind profile is used.
 + Britter, Rex E. and J. McQuaid. 1988. *Workbook on the Dispersion of Dense Gases. HSE Contract Research Report No. 17/1988*
 + AIChE/CCPS. 1999. *Guidelines for Consequence Analysis of Chemical Releases*. New York: American Institute of Chemical Engineers
 """
-function plume(scenario::Scenario, ::Type{BritterMcQuaidPlume}, eqs=DefaultSet())
+function plume(scenario::Scenario, ::BritterMcQuaidPlume, eqs=DefaultSet())
 
     Q = _release_flowrate(scenario)
     ṁ = _mass_rate(scenario)
@@ -102,7 +102,7 @@ function plume(scenario::Scenario, ::Type{BritterMcQuaidPlume}, eqs=DefaultSet()
     )
 end
 
-function (b::BritterMcQuaidPlumeSolution)(x, y, z)
+function (b::BritterMcQuaidPlumeSolution{F,I})(x, y, z) where {F,I}
 
     # plume dimension parameters
     Lu  = 0.5*b.D + 2*b.lb

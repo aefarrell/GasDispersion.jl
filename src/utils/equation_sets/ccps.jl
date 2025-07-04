@@ -2,13 +2,13 @@
 
 
 # Correlations for rural terrain
-CCPSRural = BasicEquationSet{IrwinRural,Nothing,BriggsRuralσy,BriggsRuralσz}
+CCPSRural() = BasicEquationSet(IrwinRural(),nothing,BriggsRuralσy(),BriggsRuralσz())
 
 # Correlations for urban terrain
-CCPSUrban = BasicEquationSet{IrwinUrban,Nothing,BriggsUrbanσy,BriggsUrbanσz}
+CCPSUrban() = BasicEquationSet(IrwinUrban(),nothing,BriggsUrbanσy(),BriggsUrbanσz())
 
 # Correlations for puffs, rural terrain
-CCPSPuffRural = BasicEquationSet{IrwinRural,CCPSPuffσx,CCPSPuffσy,CCPSPuffσz}
+CCPSPuffRural() = BasicEquationSet(IrwinRural(),CCPSPuffσx(),CCPSPuffσy(),CCPSPuffσz())
 
 # Correlations for puffs, urban terrain
-CCPSPuffUrban = BasicEquationSet{IrwinUrban,CCPSPuffσx,CCPSPuffσy,CCPSPuffσz}
+CCPSPuffUrban() = BasicEquationSet(IrwinUrban(),CCPSPuffσx(),CCPSPuffσy(),CCPSPuffσz())

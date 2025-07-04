@@ -50,7 +50,7 @@ end
                   pressure = P,
                   temperature = T,
                   fraction_liquid = 0)
-    a = SimpleAtmosphere(windspeed=10.9, temperature=298, stability=ClassF)
+    a = SimpleAtmosphere(windspeed=10.9, temperature=298, stability=ClassF())
     scn = Scenario(s,r,a)
     # known answers
     # initial concentration
@@ -63,7 +63,7 @@ end
     x₃, c₃ = 1200, 0.004921409666659286
 
     # test overall solution
-    pl = plume(scn, BritterMcQuaidPlume)
+    pl = plume(scn, BritterMcQuaidPlume())
     @test isa(pl, GasDispersion.BritterMcQuaidPlumeSolution)
     @test isa(pl, Plume)
     @test pl(x₁,0,0) ≈ c₁
@@ -87,9 +87,9 @@ end
     @test pl(0, 0, Lv - 2*eps(Float64)) ≈ c₀
 
     # test large α near-field
-    a = SimpleAtmosphere(windspeed=0.8322, temperature=298, stability=ClassF)
+    a = SimpleAtmosphere(windspeed=0.8322, temperature=298, stability=ClassF())
     scn = Scenario(s,r,a)
-    pl_nf = plume(scn, BritterMcQuaidPlume)
+    pl_nf = plume(scn, BritterMcQuaidPlume())
     c_nf  = 0.5311215219329275
     @test pl_nf(pl_nf.xnf*pl_nf.D,0,0) ≈ c_nf
 

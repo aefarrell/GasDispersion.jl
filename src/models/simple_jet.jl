@@ -14,6 +14,9 @@ struct SimpleJetSolution{F<:Number} <: Plume
 end
 SimpleJetSolution(s,m,d,h,θ,c0,kd,k2,k3) = SimpleJetSolution(s,m,promote(d,h,θ,c0,kd,k2,k3)...)
 
+_release_angle(::HorizontalJet) = 0.0
+_release_angle(::VerticalJet) = π/2
+
 @doc doc"""
     plume(::Scenario, SimpleJet; kwargs...)
 
@@ -33,12 +36,16 @@ of images.
 + Long, V.D. 1963. "Estimation of the Extent of Hazard Areas Round a Vent." *Chem. Process Hazard*. II:6
 
 # Arguments
-- `release_angle::Number=0`: the angle at which the jet is released, in radians
+- `release_angle::Number=nothing`: the angle at which the jet is released, in radians, if nothing defaults to 0 for horizontal jets and π/2 for vertical jets
 - `k2::Number=6` parameter of the model, default value is recommended by Long
 - `k3::Number=5` parameter of the model, default value is recommended by Long
 
 """
-function plume(scenario::Scenario, ::Type{SimpleJet}, eqs::EquationSet=DefaultSet(); release_angle::Number=0.0, k2::Number=6.0, k3::Number=5.0)
+function plume(scenario::Scenario, ::SimpleJet, eqs::EquationSet=DefaultSet(); release_angle=nothing, k2=6.0, k3=5.0)
+    # release angle
+    if isnothing(release_angle)
+        release_angle = _release_angle(scenario.release)
+    end
     # Density correction
     ρj = _release_density(scenario)
     ρa = _atmosphere_density(scenario)
@@ -65,57 +72,7 @@ function plume(scenario::Scenario, ::Type{SimpleJet}, eqs::EquationSet=DefaultSe
 
 end
 
-@doc doc"""
-    plume(::Scenario{Substance,VerticalJet,Atmosphere}, SimpleJet; kwargs...)
-
-Returns the solution to a simple turbulent jet dispersion model for a vertical jet.
-
-```math
-c\left(x,y,z\right) = k_2 c_0 \left( d \over z \right) \sqrt{ \rho_j \over \rho_a }
-\exp \left( - \left( k_3 { r \over z } \right)^2 \right)
-```
-
-where *r* is the radial distance from the jet centerline. Assumes a circular jet
-with diameter equal to the jet diameter. Ground-reflection is included by method
-of images.
-
-# References
-+ Long, V.D. 1963. "Estimation of the Extent of Hazard Areas Round a Vent." *Chem. Process Hazard*. II:6
-
-# Arguments
-- `release_angle::Number=π/2`: the angle at which the jet is released, in radians
-- `k2::Number=6` parameter of the model, default value is recommended by Long
-- `k3::Number=5` parameter of the model, default value is recommended by Long
-
-"""
-function plume(scenario::Scenario{<:AbstractSubstance,<:VerticalJet,<:Atmosphere}, ::Type{SimpleJet}, eqs::EquationSet=DefaultSet(); release_angle::Number=π/2, k2::Number=6.0, k3::Number=5.0)
-    # Density correction
-    ρj = _release_density(scenario)
-    ρa = _atmosphere_density(scenario)
-    kd = √(ρj/ρa)
-
-    # Initial concentration
-    m = _mass_rate(scenario)
-    d = _release_diameter(scenario)
-    Qt = _release_flowrate(scenario)
-    Qi = m/ρj
-    c0 = min(Qi/Qt,1.0)
-
-    return SimpleJetSolution(
-    scenario,      #scenario::Scenario
-    :simple_jet,   #model::Symbol
-    d,  # diameter
-    _release_height(scenario),  # height
-    -1*release_angle, # release angle
-    c0, # concentration
-    kd, # density_correction
-    k2,
-    k3
-    )
-
-end
-
-function (j::SimpleJetSolution)(x, y, z, t=0)
+function (j::SimpleJetSolution{F})(x, y, z, t=0) where {F}
     d  = j.diameter
     h  = j.height
     θ  = j.angle

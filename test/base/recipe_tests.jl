@@ -29,7 +29,7 @@ RecipesBase.is_key_supported(k::Symbol) = true
     atm = SimpleAtmosphere(temperature=298.0,
                  pressure=101325.0,
                  windspeed=2.0,
-                 stability=ClassF)
+                 stability=ClassF())
     scn = Scenario(sub,rel,atm)
 
     # expected recipe data

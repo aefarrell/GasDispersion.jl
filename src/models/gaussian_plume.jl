@@ -6,7 +6,7 @@ abstract type GaussianVerticalTerm end
 struct GaussianPlume <: PlumeModel end
 
 # Solution to the gaussian plume
-struct GaussianPlumeSolution{F<:Number,C<:GaussianCrossTerm,V<:GaussianVerticalTerm,P<:PlumeRise,S<:StabilityClass,E<:EquationSet,D<:ProblemDomain} <: Plume
+struct GaussianPlumeSolution{F<:Number,C<:GaussianCrossTerm,V<:GaussianVerticalTerm,P<:PlumeRise,E<:EquationSet,D<:ProblemDomain} <: Plume
     scenario::Scenario
     model::Symbol
     rate::F
@@ -17,11 +17,10 @@ struct GaussianPlumeSolution{F<:Number,C<:GaussianCrossTerm,V<:GaussianVerticalT
     crossterm::C
     verticalterm::V
     plumerise::P
-    stability::Type{S}
     equationset::E
     domain::D
 end
-GaussianPlumeSolution(s,m,Q,c,ρ,u,h_eff,cross,vert,pr,stab,es,dom) = GaussianPlumeSolution(s,m,promote(Q,c,ρ,u,h_eff)...,cross,vert,pr,stab,es,dom)
+GaussianPlumeSolution(s,m,Q,c,ρ,u,h_eff,cross,vert,pr,es,dom) = GaussianPlumeSolution(s,m,promote(Q,c,ρ,u,h_eff)...,cross,vert,pr,es,dom)
 
 struct SimpleCrossTerm <:  GaussianCrossTerm end
 cross_term(y, σy, ::SimpleCrossTerm) = exp(-0.5*(y/σy)^2)/(√(2π)*σy)
@@ -31,7 +30,7 @@ vertical_term(z, h, σz, ::SimpleVerticalTerm) = ( exp(-0.5*((z-h)/σz)^2) + exp
 
 
 @doc doc"""
-    plume(::Scenario, GaussianPlume[, ::EquationSet]; kwargs...)
+    plume(::Scenario, ::GaussianPlume[, ::EquationSet]; kwargs...)
 
 Returns the solution to a Gaussian plume dispersion model for the given scenario.
 
@@ -51,7 +50,7 @@ is a gas at ambient conditions.
 + AIChE/CCPS. 1999. *Guidelines for Consequence Analysis of Chemical Releases*. New York: American Institute of Chemical Engineers
 
 """
-function plume(scenario::Scenario, ::Type{GaussianPlume}, eqs=DefaultSet(); h_min=1.0)
+function plume(scenario::Scenario, ::GaussianPlume, eqs=DefaultSet(); h_min=1.0)
     # parameters of the jet
     hᵣ = _release_height(scenario)
     m  = _mass_rate(scenario)
@@ -82,13 +81,12 @@ function plume(scenario::Scenario, ::Type{GaussianPlume}, eqs=DefaultSet(); h_mi
     SimpleCrossTerm(),
     SimpleVerticalTerm(),
     NoPlumeRise(),                          # plume rise model
-    _stability(scenario),                   # stability class
     eqs,                                    # equation set 
     dom)                                    # problem domain
 end
 
 @doc doc"""
-    plume(::Scenario{Substance,VerticalJet,Atmosphere}, GaussianPlume[, ::EquationSet]; kwargs...)
+    plume(::Scenario{Substance,VerticalJet,Atmosphere}, ::GaussianPlume[, ::EquationSet]; kwargs...)
 
 Returns the solution to a Gaussian plume dispersion model for a vertical jet. By default the Briggs
 plume rise model is used.
@@ -114,7 +112,7 @@ is a gas at ambient conditions.
 + Briggs, Gary A. 1969. *Plume Rise* Oak Ridge: U.S. Atomic Energy Commission
 
 """
-function plume(scenario::Scenario{<:AbstractSubstance,<:VerticalJet,<:Atmosphere}, ::Type{GaussianPlume}, eqs=DefaultSet(); downwash::Bool=false, plumerise::Bool=true, h_min=1.0)  
+function plume(scenario::Scenario{<:AbstractSubstance,<:VerticalJet,<:Atmosphere}, ::GaussianPlume, eqs=DefaultSet(); downwash::Bool=false, plumerise::Bool=true, h_min=1.0)  
     # parameters of the jet
     Dⱼ = _release_diameter(scenario)
     uⱼ = _release_velocity(scenario)
@@ -169,12 +167,11 @@ function plume(scenario::Scenario{<:AbstractSubstance,<:VerticalJet,<:Atmosphere
     SimpleCrossTerm(),
     SimpleVerticalTerm(),
     plume, #plume rise model
-    stab,  #stability class
     eqs,   #equation set 
     dom)   #problem domain
 end
 
-function (g::GaussianPlumeSolution{F,C,V,NoPlumeRise,S,E})(x, y, z, t=0) where {F,C,V,S,E}
+function (g::GaussianPlumeSolution{F,C,V,NoPlumeRise,E})(x, y, z, t=0) where {F,C,V,E}
     # domain check
     h = g.effective_stack_height
     if (x==0)&&(y==0)&&(z==h)
@@ -184,8 +181,9 @@ function (g::GaussianPlumeSolution{F,C,V,NoPlumeRise,S,E})(x, y, z, t=0) where {
     else
         G = g.rate
         u = g.windspeed
-        σy = crosswind_dispersion(x,S,g.equationset)
-        σz = vertical_dispersion(x,S,g.equationset)
+        stab = _stability(g.scenario)
+        σy = crosswind_dispersion(x,stab,g.equationset)
+        σz = vertical_dispersion(x,stab,g.equationset)
 
         Fy = cross_term(y,σy,g.crossterm)
         Fz = vertical_term(z,h,σz,g.verticalterm)
@@ -199,7 +197,7 @@ function (g::GaussianPlumeSolution{F,C,V,NoPlumeRise,S,E})(x, y, z, t=0) where {
     end
 end
 
-function (g::GaussianPlumeSolution{F,C,V,<:BriggsModel,S,E})(x, y, z, t=0) where {F,C,V,S,E}
+function (g::GaussianPlumeSolution{F,C,V,<:BriggsModel,E})(x, y, z, t=0) where {F,C,V,E}
     # domain check
     h = g.effective_stack_height
     if (x==0)&&(y==0)&&(z==h)
@@ -211,9 +209,10 @@ function (g::GaussianPlumeSolution{F,C,V,<:BriggsModel,S,E})(x, y, z, t=0) where
         u = g.windspeed
         h = g.effective_stack_height
         m = g.plumerise
+        stab = _stability(g.scenario)
         Δh = plume_rise(x, m)
-        σy = crosswind_dispersion(x,S,g.equationset)
-        σz = vertical_dispersion(x,S,g.equationset)
+        σy = crosswind_dispersion(x,stab,g.equationset)
+        σz = vertical_dispersion(x,stab,g.equationset)
         hₑ  = h + Δh
         σyₑ = √( (Δh/3.5)^2 + σy^2 )
         σzₑ = √( (Δh/3.5)^2 + σz^2 )

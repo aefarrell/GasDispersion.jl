@@ -17,7 +17,7 @@
                 gas_heat_capacity = 1678, # J/kg/K, 
                 liquid_heat_capacity = 2520) # J/kg/K
     
-    scn = scenario_builder(propane, JetSource; 
+    scn = scenario_builder(propane, JetSource(); 
            phase = :gas,
            diameter = 0.01, # m
            dischargecoef = 0.85,
@@ -32,7 +32,7 @@
     c = 0.011276270392345168
 
     # horizontal jet
-    j = plume(scn, SimpleJet; release_angle=0, k2=a, k3=b)
+    j = plume(scn, SimpleJet(); release_angle=0, k2=a, k3=b)
     @test isa(j, GasDispersion.SimpleJetSolution)
     @test isa(j, Plume)
     @test j(x,y,z) ≈ c
@@ -48,7 +48,7 @@
                       temperature=scn.release.T,
                       fraction_liquid=scn.release.f_l)
     scn2 = Scenario(scn.substance,v,scn.atmosphere)
-    j2 = plume(scn2, SimpleJet; k2=a, k3=b)
+    j2 = plume(scn2, SimpleJet(); k2=a, k3=b)
     @test isa(j2, GasDispersion.SimpleJetSolution)
     @test isa(j2, Plume)
     @test j2(0,y,v.h+x) ≈ c

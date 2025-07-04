@@ -25,7 +25,7 @@
                  pressure=101325,
                  windspeed=2,
                  windspeed_height=1,
-                 stability=ClassF)
+                 stability=ClassF())
     scn = Scenario(sub,rel,atm)
     pf = puff(scn)
     # knowns
@@ -36,7 +36,7 @@
     c₁ = 1/(√(2π)*π*σy^2*σz)/1.2268
 
     # test default behaviour and type inheritance
-    @test GasDispersion.GaussianPuffSolution(scn,:test_promotion,1.0,2,3,4,ClassA,DefaultPuffSet()) isa GasDispersion.GaussianPuffSolution{Float64, ClassA, GasDispersion.BasicEquationSet{GasDispersion.DefaultWind, GasDispersion.CCPSPuffσx, GasDispersion.CCPSPuffσy, GasDispersion.CCPSPuffσz}}
+    @test GasDispersion.GaussianPuffSolution(scn,:test_promotion,1.0,2,3,4,DefaultPuffSet()) isa GasDispersion.GaussianPuffSolution{Float64, GasDispersion.BasicEquationSet{GasDispersion.DefaultWind, GasDispersion.CCPSPuffσx, GasDispersion.CCPSPuffσy, GasDispersion.CCPSPuffσz}}
     @test pf isa GasDispersion.GaussianPuffSolution
     @test pf isa  Puff
     @test pf(x₁,0,0,-t₁) == 0.0

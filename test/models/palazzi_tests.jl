@@ -24,20 +24,20 @@
     atm = SimpleAtmosphere(temperature=298,
                  pressure=101325,
                  windspeed=2,
-                 stability=ClassF)
+                 stability=ClassF())
     scn = Scenario(sub,rel,atm)
     x₁, t₁, Δt, h = 500, 250, 10, 10
 
     # testing default behaviour
-    @test puff(scn, Palazzi) isa GasDispersion.PalazziSolution{<:Number,<:StabilityClass,<:EquationSet}
-    pf = puff(scn, Palazzi; disp_method=:default)
+    @test puff(scn, Palazzi()) isa GasDispersion.PalazziSolution{<:Number,<:EquationSet}
+    pf = puff(scn, Palazzi(); disp_method=:default)
     @test pf(x₁,0,h,t₁) ≈ 1.6373715867403676e-5
     @test pf(x₁,0,h,-t₁) == 0.0
 
-    pf1 = puff(scn, Palazzi, DefaultPuffSet(); disp_method=:intpuff)
+    pf1 = puff(scn, Palazzi(), DefaultPuffSet(); disp_method=:intpuff)
     @test pf1(x₁,0,h,t₁) ≈ 0.00035586710616021256/1.2268
 
-    pf2 = puff(scn, Palazzi; disp_method=:tno)
+    pf2 = puff(scn, Palazzi(); disp_method=:tno)
     @test pf2(10,0,10,5) ≈ 0.02846251120337852
     @test pf2(x₁,0,h,t₁) ≈ 1.6373715867403676e-5
     

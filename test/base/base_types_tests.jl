@@ -115,17 +115,17 @@ end
     @test GasDispersion._cp_gas(GasDispersion.WATER, 100)*18.015 ≈ 33363.000341254825 # Table 2-156
     @test GasDispersion._cp_liquid(GasDispersion.WATER, 273.16)*18.015 ≈ 76150.12956433237 # Table 2-153
 
-    atm1 = SimpleAtmosphere(100e3,273.15,2,5,10,ClassA)
+    atm1 = SimpleAtmosphere(100e3,273.15,2,5,10,ClassA())
     atm2 = SimpleAtmosphere(pressure=100e3,temperature=273.15,windspeed=2,
-                            windspeed_height=5,rel_humidity=10,stability=ClassA)
+                            windspeed_height=5,rel_humidity=10,stability=ClassA())
     @test isa(atm1, SimpleAtmosphere)
     @test isa(atm1, Atmosphere)
     @test atm1 ≈ atm2
-    @test replstr(atm1) == "SimpleAtmosphere atmosphere:\n    P: 100000.0 Pa \n    T: 273.15 K \n    u: 2.0 m/s \n    h: 5.0 m \n    rh: 10.0 % \n    stability: ClassA  \n"
+    @test replstr(atm1) == "SimpleAtmosphere atmosphere:\n    P: 100000.0 Pa \n    T: 273.15 K \n    u: 2.0 m/s \n    h: 5.0 m \n    rh: 10.0 % \n    stability: ClassA()  \n"
 
     @test isnothing(GasDispersion._lapse_rate(atm1))
-    @test GasDispersion._lapse_rate(SimpleAtmosphere(stability=ClassE)) == 0.020
-    @test GasDispersion._lapse_rate(SimpleAtmosphere(stability=ClassF)) == 0.035
+    @test GasDispersion._lapse_rate(SimpleAtmosphere(stability=ClassE())) == 0.020
+    @test GasDispersion._lapse_rate(SimpleAtmosphere(stability=ClassF())) == 0.035
     @test GasDispersion._rel_humidity(atm1) ≈ 10.0
     @test GasDispersion._surface_roughness(atm1) == 1.0
     @test GasDispersion._density(atm1) ≈ 1.2748615244572732
@@ -134,7 +134,7 @@ end
 @testset "Scenario type" begin
     sub = Substance("test",2.0,1.0,8.90,490,298.15,120935.0368,1.3,100,123456,78910,4.19)
     rel = HorizontalJet(1, 10, 0.25, 15.67, 2, 101325, 450, 0.67)
-    atm = SimpleAtmosphere(100e3,273.15,2,5,0,ClassA)
+    atm = SimpleAtmosphere(100e3,273.15,2,5,0,ClassA())
     scn1 = Scenario(sub,rel,atm)
     scn2 = Scenario(substance=sub,release=rel,atmosphere=atm)
     @test isa(scn1, Scenario)
@@ -145,7 +145,7 @@ end
 @testset "Property getters" begin
     sub = Substance("test",2.0,1.0,8.90,490,298.15,120935.0368,1.3,100,123456,78910,4.19)
     rel = HorizontalJet(1, 10, 0.25, 15.67, 2, 101325, 450, 0.67)
-    atm = SimpleAtmosphere(100e3,273.15,2,5,0,ClassA)
+    atm = SimpleAtmosphere(100e3,273.15,2,5,0,ClassA())
     scn = Scenario(sub,rel,atm)
 
     @test GasDispersion._atmosphere_temperature(scn) == GasDispersion._temperature(atm) == 273.15
@@ -165,7 +165,7 @@ end
 
     @test GasDispersion.windspeed(scn) == GasDispersion.windspeed(atm) == 2.0
     @test GasDispersion._windspeed_height(scn) == GasDispersion._windspeed_height(atm) == 5.0
-    @test GasDispersion._stability(scn) == GasDispersion._stability(atm) == ClassA
+    @test GasDispersion._stability(scn) == GasDispersion._stability(atm) == ClassA()
 
 end
 
@@ -173,7 +173,7 @@ end
     sub1 = Substance("test",2.0,1.0,8.90,490,298.15,120935.0368,1.3,100,123456,78910,4.19)
     sub2 = Substance("test",2.0,1.0,(x,y)->y*x^2,(x,y)->y*x^3,2,3,1.3,100,123456., 78910.,4.19)
     rel = HorizontalJet(1.0, 10.0, 0.25, 15.67, 2.0, 101325.0, 450., 0.5)
-    atm = SimpleAtmosphere(100e3,273.15,2.0,5.0,0.0,ClassA)
+    atm = SimpleAtmosphere(100e3,273.15,2.0,5.0,0.0,ClassA())
     scn1 = Scenario(sub1,rel,atm)
     scn2 = Scenario(sub2,rel,atm)
 

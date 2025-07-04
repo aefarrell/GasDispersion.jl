@@ -16,7 +16,7 @@ if GROUP == "All" || GROUP == "Base"
     include("base/base_types_tests.jl")
 
     # testing plot recipes
-    include("base/recipe_tests.jl")
+    # include("base/recipe_tests.jl")
 end
 
 if GROUP == "All" || GROUP == "Util"

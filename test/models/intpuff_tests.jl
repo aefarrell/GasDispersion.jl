@@ -24,25 +24,25 @@
     atm = SimpleAtmosphere(temperature=298,
                  pressure=101325,
                  windspeed=2,
-                 stability=ClassF)
+                 stability=ClassF())
     scn = Scenario(sub,rel,atm)
     x₁, t₁, Δt, h = 500, 250, 10, 10
 
     # testing default behaviour
-    @test GasDispersion.IntPuffSolution(scn,:test_promotion,1.0,2,3,4,5,6,ClassA,DefaultPuffSet()) isa GasDispersion.IntPuffSolution{Float64, Int64, ClassA, GasDispersion.BasicEquationSet{GasDispersion.DefaultWind, GasDispersion.CCPSPuffσx, GasDispersion.CCPSPuffσy, GasDispersion.CCPSPuffσz}}
-    @test puff(scn, IntPuff;n=1) isa GasDispersion.GaussianPuffSolution
-    @test puff(scn, IntPuff;n=3) isa GasDispersion.IntPuffSolution{<:Number,<:Integer,<:StabilityClass,<:EquationSet}
-    @test puff(scn, IntPuff) isa GasDispersion.PalazziSolution{<:Number,<:StabilityClass,<:EquationSet}
-    @test_throws ErrorException puff(scn, IntPuff; n=0)
+    @test GasDispersion.IntPuffSolution(scn,:test_promotion,1.0,2,3,4,5,6,DefaultPuffSet()) isa GasDispersion.IntPuffSolution{Float64, Int64, GasDispersion.BasicEquationSet{GasDispersion.DefaultWind, GasDispersion.CCPSPuffσx, GasDispersion.CCPSPuffσy, GasDispersion.CCPSPuffσz}}
+    @test puff(scn, IntPuff();n=1) isa GasDispersion.GaussianPuffSolution
+    @test puff(scn, IntPuff();n=3) isa GasDispersion.IntPuffSolution{<:Number,<:Integer,<:EquationSet}
+    @test puff(scn, IntPuff()) isa GasDispersion.PalazziSolution{<:Number,<:EquationSet}
+    @test_throws ErrorException puff(scn, IntPuff(); n=0)
 
     # testing 3 puffs
-    gp = puff(scn, GaussianPuff)
-    ip = puff(scn, IntPuff;n=3)
+    gp = puff(scn, GaussianPuff())
+    ip = puff(scn, IntPuff();n=3)
     @test ip(x₁,0,h,t₁) ≈ (1/3)*(gp(x₁,0,h,t₁) + gp(x₁,0,h,t₁-0.5*Δt) + gp(x₁,0,h,t₁-Δt))
     @test ip(x₁,0,h,-t₁) == 0.0
 
     # testing ∞ puffs
-    ip∞ = puff(scn,IntPuff)
+    ip∞ = puff(scn,IntPuff())
     @test ip∞(x₁,0,h,t₁) ≈ 0.00035586710616021256/1.2268
     @test ip∞(x₁,0,h,-t₁) == 0.0
 end

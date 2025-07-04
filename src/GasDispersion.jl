@@ -86,7 +86,7 @@ distances in m, velocities in m/s, mass in kg, etc.)
 function plume end
 
 #default behaviour
-plume(s; kwargs...) = plume(s, GaussianPlume; kwargs...)
+plume(s; kwargs...) = plume(s, GaussianPlume(); kwargs...)
 
 # plume models
 include("models/gaussian_plume.jl")
@@ -114,7 +114,7 @@ distances in m, velocities in m/s, mass in kg, etc.)
 function puff end
 
 # default behaviour
-puff(s; kwargs...) = puff(s, GaussianPuff; kwargs...)
+puff(s; kwargs...) = puff(s, GaussianPuff(); kwargs...)
 
 # puff models
 include("models/gaussian_puff.jl")
