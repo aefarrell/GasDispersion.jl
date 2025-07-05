@@ -22,7 +22,7 @@ struct MomentumPlume{F<:Number,S<:StabilityClass} <: BriggsModel
     u::F
     s::F
     final_rise::F
-    stab::Type{S}
+    stab::S
 end
 MomentumPlume(Fm,xf,β,u,final,s,stab) = MomentumPlume(promote(Fm,xf,β,u,final,s)...,stab)
 
@@ -51,7 +51,7 @@ plume rise.
 + EPA. 1995. *User's Guide for the Industrial Source Complex (ISC3) Dispersion Models, vol 2*. United States Environmental Protection Agency EPA-454/B-95-003b
 
 """
-function plume_rise(Dⱼ,uⱼ,Tᵣ,u,Tₐ,Γ,stab::Union{Type{ClassA},Type{ClassB},Type{ClassC},Type{ClassD}})
+function plume_rise(Dⱼ,uⱼ,Tᵣ,u,Tₐ,Γ,stab::Union{UnstableClass,NeutralClass})
     # physics parameters
     g = 9.80616 #m/s^2
 
@@ -85,7 +85,7 @@ function plume_rise(Dⱼ,uⱼ,Tᵣ,u,Tₐ,Γ,stab::Union{Type{ClassA},Type{Class
     end
 end
 
-function plume_rise(Dⱼ,uⱼ,Tᵣ,u,Tₐ,Γ,stab::Union{Type{ClassE},Type{ClassF}})
+function plume_rise(Dⱼ,uⱼ,Tᵣ,u,Tₐ,Γ,stab::StableClass)
     # physics parameters
     g = 9.80616 #m/s^2
     s = (g/Tₐ)*Γ # stability
@@ -119,7 +119,7 @@ function plume_rise(x::Number, m::BuoyantPlume)
     end
 end
 
-function plume_rise(x::Number, m::MomentumPlume{<:Number,<:Union{ClassA,ClassB,ClassC,ClassD}})
+function plume_rise(x::Number, m::MomentumPlume{<:Number,<:Union{UnstableClass,NeutralClass}})
     if x < m.xf
         return min((3m.Fm*x/(m.β*m.u)^2)^(1/3), m.final_rise)
     else
@@ -127,7 +127,7 @@ function plume_rise(x::Number, m::MomentumPlume{<:Number,<:Union{ClassA,ClassB,C
     end
 end
 
-function plume_rise(x::Number, m::MomentumPlume{<:Number,<:Union{ClassE,ClassF}})
+function plume_rise(x::Number, m::MomentumPlume{<:Number,<:StableClass})
     if x < m.xf
         return min((3m.Fm*sin(x*√(m.s)/m.u)/(m.β^2*m.u*√(m.s)))^(1/3), m.final_rise)
     else

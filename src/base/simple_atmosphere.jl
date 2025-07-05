@@ -33,7 +33,7 @@ A simple model of the atmosphere.
 - `windspeed::Number=1.5`: windspeed at anemometer height, m/s
 - `windspeed_height::Number=10`: anemometer height, m
 - `rel_humidity::Number=0`: relative humidity, %
-- `stability::StabilityClass=ClassF`: Pasquill-Gifford stability class
+- `stability::StabilityClass=ClassF()`: Pasquill-Gifford stability class
 
 """
 struct SimpleAtmosphere{F<:Number,S<:StabilityClass} <: Atmosphere
@@ -42,16 +42,22 @@ struct SimpleAtmosphere{F<:Number,S<:StabilityClass} <: Atmosphere
     u::F  # windspeed at windspeed height, m/s
     h::F  # reference height for windspeed, m
     rh::F # relative humidity, %
-    stability::Type{S} # Pasquill-Gifford stability class
+    stability::S # Pasquill-Gifford stability class
 end
 SimpleAtmosphere(P,T,u,h,rh,stability) = SimpleAtmosphere(promote(P,T,u,h,rh,)...,stability)
-SimpleAtmosphere(; pressure=101325,temperature=298.15,windspeed=1.5,windspeed_height=10,
-                   rel_humidity=0.0,stability=ClassF) = SimpleAtmosphere(pressure,
-                   temperature,windspeed,windspeed_height,rel_humidity,stability)
 
-_lapse_rate(a::SimpleAtmosphere{<:Number,ClassE}) = 0.020
-_lapse_rate(a::SimpleAtmosphere{<:Number,ClassF}) = 0.035
-_lapse_rate(a::SimpleAtmosphere{<:Number,<:StabilityClass}) = nothing
+function SimpleAtmosphere(; pressure=101325,temperature=298.15,windspeed=1.5,windspeed_height=10,
+                            rel_humidity=0.0,stability=ClassF())
+    if stability isa Type{<:StabilityClass}
+        @warn "Instantiating SimpleAtmosphere with a StabilityClass type is deprecated, use an instance instead. For example, use stability=ClassF() instead of stability=ClassF."
+        stability = stability()
+    end
+    return SimpleAtmosphere(pressure,temperature,windspeed,windspeed_height,rel_humidity,stability)
+end
+
+_lapse_rate(a::SimpleAtmosphere{<:Number,<:ClassE}) = 0.020
+_lapse_rate(a::SimpleAtmosphere{<:Number,<:ClassF}) = 0.035
+_lapse_rate(a::SimpleAtmosphere) = nothing
 _rel_humidity(a::SimpleAtmosphere) = a.rh
 _surface_roughness(a::SimpleAtmosphere) = 1.0
 

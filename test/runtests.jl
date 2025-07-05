@@ -22,6 +22,7 @@ end
 if GROUP == "All" || GROUP == "Util"
     # testing utilities
     include("utils/util_tests.jl")
+    include("depreciation/depreciation_tests.jl")
 end
 
 if GROUP == "All" || GROUP == "Model"

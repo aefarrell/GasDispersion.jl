@@ -43,10 +43,10 @@ It is possible to define one's own equation set by either mixing and matching ex
 ```@example
 using GasDispersion
 
-MyPuffSet = BasicEquationSet{IrwinRural,TNOPuffσz,TNOPuffσy,TNOPuffσz}
+MyPuffSet = BasicEquationSet(IrwinRural(),TNOPuffσz(),TNOPuffσy(),TNOPuffσz())
 ```
 
-It is possible to extend this further by defining singletons for entirely new correlations and overloading the appropriate methods internal to `GasDispersion`, but this is dangerous as the internals are subject to change. If it is a common equation set please feel free to add it to `GasDispersion` by initiating a pull request.
+All of the pre-defined equation sets are simply constants set to a particular instance of `BasicEquationSet`. Additional correlations can be added for windspeed or dispersion, by overloading the internal functions `windspeed`, `downwind_dispersion`, `crosswind_dispersion`, and `vertical_dispersion`, but this can be dangerous as the internals are subject to change without notice. A better choice is to open an issue or pull request through GitHub, and it can be added to the next release.
 
 ### Example Usage
 
@@ -68,7 +68,7 @@ Patm = 101325 # Pa
 P1 = 4e5 + Patm # Pa
 T1 = 25 + 273.15 # K
 
-scn = scenario_builder(propane, JetSource; 
+scn = scenario_builder(propane, JetSource(); 
        phase = :gas,
        diameter = 0.01,  # m
        dischargecoef = 0.85,
@@ -106,74 +106,74 @@ SimpleAtmosphere atmosphere:
     u: 1.5 m/s
     h: 10.0 m
     rh: 0.0 %
-    stability: ClassF
+    stability: ClassF()
 
 ```
 
 The plume using the default equation set is simply this
 
 ```jldoctest eqnset_example; output = false, filter = r"(\d*)\.(\d{4})\d+" => s"\1.\2***"
-dflt = plume(scn, GaussianPlume, DefaultSet())
+dflt = plume(scn, GaussianPlume(), DefaultSet)
 
 # output
 
-GasDispersion.GaussianPlumeSolution{Float64, GasDispersion.SimpleCrossTerm, GasDispersion.SimpleVerticalTerm, GasDispersion.NoPlumeRise, ClassF, BasicEquationSet{DefaultWind, Nothing, Defaultσy, Defaultσz}, GasDispersion.ProblemDomain{Float64}}(Scenario{Substance{String, GasDispersion.Antoine{Float64}, Float64, Float64, Float64, Int64, Int64, Int64}, HorizontalJet{Float64}, SimpleAtmosphere{Float64, ClassF}}(Substance{String, GasDispersion.Antoine{Float64}, Float64, Float64, Float64, Int64, Int64, Int64}("propane", 0.044096, GasDispersion.Antoine{Float64}(9.773719865868816, 2257.9247634130143, 0.0), 1.864931992847327, 526.13, 288.15, 101325.0, 1.142, 231.02, 425740, 1678, 2520), HorizontalJet{Float64}(0.08991798763471508, Inf, 0.01, 208.10961399327573, 3.5, 288765.2212333958, 278.3846872082166, 0.0), SimpleAtmosphere{Float64, ClassF}(101325.0, 298.15, 1.5, 10.0, 0.0, ClassF)), :gaussian, 0.08991798763471508, 0.9999999999999998, 1.8023818673116125, 1.150112899011524, 3.5, GasDispersion.SimpleCrossTerm(), GasDispersion.SimpleVerticalTerm(), GasDispersion.NoPlumeRise(), ClassF, BasicEquationSet{DefaultWind, Nothing, Defaultσy, Defaultσz}(), GasDispersion.ProblemDomain{Float64}(0.0, Inf, -Inf, Inf, 0.0, Inf))
+GasDispersion.GaussianPlumeSolution{Float64, GasDispersion.SimpleCrossTerm, GasDispersion.SimpleVerticalTerm, GasDispersion.NoPlumeRise, BasicEquationSet{DefaultWind, Nothing, Defaultσy, Defaultσz}, GasDispersion.ProblemDomain{Float64}}(Scenario{Substance{String, Float64, GasDispersion.Antoine{Float64}, Float64, Float64, Int64, Int64, Int64}, HorizontalJet{Float64}, SimpleAtmosphere{Float64, ClassF}}(Substance{String, Float64, GasDispersion.Antoine{Float64}, Float64, Float64, Int64, Int64, Int64}("propane", 0.044096, GasDispersion.Antoine{Float64}(9.773719865868816, 2257.9247634130143, 0.0), 1.864931992847327, 526.13, 288.15, 101325.0, 1.142, 231.02, 425740, 1678, 2520), HorizontalJet{Float64}(0.08991798763471508, Inf, 0.01, 208.10961399327573, 3.5, 288765.2212333958, 278.3846872082166, 0.0), SimpleAtmosphere{Float64, ClassF}(101325.0, 298.15, 1.5, 10.0, 0.0, ClassF())), :gaussian, 0.08991798763471508, 0.9999999999999998, 1.8023818673116125, 1.150112899011524, 3.5, GasDispersion.SimpleCrossTerm(), GasDispersion.SimpleVerticalTerm(), GasDispersion.NoPlumeRise(), BasicEquationSet{DefaultWind, Nothing, Defaultσy, Defaultσz}(DefaultWind(), nothing, Defaultσy(), Defaultσz()), GasDispersion.ProblemDomain{Float64}(0.0, Inf, -Inf, Inf, 0.0, Inf))
 
 ```
 
 For each of the plume equation sets we can easily create corresponding plume solutions
 
 ```jldoctest eqnset_example; output = false, filter = r"(\d*)\.(\d{4})\d+" => s"\1.\2***"
-ccps_rurl = plume(scn, GaussianPlume, CCPSRural())
+ccps_rurl = plume(scn, GaussianPlume(), CCPSRural)
 
 # output
 
-GasDispersion.GaussianPlumeSolution{Float64, GasDispersion.SimpleCrossTerm, GasDispersion.SimpleVerticalTerm, GasDispersion.NoPlumeRise, ClassF, BasicEquationSet{IrwinRural, Nothing, BriggsRuralσy, BriggsRuralσz}, GasDispersion.ProblemDomain{Float64}}(Scenario{Substance{String, GasDispersion.Antoine{Float64}, Float64, Float64, Float64, Int64, Int64, Int64}, HorizontalJet{Float64}, SimpleAtmosphere{Float64, ClassF}}(Substance{String, GasDispersion.Antoine{Float64}, Float64, Float64, Float64, Int64, Int64, Int64}("propane", 0.044096, GasDispersion.Antoine{Float64}(9.773719865868816, 2257.9247634130143, 0.0), 1.864931992847327, 526.13, 288.15, 101325.0, 1.142, 231.02, 425740, 1678, 2520), HorizontalJet{Float64}(0.08991798763471508, Inf, 0.01, 208.10961399327573, 3.5, 288765.2212333958, 278.3846872082166, 0.0), SimpleAtmosphere{Float64, ClassF}(101325.0, 298.15, 1.5, 10.0, 0.0, ClassF)), :gaussian, 0.08991798763471508, 0.9999999999999998, 1.8023818673116125, 0.8420321686971456, 3.5, GasDispersion.SimpleCrossTerm(), GasDispersion.SimpleVerticalTerm(), GasDispersion.NoPlumeRise(), ClassF, BasicEquationSet{IrwinRural, Nothing, BriggsRuralσy, BriggsRuralσz}(), GasDispersion.ProblemDomain{Float64}(0.0, Inf, -Inf, Inf, 0.0, Inf))
+GasDispersion.GaussianPlumeSolution{Float64, GasDispersion.SimpleCrossTerm, GasDispersion.SimpleVerticalTerm, GasDispersion.NoPlumeRise, BasicEquationSet{IrwinRural, Nothing, BriggsRuralσy, BriggsRuralσz}, GasDispersion.ProblemDomain{Float64}}(Scenario{Substance{String, Float64, GasDispersion.Antoine{Float64}, Float64, Float64, Int64, Int64, Int64}, HorizontalJet{Float64}, SimpleAtmosphere{Float64, ClassF}}(Substance{String, Float64, GasDispersion.Antoine{Float64}, Float64, Float64, Int64, Int64, Int64}("propane", 0.044096, GasDispersion.Antoine{Float64}(9.773719865868816, 2257.9247634130143, 0.0), 1.864931992847327, 526.13, 288.15, 101325.0, 1.142, 231.02, 425740, 1678, 2520), HorizontalJet{Float64}(0.08991798763471508, Inf, 0.01, 208.10961399327573, 3.5, 288765.2212333958, 278.3846872082166, 0.0), SimpleAtmosphere{Float64, ClassF}(101325.0, 298.15, 1.5, 10.0, 0.0, ClassF())), :gaussian, 0.08991798763471508, 0.9999999999999998, 1.8023818673116125, 0.8420321686971456, 3.5, GasDispersion.SimpleCrossTerm(), GasDispersion.SimpleVerticalTerm(), GasDispersion.NoPlumeRise(), BasicEquationSet{IrwinRural, Nothing, BriggsRuralσy, BriggsRuralσz}(IrwinRural(), nothing, BriggsRuralσy(), BriggsRuralσz()), GasDispersion.ProblemDomain{Float64}(0.0, Inf, -Inf, Inf, 0.0, Inf))
 
 ```
 
 ```jldoctest eqnset_example; output = false, filter = r"(\d*)\.(\d{4})\d+" => s"\1.\2***"
-ccps_urb = plume(scn, GaussianPlume, CCPSUrban())
+ccps_urb = plume(scn, GaussianPlume(), CCPSUrban)
 
 # output
 
-GasDispersion.GaussianPlumeSolution{Float64, GasDispersion.SimpleCrossTerm, GasDispersion.SimpleVerticalTerm, GasDispersion.NoPlumeRise, ClassF, BasicEquationSet{IrwinUrban, Nothing, BriggsUrbanσy, BriggsUrbanσz}, GasDispersion.ProblemDomain{Float64}}(Scenario{Substance{String, GasDispersion.Antoine{Float64}, Float64, Float64, Float64, Int64, Int64, Int64}, HorizontalJet{Float64}, SimpleAtmosphere{Float64, ClassF}}(Substance{String, GasDispersion.Antoine{Float64}, Float64, Float64, Float64, Int64, Int64, Int64}("propane", 0.044096, GasDispersion.Antoine{Float64}(9.773719865868816, 2257.9247634130143, 0.0), 1.864931992847327, 526.13, 288.15, 101325.0, 1.142, 231.02, 425740, 1678, 2520), HorizontalJet{Float64}(0.08991798763471508, Inf, 0.01, 208.10961399327573, 3.5, 288765.2212333958, 278.3846872082166, 0.0), SimpleAtmosphere{Float64, ClassF}(101325.0, 298.15, 1.5, 10.0, 0.0, ClassF)), :gaussian, 0.08991798763471508, 0.9999999999999998, 1.8023818673116125, 0.7989729675905327, 3.5, GasDispersion.SimpleCrossTerm(), GasDispersion.SimpleVerticalTerm(), GasDispersion.NoPlumeRise(), ClassF, BasicEquationSet{IrwinUrban, Nothing, BriggsUrbanσy, BriggsUrbanσz}(), GasDispersion.ProblemDomain{Float64}(0.0, Inf, -Inf, Inf, 0.0, Inf))
+GasDispersion.GaussianPlumeSolution{Float64, GasDispersion.SimpleCrossTerm, GasDispersion.SimpleVerticalTerm, GasDispersion.NoPlumeRise, BasicEquationSet{IrwinUrban, Nothing, BriggsUrbanσy, BriggsUrbanσz}, GasDispersion.ProblemDomain{Float64}}(Scenario{Substance{String, Float64, GasDispersion.Antoine{Float64}, Float64, Float64, Int64, Int64, Int64}, HorizontalJet{Float64}, SimpleAtmosphere{Float64, ClassF}}(Substance{String, Float64, GasDispersion.Antoine{Float64}, Float64, Float64, Int64, Int64, Int64}("propane", 0.044096, GasDispersion.Antoine{Float64}(9.773719865868816, 2257.9247634130143, 0.0), 1.864931992847327, 526.13, 288.15, 101325.0, 1.142, 231.02, 425740, 1678, 2520), HorizontalJet{Float64}(0.08991798763471508, Inf, 0.01, 208.10961399327573, 3.5, 288765.2212333958, 278.3846872082166, 0.0), SimpleAtmosphere{Float64, ClassF}(101325.0, 298.15, 1.5, 10.0, 0.0, ClassF())), :gaussian, 0.08991798763471508, 0.9999999999999998, 1.8023818673116125, 0.7989729675905327, 3.5, GasDispersion.SimpleCrossTerm(), GasDispersion.SimpleVerticalTerm(), GasDispersion.NoPlumeRise(), BasicEquationSet{IrwinUrban, Nothing, BriggsUrbanσy, BriggsUrbanσz}(IrwinUrban(), nothing, BriggsUrbanσy(), BriggsUrbanσz()), GasDispersion.ProblemDomain{Float64}(0.0, Inf, -Inf, Inf, 0.0, Inf))
 
 ```
 
 ```jldoctest eqnset_example; output = false, filter = r"(\d*)\.(\d{4})\d+" => s"\1.\2***"
-isc3_rurl = plume(scn, GaussianPlume, ISC3Rural())
+isc3_rurl = plume(scn, GaussianPlume(), ISC3Rural)
 
 # output
 
-GasDispersion.GaussianPlumeSolution{Float64, GasDispersion.SimpleCrossTerm, GasDispersion.SimpleVerticalTerm, GasDispersion.NoPlumeRise, ClassF, BasicEquationSet{IrwinRural, Nothing, ISC3Ruralσy, ISC3Ruralσz}, GasDispersion.ProblemDomain{Float64}}(Scenario{Substance{String, GasDispersion.Antoine{Float64}, Float64, Float64, Float64, Int64, Int64, Int64}, HorizontalJet{Float64}, SimpleAtmosphere{Float64, ClassF}}(Substance{String, GasDispersion.Antoine{Float64}, Float64, Float64, Float64, Int64, Int64, Int64}("propane", 0.044096, GasDispersion.Antoine{Float64}(9.773719865868816, 2257.9247634130143, 0.0), 1.864931992847327, 526.13, 288.15, 101325.0, 1.142, 231.02, 425740, 1678, 2520), HorizontalJet{Float64}(0.08991798763471508, Inf, 0.01, 208.10961399327573, 3.5, 288765.2212333958, 278.3846872082166, 0.0), SimpleAtmosphere{Float64, ClassF}(101325.0, 298.15, 1.5, 10.0, 0.0, ClassF)), :gaussian, 0.08991798763471508, 0.9999999999999998, 1.8023818673116125, 0.8420321686971456, 3.5, GasDispersion.SimpleCrossTerm(), GasDispersion.SimpleVerticalTerm(), GasDispersion.NoPlumeRise(), ClassF, BasicEquationSet{IrwinRural, Nothing, ISC3Ruralσy, ISC3Ruralσz}(), GasDispersion.ProblemDomain{Float64}(0.0, Inf, -Inf, Inf, 0.0, Inf))
+GasDispersion.GaussianPlumeSolution{Float64, GasDispersion.SimpleCrossTerm, GasDispersion.SimpleVerticalTerm, GasDispersion.NoPlumeRise, BasicEquationSet{IrwinRural, Nothing, ISC3Ruralσy, ISC3Ruralσz}, GasDispersion.ProblemDomain{Float64}}(Scenario{Substance{String, Float64, GasDispersion.Antoine{Float64}, Float64, Float64, Int64, Int64, Int64}, HorizontalJet{Float64}, SimpleAtmosphere{Float64, ClassF}}(Substance{String, Float64, GasDispersion.Antoine{Float64}, Float64, Float64, Int64, Int64, Int64}("propane", 0.044096, GasDispersion.Antoine{Float64}(9.773719865868816, 2257.9247634130143, 0.0), 1.864931992847327, 526.13, 288.15, 101325.0, 1.142, 231.02, 425740, 1678, 2520), HorizontalJet{Float64}(0.08991798763471508, Inf, 0.01, 208.10961399327573, 3.5, 288765.2212333958, 278.3846872082166, 0.0), SimpleAtmosphere{Float64, ClassF}(101325.0, 298.15, 1.5, 10.0, 0.0, ClassF())), :gaussian, 0.08991798763471508, 0.9999999999999998, 1.8023818673116125, 0.8420321686971456, 3.5, GasDispersion.SimpleCrossTerm(), GasDispersion.SimpleVerticalTerm(), GasDispersion.NoPlumeRise(), BasicEquationSet{IrwinRural, Nothing, ISC3Ruralσy, ISC3Ruralσz}(IrwinRural(), nothing, ISC3Ruralσy(), ISC3Ruralσz()), GasDispersion.ProblemDomain{Float64}(0.0, Inf, -Inf, Inf, 0.0, Inf))
 
 ```
 
 ```jldoctest eqnset_example; output = false, filter = r"(\d*)\.(\d{4})\d+" => s"\1.\2***"
-isc3_urb = plume(scn, GaussianPlume, ISC3Urban())
+isc3_urb = plume(scn, GaussianPlume(), ISC3Urban)
 
 # output
 
-GasDispersion.GaussianPlumeSolution{Float64, GasDispersion.SimpleCrossTerm, GasDispersion.SimpleVerticalTerm, GasDispersion.NoPlumeRise, ClassF, BasicEquationSet{ISC3UrbanWind, Nothing, BriggsUrbanσy, BriggsUrbanσz}, GasDispersion.ProblemDomain{Float64}}(Scenario{Substance{String, GasDispersion.Antoine{Float64}, Float64, Float64, Float64, Int64, Int64, Int64}, HorizontalJet{Float64}, SimpleAtmosphere{Float64, ClassF}}(Substance{String, GasDispersion.Antoine{Float64}, Float64, Float64, Float64, Int64, Int64, Int64}("propane", 0.044096, GasDispersion.Antoine{Float64}(9.773719865868816, 2257.9247634130143, 0.0), 1.864931992847327, 526.13, 288.15, 101325.0, 1.142, 231.02, 425740, 1678, 2520), HorizontalJet{Float64}(0.08991798763471508, Inf, 0.01, 208.10961399327573, 3.5, 288765.2212333958, 278.3846872082166, 0.0), SimpleAtmosphere{Float64, ClassF}(101325.0, 298.15, 1.5, 10.0, 0.0, ClassF)), :gaussian, 0.08991798763471508, 0.9999999999999998, 1.8023818673116125, 1.0947417281650496, 3.5, GasDispersion.SimpleCrossTerm(), GasDispersion.SimpleVerticalTerm(), GasDispersion.NoPlumeRise(), ClassF, BasicEquationSet{ISC3UrbanWind, Nothing, BriggsUrbanσy, BriggsUrbanσz}(), GasDispersion.ProblemDomain{Float64}(0.0, Inf, -Inf, Inf, 0.0, Inf))
+GasDispersion.GaussianPlumeSolution{Float64, GasDispersion.SimpleCrossTerm, GasDispersion.SimpleVerticalTerm, GasDispersion.NoPlumeRise, BasicEquationSet{ISC3UrbanWind, Nothing, BriggsUrbanσy, BriggsUrbanσz}, GasDispersion.ProblemDomain{Float64}}(Scenario{Substance{String, Float64, GasDispersion.Antoine{Float64}, Float64, Float64, Int64, Int64, Int64}, HorizontalJet{Float64}, SimpleAtmosphere{Float64, ClassF}}(Substance{String, Float64, GasDispersion.Antoine{Float64}, Float64, Float64, Int64, Int64, Int64}("propane", 0.044096, GasDispersion.Antoine{Float64}(9.773719865868816, 2257.9247634130143, 0.0), 1.864931992847327, 526.13, 288.15, 101325.0, 1.142, 231.02, 425740, 1678, 2520), HorizontalJet{Float64}(0.08991798763471508, Inf, 0.01, 208.10961399327573, 3.5, 288765.2212333958, 278.3846872082166, 0.0), SimpleAtmosphere{Float64, ClassF}(101325.0, 298.15, 1.5, 10.0, 0.0, ClassF())), :gaussian, 0.08991798763471508, 0.9999999999999998, 1.8023818673116125, 1.0947417281650496, 3.5, GasDispersion.SimpleCrossTerm(), GasDispersion.SimpleVerticalTerm(), GasDispersion.NoPlumeRise(), BasicEquationSet{ISC3UrbanWind, Nothing, BriggsUrbanσy, BriggsUrbanσz}(ISC3UrbanWind(), nothing, BriggsUrbanσy(), BriggsUrbanσz()), GasDispersion.ProblemDomain{Float64}(0.0, Inf, -Inf, Inf, 0.0, Inf))
 
 ```
 
 ```jldoctest eqnset_example; output = false, filter = r"(\d*)\.(\d{4})\d+" => s"\1.\2***"
-tno = plume(scn, GaussianPlume, TNOPlume())
+tno = plume(scn, GaussianPlume(), TNOPlume)
 
 # output
 
-GasDispersion.GaussianPlumeSolution{Float64, GasDispersion.SimpleCrossTerm, GasDispersion.SimpleVerticalTerm, GasDispersion.NoPlumeRise, ClassF, BasicEquationSet{TNOWind, Nothing, TNOPlumeσy, TNOPlumeσz}, GasDispersion.ProblemDomain{Float64}}(Scenario{Substance{String, GasDispersion.Antoine{Float64}, Float64, Float64, Float64, Int64, Int64, Int64}, HorizontalJet{Float64}, SimpleAtmosphere{Float64, ClassF}}(Substance{String, GasDispersion.Antoine{Float64}, Float64, Float64, Float64, Int64, Int64, Int64}("propane", 0.044096, GasDispersion.Antoine{Float64}(9.773719865868816, 2257.9247634130143, 0.0), 1.864931992847327, 526.13, 288.15, 101325.0, 1.142, 231.02, 425740, 1678, 2520), HorizontalJet{Float64}(0.08991798763471508, Inf, 0.01, 208.10961399327573, 3.5, 288765.2212333958, 278.3846872082166, 0.0), SimpleAtmosphere{Float64, ClassF}(101325.0, 298.15, 1.5, 10.0, 0.0, ClassF)), :gaussian, 0.08991798763471508, 0.9999999999999998, 1.8023818673116125, 0.8753751236458281, 3.5, GasDispersion.SimpleCrossTerm(), GasDispersion.SimpleVerticalTerm(), GasDispersion.NoPlumeRise(), ClassF, BasicEquationSet{TNOWind, Nothing, TNOPlumeσy, TNOPlumeσz}(), GasDispersion.ProblemDomain{Float64}(0.0, Inf, -Inf, Inf, 0.0, Inf))
+GasDispersion.GaussianPlumeSolution{Float64, GasDispersion.SimpleCrossTerm, GasDispersion.SimpleVerticalTerm, GasDispersion.NoPlumeRise, BasicEquationSet{TNOWind, Nothing, TNOPlumeσy, TNOPlumeσz}, GasDispersion.ProblemDomain{Float64}}(Scenario{Substance{String, Float64, GasDispersion.Antoine{Float64}, Float64, Float64, Int64, Int64, Int64}, HorizontalJet{Float64}, SimpleAtmosphere{Float64, ClassF}}(Substance{String, Float64, GasDispersion.Antoine{Float64}, Float64, Float64, Int64, Int64, Int64}("propane", 0.044096, GasDispersion.Antoine{Float64}(9.773719865868816, 2257.9247634130143, 0.0), 1.864931992847327, 526.13, 288.15, 101325.0, 1.142, 231.02, 425740, 1678, 2520), HorizontalJet{Float64}(0.08991798763471508, Inf, 0.01, 208.10961399327573, 3.5, 288765.2212333958, 278.3846872082166, 0.0), SimpleAtmosphere{Float64, ClassF}(101325.0, 298.15, 1.5, 10.0, 0.0, ClassF())), :gaussian, 0.08991798763471508, 0.9999999999999998, 1.8023818673116125, 0.8753751236458281, 3.5, GasDispersion.SimpleCrossTerm(), GasDispersion.SimpleVerticalTerm(), GasDispersion.NoPlumeRise(), BasicEquationSet{TNOWind, Nothing, TNOPlumeσy, TNOPlumeσz}(TNOWind(), nothing, TNOPlumeσy(), TNOPlumeσz()), GasDispersion.ProblemDomain{Float64}(0.0, Inf, -Inf, Inf, 0.0, Inf))
 
 ```
 
 ```jldoctest eqnset_example; output = false, filter = r"(\d*)\.(\d{4})\d+" => s"\1.\2***"
-turner = plume(scn, GaussianPlume, Turner())
+turner = plume(scn, GaussianPlume(), Turner)
 
 # output
 
-GasDispersion.GaussianPlumeSolution{Float64, GasDispersion.SimpleCrossTerm, GasDispersion.SimpleVerticalTerm, GasDispersion.NoPlumeRise, ClassF, BasicEquationSet{DefaultWind, Nothing, Turnerσy, Turnerσz}, GasDispersion.ProblemDomain{Float64}}(Scenario{Substance{String, GasDispersion.Antoine{Float64}, Float64, Float64, Float64, Int64, Int64, Int64}, HorizontalJet{Float64}, SimpleAtmosphere{Float64, ClassF}}(Substance{String, GasDispersion.Antoine{Float64}, Float64, Float64, Float64, Int64, Int64, Int64}("propane", 0.044096, GasDispersion.Antoine{Float64}(9.773719865868816, 2257.9247634130143, 0.0), 1.864931992847327, 526.13, 288.15, 101325.0, 1.142, 231.02, 425740, 1678, 2520), HorizontalJet{Float64}(0.08991798763471508, Inf, 0.01, 208.10961399327573, 3.5, 288765.2212333958, 278.3846872082166, 0.0), SimpleAtmosphere{Float64, ClassF}(101325.0, 298.15, 1.5, 10.0, 0.0, ClassF)), :gaussian, 0.08991798763471508, 0.9999999999999998, 1.8023818673116125, 1.150112899011524, 3.5, GasDispersion.SimpleCrossTerm(), GasDispersion.SimpleVerticalTerm(), GasDispersion.NoPlumeRise(), ClassF, BasicEquationSet{DefaultWind, Nothing, Turnerσy, Turnerσz}(), GasDispersion.ProblemDomain{Float64}(0.0, Inf, -Inf, Inf, 0.0, Inf))
+GasDispersion.GaussianPlumeSolution{Float64, GasDispersion.SimpleCrossTerm, GasDispersion.SimpleVerticalTerm, GasDispersion.NoPlumeRise, BasicEquationSet{DefaultWind, Nothing, Turnerσy, Turnerσz}, GasDispersion.ProblemDomain{Float64}}(Scenario{Substance{String, Float64, GasDispersion.Antoine{Float64}, Float64, Float64, Int64, Int64, Int64}, HorizontalJet{Float64}, SimpleAtmosphere{Float64, ClassF}}(Substance{String, Float64, GasDispersion.Antoine{Float64}, Float64, Float64, Int64, Int64, Int64}("propane", 0.044096, GasDispersion.Antoine{Float64}(9.773719865868816, 2257.9247634130143, 0.0), 1.864931992847327, 526.13, 288.15, 101325.0, 1.142, 231.02, 425740, 1678, 2520), HorizontalJet{Float64}(0.08991798763471508, Inf, 0.01, 208.10961399327573, 3.5, 288765.2212333958, 278.3846872082166, 0.0), SimpleAtmosphere{Float64, ClassF}(101325.0, 298.15, 1.5, 10.0, 0.0, ClassF())), :gaussian, 0.08991798763471508, 0.9999999999999998, 1.8023818673116125, 1.150112899011524, 3.5, GasDispersion.SimpleCrossTerm(), GasDispersion.SimpleVerticalTerm(), GasDispersion.NoPlumeRise(), BasicEquationSet{DefaultWind, Nothing, Turnerσy, Turnerσz}(DefaultWind(), nothing, Turnerσy(), Turnerσz()), GasDispersion.ProblemDomain{Float64}(0.0, Inf, -Inf, Inf, 0.0, Inf))
 
 ```
 
@@ -195,7 +195,7 @@ Patm = 101325 # Pa
 P1 = 4e5 + Patm # Pa
 T1 = 25 + 273.15 # K
 
-scn = scenario_builder(propane, JetSource; 
+scn = scenario_builder(propane, JetSource(); 
        phase = :gas,
        diameter = 0.01,  # m
        dischargecoef = 0.85,
@@ -203,13 +203,13 @@ scn = scenario_builder(propane, JetSource;
        pressure = P1,    # Pa
        height = 3.5)     # m, height of hole above the ground
 
-dflt = plume(scn, GaussianPlume, DefaultSet())
-ccps_rurl = plume(scn, GaussianPlume, CCPSRural())
-ccps_urb = plume(scn, GaussianPlume, CCPSUrban())
-isc3_rurl = plume(scn, GaussianPlume, ISC3Rural())
-isc3_urb = plume(scn, GaussianPlume, ISC3Urban())
-tno = plume(scn, GaussianPlume, TNOPlume())
-turner = plume(scn, GaussianPlume, Turner())
+dflt = plume(scn, GaussianPlume(), DefaultSet)
+ccps_rurl = plume(scn, GaussianPlume(), CCPSRural)
+ccps_urb = plume(scn, GaussianPlume(), CCPSUrban)
+isc3_rurl = plume(scn, GaussianPlume(), ISC3Rural)
+isc3_urb = plume(scn, GaussianPlume(), ISC3Urban)
+tno = plume(scn, GaussianPlume(), TNOPlume)
+turner = plume(scn, GaussianPlume(), Turner)
 
 solset = [("Default", dflt), ("CCPSRural", ccps_rurl), 
           ("CCPSUrban", ccps_urb), ("ISC3Rural", isc3_rurl),
@@ -273,32 +273,32 @@ using Plots
 
 u0, z0 = 10, 10
 zs = 0.1:.1:2
-Businger = BasicEquationSet{BusingerWind,Nothing,Nothing,Nothing}
+Businger = BasicEquationSet(BusingerWind(),nothing,nothing,nothing)
 
-for class in [ClassA,ClassB,ClassC,ClassD,ClassE,ClassF]
+for (cls_lbl, class) in [("A",ClassA()),("B",ClassB()),("C",ClassC()),("D",ClassD()),("E",ClassE()),("F",ClassF())]
     p = plot(title="Windspeed for $class stability",ylabel="Relative Elevation (z/z_R)", xlabel="Relative Windspeed (u/u_R)")
     atm = SimpleAtmosphere(;windspeed=u0,windspeed_height=z0,stability=class)
 
-    for row in [("Default",DefaultSet()),("Irwin Rural",CCPSRural()),("Irwin Urban",CCPSUrban()),
-                ("ISC3 Urban",ISC3Urban()),("TNO",TNOPlume()),("Businger et al.",Businger())]
+    for row in [("Default",DefaultSet),("Irwin Rural",CCPSRural),("Irwin Urban",CCPSUrban),
+                ("ISC3 Urban",ISC3Urban),("TNO",TNOPlume),("Businger et al.",Businger)]
         lbl, eqn = row
         u = [ GasDispersion.windspeed(atm,z*z0,eqn) for z in zs ]./u0
         plot!(p,u,zs,label=lbl)
     end
 
-    savefig(p,"$(class)_windspeed.svg")
+    savefig(p,"Class_$(cls_lbl)_windspeed.svg")
 
 end
 
 nothing
 ```
 
-![](ClassA_windspeed.svg)
-![](ClassB_windspeed.svg)
-![](ClassC_windspeed.svg)
-![](ClassD_windspeed.svg)
-![](ClassE_windspeed.svg)
-![](ClassF_windspeed.svg)
+![](Class_A_windspeed.svg)
+![](Class_B_windspeed.svg)
+![](Class_C_windspeed.svg)
+![](Class_D_windspeed.svg)
+![](Class_E_windspeed.svg)
+![](Class_F_windspeed.svg)
 
 ## Plume Dispersion
 
@@ -323,30 +323,30 @@ using Plots
 
 xs = range(1,1e5,1000)
 
-for class in [ClassA,ClassB,ClassC,ClassD,ClassE,ClassF]
+for (cls_lbl, class) in [("A",ClassA()),("B",ClassB()),("C",ClassC()),("D",ClassD()),("E",ClassE()),("F",ClassF())]
     p = plot(title="Crosswind Dispersion for $class stability",ylabel="Crosswind Dispersion, m", xlabel="Downwind distance, m", xaxis=:log10, yaxis=:log10, legend=:bottomright)
 
-    for row in [("Default",DefaultSet()),("Briggs Rural",CCPSRural()),("Briggs Urban",CCPSUrban()),
-                ("ISC3 Rural",ISC3Rural()),("TNO",TNOPlume()),
-                ("Turner",Turner())]
+    for row in [("Default",DefaultSet),("Briggs Rural",CCPSRural),("Briggs Urban",CCPSUrban),
+                ("ISC3 Rural",ISC3Rural),("TNO",TNOPlume),
+                ("Turner",Turner)]
         lbl, eqn = row
         s = [ GasDispersion.crosswind_dispersion(x, class, eqn) for x in xs ]
         plot!(p,xs,s,label=lbl)
     end
 
-    savefig(p,"$(class)_plume_sigma_y.svg")
+    savefig(p,"Class_$(cls_lbl)_plume_sigma_y.svg")
 
 end
 
 nothing
 ```
 
-![](ClassA_plume_sigma_y.svg)
-![](ClassB_plume_sigma_y.svg)
-![](ClassC_plume_sigma_y.svg)
-![](ClassD_plume_sigma_y.svg)
-![](ClassE_plume_sigma_y.svg)
-![](ClassF_plume_sigma_y.svg)
+![](Class_A_plume_sigma_y.svg)
+![](Class_B_plume_sigma_y.svg)
+![](Class_C_plume_sigma_y.svg)
+![](Class_D_plume_sigma_y.svg)
+![](Class_E_plume_sigma_y.svg)
+![](Class_F_plume_sigma_y.svg)
 
 ### Vertical Dispersion
 
@@ -368,30 +368,30 @@ using Plots
 
 xs = range(1,1e5,1000)
 
-for class in [ClassA,ClassB,ClassC,ClassD,ClassE,ClassF]
+for (cls_lbl, class) in [("A",ClassA()),("B",ClassB()),("C",ClassC()),("D",ClassD()),("E",ClassE()),("F",ClassF())]
     p = plot(title="Vertical Dispersion for $class stability",ylabel="Vertical Dispersion, m", xlabel="Downwind distance, m", xaxis=:log10, yaxis=:log10, legend=:bottomright)
 
-    for row in [("Default",DefaultSet()),("Briggs Rural",CCPSRural()),("Briggs Urban",CCPSUrban()),
-                ("ISC3 Rural",ISC3Rural()),("TNO",TNOPlume()),
-                ("Turner",Turner())]
+    for row in [("Default",DefaultSet),("Briggs Rural",CCPSRural),("Briggs Urban",CCPSUrban),
+                ("ISC3 Rural",ISC3Rural),("TNO",TNOPlume),
+                ("Turner",Turner)]
         lbl, eqn = row
         s = [ GasDispersion.vertical_dispersion(x, class, eqn) for x in xs ]
         plot!(p,xs,s,label=lbl)
     end
 
-    savefig(p,"$(class)_plume_sigma_z.svg")
+    savefig(p,"Class_$(cls_lbl)_plume_sigma_z.svg")
 
 end
 
 nothing
 ```
 
-![](ClassA_plume_sigma_z.svg)
-![](ClassB_plume_sigma_z.svg)
-![](ClassC_plume_sigma_z.svg)
-![](ClassD_plume_sigma_z.svg)
-![](ClassE_plume_sigma_z.svg)
-![](ClassF_plume_sigma_z.svg)
+![](Class_A_plume_sigma_z.svg)
+![](Class_B_plume_sigma_z.svg)
+![](Class_C_plume_sigma_z.svg)
+![](Class_D_plume_sigma_z.svg)
+![](Class_E_plume_sigma_z.svg)
+![](Class_F_plume_sigma_z.svg)
 
 
 ## Puff Dispersion
@@ -410,28 +410,28 @@ using Plots
 
 xs = range(1,1e5,1000)
 
-for class in [ClassA,ClassB,ClassC,ClassD,ClassE,ClassF]
+for (cls_lbl, class) in [("A",ClassA()),("B",ClassB()),("C",ClassC()),("D",ClassD()),("E",ClassE()),("F",ClassF())]
     p = plot(title="Downwind Dispersion for $class stability",ylabel="Downwind Dispersion, m", xlabel="Downwind distance, m", xaxis=:log10, yaxis=:log10, legend=:bottomright)
 
-    for row in [("CCPS",CCPSPuffRural()),("TNO",TNOPuff())]
+    for row in [("CCPS",CCPSPuffRural),("TNO",TNOPuff)]
         lbl, eqn = row
         s = [ GasDispersion.downwind_dispersion(x, class, eqn) for x in xs ]
         plot!(p,xs,s,label=lbl)
     end
 
-    savefig(p,"$(class)_puff_sigma_x.svg")
+    savefig(p,"Class_$(cls_lbl)_puff_sigma_x.svg")
 
 end
 
 nothing
 ```
 
-![](ClassA_puff_sigma_x.svg)
-![](ClassB_puff_sigma_x.svg)
-![](ClassC_puff_sigma_x.svg)
-![](ClassD_puff_sigma_x.svg)
-![](ClassE_puff_sigma_x.svg)
-![](ClassF_puff_sigma_x.svg)
+![](Class_A_puff_sigma_x.svg)
+![](Class_B_puff_sigma_x.svg)
+![](Class_C_puff_sigma_x.svg)
+![](Class_D_puff_sigma_x.svg)
+![](Class_E_puff_sigma_x.svg)
+![](Class_F_puff_sigma_x.svg)
 
 ### Crosswind Dispersion
 
@@ -445,28 +445,28 @@ using Plots
 
 xs = range(1,1e5,1000)
 
-for class in [ClassA,ClassB,ClassC,ClassD,ClassE,ClassF]
+for (cls_lbl, class) in [("A",ClassA()),("B",ClassB()),("C",ClassC()),("D",ClassD()),("E",ClassE()),("F",ClassF())]
     p = plot(title="Crosswind Dispersion for $class stability",ylabel="Crosswind Dispersion, m", xlabel="Downwind distance, m", xaxis=:log10, yaxis=:log10, legend=:bottomright)
 
-    for row in [("CCPS",CCPSPuffRural()),("TNO",TNOPuff())]
+    for row in [("CCPS",CCPSPuffRural),("TNO",TNOPuff)]
         lbl, eqn = row
         s = [ GasDispersion.crosswind_dispersion(x, class, eqn) for x in xs ]
         plot!(p,xs,s,label=lbl)
     end
 
-    savefig(p,"$(class)_puff_sigma_y.svg")
+    savefig(p,"Class_$(cls_lbl)_puff_sigma_y.svg")
 
 end
 
 nothing
 ```
 
-![](ClassA_puff_sigma_y.svg)
-![](ClassB_puff_sigma_y.svg)
-![](ClassC_puff_sigma_y.svg)
-![](ClassD_puff_sigma_y.svg)
-![](ClassE_puff_sigma_y.svg)
-![](ClassF_puff_sigma_y.svg)
+![](Class_A_puff_sigma_y.svg)
+![](Class_B_puff_sigma_y.svg)
+![](Class_C_puff_sigma_y.svg)
+![](Class_D_puff_sigma_y.svg)
+![](Class_E_puff_sigma_y.svg)
+![](Class_F_puff_sigma_y.svg)
 
 ### Vertical Dispersion
 
@@ -482,25 +482,25 @@ using Plots
 
 xs = range(1,1e5,1000)
 
-for class in [ClassA,ClassB,ClassC,ClassD,ClassE,ClassF]
+for (cls_lbl, class) in [("A",ClassA()),("B",ClassB()),("C",ClassC()),("D",ClassD()),("E",ClassE()),("F",ClassF())]
     p = plot(title="Vertical Dispersion for $class stability",ylabel="Vertical Dispersion, m", xlabel="Downwind distance, m", xaxis=:log10, yaxis=:log10, legend=:bottomright)
 
-    for row in [("CCPS",CCPSPuffRural()),("TNO",TNOPuff())]
+    for row in [("CCPS",CCPSPuffRural),("TNO",TNOPuff)]
         lbl, eqn = row
         s = [ GasDispersion.vertical_dispersion(x, class, eqn) for x in xs ]
         plot!(p,xs,s,label=lbl)
     end
 
-    savefig(p,"$(class)_puff_sigma_z.svg")
+    savefig(p,"Class_$(cls_lbl)_puff_sigma_z.svg")
 
 end
 
 nothing
 ```
 
-![](ClassA_puff_sigma_z.svg)
-![](ClassB_puff_sigma_z.svg)
-![](ClassC_puff_sigma_z.svg)
-![](ClassD_puff_sigma_z.svg)
-![](ClassE_puff_sigma_z.svg)
-![](ClassF_puff_sigma_z.svg)
+![](Class_A_puff_sigma_z.svg)
+![](Class_B_puff_sigma_z.svg)
+![](Class_C_puff_sigma_z.svg)
+![](Class_D_puff_sigma_z.svg)
+![](Class_E_puff_sigma_z.svg)
+![](Class_F_puff_sigma_z.svg)

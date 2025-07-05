@@ -11,7 +11,7 @@ puff
 ### Simple Gaussial Puffs
 
 ```@docs
-puff(::Scenario, ::Type{GaussianPuff})
+puff(::Scenario, ::GaussianPuff)
 ```
 
 A simple gaussian puff model assumes the release is instantaneous, and all mass is concentrated in a single point. The cloud then disperses as it moves downwind with the concentration profile is given by a series of gaussians with dispersions $\sigma_x$, $\sigma_y$, and $\sigma_z$, which are found from correlations tabulated per stability class. Similarly to the plume model, a ground reflection term is included to correct for the fact that material cannot pass through the ground.
@@ -106,7 +106,7 @@ Patm = 101325 # Pa
 P1 = 4e5 + Patm # Pa
 T1 = 25 + 273.15 # K
 
-scn = scenario_builder(propane, JetSource; 
+scn = scenario_builder(propane, JetSource(); 
        phase = :gas,
        diameter = 0.01,  # m
        dischargecoef = 0.85,
@@ -145,18 +145,18 @@ SimpleAtmosphere atmosphere:
     u: 1.5 m/s
     h: 10.0 m
     rh: 0.0 %
-    stability: ClassF
+    stability: ClassF()
 
 ```
 
 And then pass it to the `puff` function
 
 ```jldoctest propaneleak; output = false, filter = r"(\d*)\.(\d{4})\d+" => s"\1.\2***"
-g = puff(scn, GaussianPuff)
+g = puff(scn, GaussianPuff())
 
 # output
 
-GasDispersion.GaussianPuffSolution{Float64, ClassF, BasicEquationSet{DefaultWind, CCPSPuffσx, CCPSPuffσy, CCPSPuffσz}}(Scenario{Substance{String, GasDispersion.Antoine{Float64}, Float64, Float64, Float64, Int64, Int64, Int64}, HorizontalJet{Float64}, SimpleAtmosphere{Float64, ClassF}}(Substance{String, GasDispersion.Antoine{Float64}, Float64, Float64, Float64, Int64, Int64, Int64}("propane", 0.044096, GasDispersion.Antoine{Float64}(9.773719865868816, 2257.9247634130143, 0.0), 1.864931992847327, 526.13, 288.15, 101325.0, 1.142, 231.02, 425740, 1678, 2520), HorizontalJet{Float64}(0.08991798763471508, 10.0, 0.01, 208.10961399327573, 3.5, 288765.2212333958, 278.3846872082166, 0.0), SimpleAtmosphere{Float64, ClassF}(101325.0, 298.15, 1.5, 10.0, 0.0, ClassF)), :gaussian, 0.8991798763471508, 1.8023818673116125, 3.5, 1.150112899011524, ClassF, BasicEquationSet{DefaultWind, CCPSPuffσx, CCPSPuffσy, CCPSPuffσz}())
+GasDispersion.GaussianPuffSolution{Float64, BasicEquationSet{DefaultWind, CCPSPuffσx, CCPSPuffσy, CCPSPuffσz}}(Scenario{Substance{String, Float64, GasDispersion.Antoine{Float64}, Float64, Float64, Int64, Int64, Int64}, HorizontalJet{Float64}, SimpleAtmosphere{Float64, ClassF}}(Substance{String, Float64, GasDispersion.Antoine{Float64}, Float64, Float64, Int64, Int64, Int64}("propane", 0.044096, GasDispersion.Antoine{Float64}(9.773719865868816, 2257.9247634130143, 0.0), 1.864931992847327, 526.13, 288.15, 101325.0, 1.142, 231.02, 425740, 1678, 2520), HorizontalJet{Float64}(0.08991798763471508, 10.0, 0.01, 208.10961399327573, 3.5, 288765.2212333958, 278.3846872082166, 0.0), SimpleAtmosphere{Float64, ClassF}(101325.0, 298.15, 1.5, 10.0, 0.0, ClassF())), :gaussian, 0.8991798763471508, 1.8023818673116125, 3.5, 1.150112899011524, BasicEquationSet{DefaultWind, CCPSPuffσx, CCPSPuffσy, CCPSPuffσz}(DefaultWind(), CCPSPuffσx(), CCPSPuffσy(), CCPSPuffσz()))
 
 ```
 
@@ -187,7 +187,7 @@ Patm = 101325 # Pa
 P1 = 4e5 + Patm # Pa
 T1 = 25 + 273.15 # K
 
-scn = scenario_builder(propane, JetSource; 
+scn = scenario_builder(propane, JetSource(); 
        phase = :gas,
        diameter = 0.01,  # m
        dischargecoef = 0.85,
@@ -196,7 +196,7 @@ scn = scenario_builder(propane, JetSource;
        height = 3.5,     # m, height of hole above the ground
        duration = 10)    # s, duration of leak
 
-g = puff(scn, GaussianPuff)
+g = puff(scn, GaussianPuff())
 
 ```
 
@@ -221,7 +221,7 @@ end
 
 ### Palazzi Short Duration Puff Model
 ```@docs
-    puff(::Scenario, ::Type{Palazzi})
+    puff(::Scenario, ::Palazzi)
 ```
 The `Palazzi` model integrates over the Gaussian puff model for a short duration release ([Palazzi 1982](references.md)), where the dispersion parameters $\sigma$ are assumed to be independent time.
 
@@ -242,7 +242,7 @@ There are multiple variations of the Palazzi short duration model, depending on 
 ### Integrated Gaussian Puff Model
 
 ```@docs
-puff(::Scenario, ::Type{IntPuff})
+puff(::Scenario, ::IntPuff)
 ```
 
 The `IntPuff` model treats a release as a sequence of $n$ gaussian puffs, each one corresponding to $\frac{1}{n}$ of the total mass of the release.
@@ -269,11 +269,11 @@ The model assumes the initial release is a single point, with no dimensions. Add
 Continuing with the propane leak example from above, we now model the release as a sequence of 100 gaussian puffs. Essentially chopping the 10s over which the release happens into 0.1s intervals and releasing one puff per interval at a time for 10s.
 
 ```jldoctest propaneleak; output = false, filter = r"(\d*)\.(\d{4})\d+" => s"\1.\2***"
-ig = puff(scn, IntPuff; n=100)
+ig = puff(scn, IntPuff(); n=100)
 
 # output
 
-GasDispersion.IntPuffSolution{Float64, Int64, ClassF, BasicEquationSet{DefaultWind, CCPSPuffσx, CCPSPuffσy, CCPSPuffσz}}(Scenario{Substance{String, GasDispersion.Antoine{Float64}, Float64, Float64, Float64, Int64, Int64, Int64}, HorizontalJet{Float64}, SimpleAtmosphere{Float64, ClassF}}(Substance{String, GasDispersion.Antoine{Float64}, Float64, Float64, Float64, Int64, Int64, Int64}("propane", 0.044096, GasDispersion.Antoine{Float64}(9.773719865868816, 2257.9247634130143, 0.0), 1.864931992847327, 526.13, 288.15, 101325.0, 1.142, 231.02, 425740, 1678, 2520), HorizontalJet{Float64}(0.08991798763471508, 10.0, 0.01, 208.10961399327573, 3.5, 288765.2212333958, 278.3846872082166, 0.0), SimpleAtmosphere{Float64, ClassF}(101325.0, 298.15, 1.5, 10.0, 0.0, ClassF)), :intpuff, 0.08991798763471508, 1.8023818673116125, 10.0, 3.5, 1.150112899011524, 100, ClassF, BasicEquationSet{DefaultWind, CCPSPuffσx, CCPSPuffσy, CCPSPuffσz}())
+GasDispersion.IntPuffSolution{Float64, Int64, BasicEquationSet{DefaultWind, CCPSPuffσx, CCPSPuffσy, CCPSPuffσz}}(Scenario{Substance{String, Float64, GasDispersion.Antoine{Float64}, Float64, Float64, Int64, Int64, Int64}, HorizontalJet{Float64}, SimpleAtmosphere{Float64, ClassF}}(Substance{String, Float64, GasDispersion.Antoine{Float64}, Float64, Float64, Int64, Int64, Int64}("propane", 0.044096, GasDispersion.Antoine{Float64}(9.773719865868816, 2257.9247634130143, 0.0), 1.864931992847327, 526.13, 288.15, 101325.0, 1.142, 231.02, 425740, 1678, 2520), HorizontalJet{Float64}(0.08991798763471508, 10.0, 0.01, 208.10961399327573, 3.5, 288765.2212333958, 278.3846872082166, 0.0), SimpleAtmosphere{Float64, ClassF}(101325.0, 298.15, 1.5, 10.0, 0.0, ClassF())), :intpuff, 0.08991798763471508, 1.8023818673116125, 10.0, 3.5, 1.150112899011524, 100, BasicEquationSet{DefaultWind, CCPSPuffσx, CCPSPuffσy, CCPSPuffσz}(DefaultWind(), CCPSPuffσx(), CCPSPuffσy(), CCPSPuffσz()))
 ```
 
 At the same point as above the concentration has dropped
@@ -308,7 +308,7 @@ plot(ig_inf, 86; xlims=(90,110), ylims=(-10,10), aspect_ratio=:equal)
 ### Britter-McQuaid Model
 
 ```@docs
-puff(::Scenario, ::Type{BritterMcQuaidPuff})
+puff(::Scenario, ::BritterMcQuaidPuff)
 ```
 
 The Britter-McQuaid model is an empirical correlation for dense cloud
@@ -321,7 +321,7 @@ in the provided equationset are for windspeed.
 ### SLAB Jet Model
 
 ```@docs
-puff(::Scenario{Substance,VerticalJet,Atmosphere}, ::Type{SLAB})
+puff(::Scenario{Substance,VerticalJet,Atmosphere}, ::SLAB)
 ```
 
 The SLAB jet model is derived from the SLAB software package developed by 

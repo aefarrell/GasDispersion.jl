@@ -1,7 +1,7 @@
 # Correlations from Turner (1970)
 struct Turnerσy <: DispersionFunction end
 struct Turnerσz <: DispersionFunction end
-Turner = BasicEquationSet{DefaultWind,Nothing,Turnerσy,Turnerσz}
+const Turner = BasicEquationSet(DefaultWind(),nothing,Turnerσy(),Turnerσz())
 
 """
     crosswind_dispersion(x, StabilityClass, Turnerσy)
@@ -12,12 +12,12 @@ Plume crosswind dispersion correlations
 + Lees, Frank P. 1996. *Loss Prevention in the Process Industries, 2nd ed*. Oxford: Butterworth-Heinemann
 + Turner, D. Bruce. 1970. *Workbook of Atmospheric Dispersion Estimates*. United States Environmental Protection Agency.
 """
-crosswind_dispersion(x::Number, ::Type{ClassA}, ::Type{Turnerσy}) = 0.493x^0.88
-crosswind_dispersion(x::Number, ::Type{ClassB}, ::Type{Turnerσy}) = 0.337x^0.88
-crosswind_dispersion(x::Number, ::Type{ClassC}, ::Type{Turnerσy}) = 0.195x^0.90
-crosswind_dispersion(x::Number, ::Type{ClassD}, ::Type{Turnerσy}) = 0.128x^0.90
-crosswind_dispersion(x::Number, ::Type{ClassE}, ::Type{Turnerσy}) = 0.091x^0.91
-crosswind_dispersion(x::Number, ::Type{ClassF}, ::Type{Turnerσy}) = 0.067x^0.90
+crosswind_dispersion(x::Number, ::ClassA, ::Turnerσy) = 0.493x^0.88
+crosswind_dispersion(x::Number, ::ClassB, ::Turnerσy) = 0.337x^0.88
+crosswind_dispersion(x::Number, ::ClassC, ::Turnerσy) = 0.195x^0.90
+crosswind_dispersion(x::Number, ::ClassD, ::Turnerσy) = 0.128x^0.90
+crosswind_dispersion(x::Number, ::ClassE, ::Turnerσy) = 0.091x^0.91
+crosswind_dispersion(x::Number, ::ClassF, ::Turnerσy) = 0.067x^0.90
 
 """
     vertical_dispersion(x, StabilityClass, Turnerσz)
@@ -28,7 +28,7 @@ References:
 + Lees, Frank P. 1996. *Loss Prevention in the Process Industries, 2nd ed*. Oxford: Butterworth-Heinemann
 + Turner, D. Bruce. 1970. *Workbook of Atmospheric Dispersion Estimates*. United States Environmental Protection Agency.
 """
-function vertical_dispersion(x::Number, ::Type{ClassA}, ::Type{Turnerσz})
+function vertical_dispersion(x::Number, ::ClassA, ::Turnerσz)
     if x < 100
         @warn "x = $x, outside of the range of the Turner correlation, range is 100 ≤ x ≤ 3000"
         return 0.087x^1.10
@@ -44,7 +44,7 @@ function vertical_dispersion(x::Number, ::Type{ClassA}, ::Type{Turnerσz})
     end
 end
 
-function vertical_dispersion(x::Number, ::Type{ClassB}, ::Type{Turnerσz})
+function vertical_dispersion(x::Number, ::ClassB, ::Turnerσz)
     if x < 100
         @warn "x = $x, outside of the range of the Turner correlation, range is 100 ≤ x ≤ 20000"
         return 0.135x^0.95
@@ -60,7 +60,7 @@ function vertical_dispersion(x::Number, ::Type{ClassB}, ::Type{Turnerσz})
     end
 end
 
-function vertical_dispersion(x::Number, ::Type{ClassC}, ::Type{Turnerσz})
+function vertical_dispersion(x::Number, ::ClassC, ::Turnerσz)
     if x < 100
         @warn "x = $x, outside of the range of the Turner correlation, range is 100 ≤ x ≤ 100000"
         return 0.112x^0.91
@@ -72,7 +72,7 @@ function vertical_dispersion(x::Number, ::Type{ClassC}, ::Type{Turnerσz})
     end
 end
 
-function vertical_dispersion(x::Number, ::Type{ClassD}, ::Type{Turnerσz})
+function vertical_dispersion(x::Number, ::ClassD, ::Turnerσz)
     if x < 100
         @warn "x = $x, outside of the range of the Turner correlation, range is 100 ≤ x ≤ 100000"
         return 0.093x^0.85
@@ -88,7 +88,7 @@ function vertical_dispersion(x::Number, ::Type{ClassD}, ::Type{Turnerσz})
     end
 end
 
-function vertical_dispersion(x::Number, ::Type{ClassE}, ::Type{Turnerσz})
+function vertical_dispersion(x::Number, ::ClassE, ::Turnerσz)
     if x < 100
         @warn "x = $x, outside of the range of the Turner correlation, range is 100 ≤ x ≤ 100000"
         return 0.082x^0.82
@@ -104,7 +104,7 @@ function vertical_dispersion(x::Number, ::Type{ClassE}, ::Type{Turnerσz})
     end
 end
 
-function vertical_dispersion(x::Number, ::Type{ClassF}, ::Type{Turnerσz})
+function vertical_dispersion(x::Number, ::ClassF, ::Turnerσz)
     if x < 100
         @warn "x = $x, outside of the range of the Turner correlation, range is 100 ≤ x ≤ 100000"
         return 0.057x^0.80

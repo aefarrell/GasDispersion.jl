@@ -44,7 +44,7 @@ Patm = 101325 # Pa
 P1 = 4e5 + Patm # Pa
 T1 = 25 + 273.15 # K
 
-scn = scenario_builder(propane, JetSource; 
+scn = scenario_builder(propane, JetSource(); 
        phase = :gas,
        diameter = 0.01,  # m
        dischargecoef = 0.85,
@@ -73,7 +73,7 @@ concentration at any point downwind of the release point, assuming the release
 is a continuous plume, using
 
 ```julia
-p = plume(scn, GaussianPlume)
+p = plume(scn, GaussianPlume())
 ```
 
 Where `p` is a callable which returns the concentration (in vol fraction) at any point. For example at 100m downwind and at a height of 2m

@@ -42,7 +42,7 @@ function vertical_term(z, h, σz, ml::PeriodicMixingLayer)
 end
 
 @doc doc"""
-    plume(::Scenario, GaussianMixingLayer[, ::EquationSet]; **kwargs...)
+    plume(::Scenario, ::GaussianMixingLayer[, ::EquationSet]; kwargs...)
 
 Returns the solution to a Gaussian plume dispersion model with a simple reflective mixing layer.
 
@@ -69,7 +69,7 @@ There are two methods for the mixing layer:
 + Seinfeld, John H. and Spyros N. Pandis. 2006. *Atmospheric Chemistry and Physics* 2nd Ed. New York: John Wiley and Sons.
 
 """
-function plume(scenario::Scenario, ::Type{GaussianMixingLayer}, eqs=DefaultSet(); 
+function plume(scenario::Scenario, ::GaussianMixingLayer, eqs=DefaultSet; 
                method=:simplemixinglayer, 
                h_min=1.0, 
                n_terms=10,
@@ -121,13 +121,12 @@ function plume(scenario::Scenario, ::Type{GaussianMixingLayer}, eqs=DefaultSet()
     SimpleCrossTerm(),
     ml,
     NoPlumeRise(),                          # plume rise model
-    _stability(scenario),                   # stability class
     eqs,                                    # equation set 
     dom)                                    # problem domain
 end
 
 @doc doc"""
-    plume(::Scenario{Substance,VerticalJet,Atmosphere}, GaussianMixingLayer[, ::EquationSet]; **kwargs...)
+    plume(::Scenario{Substance,VerticalJet,Atmosphere}, ::GaussianMixingLayer[, ::EquationSet]; kwargs...)
 
 Returns the solution to a Gaussian plume dispersion model with a simple reflective mixing layer.
 
@@ -157,7 +156,7 @@ There are two methods for the mixing layer:
 
 """
 function plume(scenario::Scenario{<:AbstractSubstance,<:VerticalJet,<:Atmosphere}, 
-               ::Type{GaussianMixingLayer}, eqs=DefaultSet(); 
+               ::GaussianMixingLayer, eqs=DefaultSet; 
                downwash::Bool=false, plumerise::Bool=true,
                method=:simplemixinglayer,
                h_min=1.0, 
@@ -238,7 +237,6 @@ function plume(scenario::Scenario{<:AbstractSubstance,<:VerticalJet,<:Atmosphere
     SimpleCrossTerm(),
     ml,
     plume, #plume rise model
-    stab,  #stability class
     eqs,   #equation set 
     dom)   #problem domain
 end

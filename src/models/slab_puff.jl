@@ -22,12 +22,12 @@ struct SLABSolution{I <: Integer, F <: Number, V <: AbstractVector{F}, S} <: Puf
 end
 
 # SLAB stability mapping
-_slab_stab(::Type{ClassA}) = 1.0
-_slab_stab(::Type{ClassB}) = 2.0
-_slab_stab(::Type{ClassC}) = 3.0
-_slab_stab(::Type{ClassD}) = 4.0
-_slab_stab(::Type{ClassE}) = 5.0
-_slab_stab(::Type{ClassF}) = 6.0
+_slab_stab(::ClassA) = 1.0
+_slab_stab(::ClassB) = 2.0
+_slab_stab(::ClassC) = 3.0
+_slab_stab(::ClassD) = 4.0
+_slab_stab(::ClassE) = 5.0
+_slab_stab(::ClassF) = 6.0
 
 # SLAB ala mapping
 _slab_ala(::SimpleAtmosphere) = 0.0
@@ -63,8 +63,14 @@ function _slab_antoine(s::Scenario)
     end
 end
 
+# for reverse compatibility
+function puff(scenario::Scenario, ::Type{SLAB}, eqs::EquationSet=DefaultSet; kwargs...)
+    @warn "puff(scenario, SLAB, eqs) is deprecated, use puff(scenario, SLAB(), eqs) instead."
+    return puff(scenario, SLAB(), eqs; kwargs...)
+end
+
 @doc doc"""
-    puff(::Scenario, SLAB; kwargs...)
+    puff(::Scenario, ::SLAB; kwargs...)
 
 Returns the solution to the SLAB horizontal jet dispersion model for the given
 scenario.
@@ -77,7 +83,7 @@ scenario.
 - `x_max::Number=2000`: maximum downwind distance, meters, this defines the problem domain
 
 """
-function puff(scenario::Scenario, ::Type{SLAB}, eqs::EquationSet=DefaultSet(); 
+function puff(scenario::Scenario, ::SLAB, eqs::EquationSet=DefaultSet; 
               t_av=10, x_max=2000)
     c_max = 1.0
     stab = _slab_stab( _stability(scenario) )
@@ -130,7 +136,7 @@ end
 
 
 @doc doc"""
-    puff(::Scenario{Substance,VerticalJet,Atmosphere}, SLAB; kwargs...)
+    puff(::Scenario{Substance,VerticalJet,Atmosphere}, ::SLAB; kwargs...)
 
 Returns the solution to the SLAB vertical jet dispersion model for the given
 scenario.
@@ -143,7 +149,7 @@ scenario.
 - `x_max::Number=2000`: maximum downwind distance, meters, this defines the problem domain
 
 """
-function puff(scenario::Scenario{<:AbstractSubstance,<:VerticalJet,<:Atmosphere}, ::Type{SLAB}, eqs::EquationSet=DefaultSet();
+function puff(scenario::Scenario{<:AbstractSubstance,<:VerticalJet,<:Atmosphere}, ::SLAB, eqs::EquationSet=DefaultSet;
               t_av=10, x_max=2000)
     c_max = 1.0
     stab = _slab_stab( _stability(scenario) )

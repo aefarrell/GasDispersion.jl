@@ -2,7 +2,7 @@
 
 # Correlations for urban terrain
 struct ISC3UrbanWind <: PowerLawWind end
-ISC3Urban = BasicEquationSet{ISC3UrbanWind,Nothing,BriggsUrbanσy,BriggsUrbanσz}
+const ISC3Urban = BasicEquationSet(ISC3UrbanWind(),nothing,BriggsUrbanσy(),BriggsUrbanσz())
 
 """
     windspeed(u0::Number,z0::Number,z::Number, stability, ISC3UrbanWind)
@@ -15,18 +15,18 @@ Assumes urban terrain.
 + Irwin, J. S. 1979. "A Theoretical Variation of the Wind Profile Power Law Exponent as a Function of Surface Roughness, and Stability," *Atmospheric Environment, 13: 191-194.
 + EPA. 1995. *User's Guide for the Industrial Source Complex (ISC3) Dispersion Models, vol 2*. United States Environmental Protection Agency EPA-454/B-95-003b
 """
-windspeed(u0::Number,z0::Number,z::Number,::Type{ClassA},::Type{ISC3UrbanWind}) = u0*(z/z0)^0.15
-windspeed(u0::Number,z0::Number,z::Number,::Type{ClassB},::Type{ISC3UrbanWind}) = u0*(z/z0)^0.15
-windspeed(u0::Number,z0::Number,z::Number,::Type{ClassC},::Type{ISC3UrbanWind}) = u0*(z/z0)^0.20
-windspeed(u0::Number,z0::Number,z::Number,::Type{ClassD},::Type{ISC3UrbanWind}) = u0*(z/z0)^0.25
-windspeed(u0::Number,z0::Number,z::Number,::Type{ClassE},::Type{ISC3UrbanWind}) = u0*(z/z0)^0.30
-windspeed(u0::Number,z0::Number,z::Number,::Type{ClassF},::Type{ISC3UrbanWind}) = u0*(z/z0)^0.30
+windspeed(u0::Number,z0::Number,z::Number,::ClassA,::ISC3UrbanWind) = u0*(z/z0)^0.15
+windspeed(u0::Number,z0::Number,z::Number,::ClassB,::ISC3UrbanWind) = u0*(z/z0)^0.15
+windspeed(u0::Number,z0::Number,z::Number,::ClassC,::ISC3UrbanWind) = u0*(z/z0)^0.20
+windspeed(u0::Number,z0::Number,z::Number,::ClassD,::ISC3UrbanWind) = u0*(z/z0)^0.25
+windspeed(u0::Number,z0::Number,z::Number,::ClassE,::ISC3UrbanWind) = u0*(z/z0)^0.30
+windspeed(u0::Number,z0::Number,z::Number,::ClassF,::ISC3UrbanWind) = u0*(z/z0)^0.30
 
 
 # Correlations for rural terrain
 struct ISC3Ruralσy <: DispersionFunction end
 struct ISC3Ruralσz <: DispersionFunction end
-ISC3Rural = BasicEquationSet{IrwinRural,Nothing,ISC3Ruralσy,ISC3Ruralσz}
+const ISC3Rural = BasicEquationSet(IrwinRural(),nothing,ISC3Ruralσy(),ISC3Ruralσz())
 
 
 """
@@ -37,12 +37,12 @@ Plume crosswind dispersion correlations, for rural terrain
 # References
 + EPA. 1995. *User's Guide for the Industrial Source Complex (ISC3) Dispersion Models, vol 2*. United States Environmental Protection Agency EPA-454/B-95-003b
 """
-crosswind_dispersion(x::Number, ::Type{ClassA}, ::Type{ISC3Ruralσy}) = 465.11628(x/1000)*tan(0.017453293*(24.1670-2.5334log(x/1000)))
-crosswind_dispersion(x::Number, ::Type{ClassB}, ::Type{ISC3Ruralσy}) = 465.11628(x/1000)*tan(0.017453293*(18.3330-1.8096log(x/1000)))
-crosswind_dispersion(x::Number, ::Type{ClassC}, ::Type{ISC3Ruralσy}) = 465.11628(x/1000)*tan(0.017453293*(12.5000-1.0857log(x/1000)))
-crosswind_dispersion(x::Number, ::Type{ClassD}, ::Type{ISC3Ruralσy}) = 465.11628(x/1000)*tan(0.017453293*(8.3330-0.72382log(x/1000)))
-crosswind_dispersion(x::Number, ::Type{ClassE}, ::Type{ISC3Ruralσy}) = 465.11628(x/1000)*tan(0.017453293*(6.2500-0.54287log(x/1000)))
-crosswind_dispersion(x::Number, ::Type{ClassF}, ::Type{ISC3Ruralσy}) = 465.11628(x/1000)*tan(0.017453293*(4.1667-0.36191log(x/1000)))
+crosswind_dispersion(x::Number, ::ClassA, ::ISC3Ruralσy) = 465.11628(x/1000)*tan(0.017453293*(24.1670-2.5334log(x/1000)))
+crosswind_dispersion(x::Number, ::ClassB, ::ISC3Ruralσy) = 465.11628(x/1000)*tan(0.017453293*(18.3330-1.8096log(x/1000)))
+crosswind_dispersion(x::Number, ::ClassC, ::ISC3Ruralσy) = 465.11628(x/1000)*tan(0.017453293*(12.5000-1.0857log(x/1000)))
+crosswind_dispersion(x::Number, ::ClassD, ::ISC3Ruralσy) = 465.11628(x/1000)*tan(0.017453293*(8.3330-0.72382log(x/1000)))
+crosswind_dispersion(x::Number, ::ClassE, ::ISC3Ruralσy) = 465.11628(x/1000)*tan(0.017453293*(6.2500-0.54287log(x/1000)))
+crosswind_dispersion(x::Number, ::ClassF, ::ISC3Ruralσy) = 465.11628(x/1000)*tan(0.017453293*(4.1667-0.36191log(x/1000)))
 
 
 """
@@ -53,7 +53,7 @@ Plume vertical dispersion correlations, for rural terrain
 References:
 + EPA. 1995. *User's Guide for the Industrial Source Complex (ISC3) Dispersion Models, vol 2*. United States Environmental Protection Agency EPA-454/B-95-003b
 """
-function vertical_dispersion(x::Number, ::Type{ClassA}, ::Type{ISC3Ruralσz})
+function vertical_dispersion(x::Number, ::ClassA, ::ISC3Ruralσz)
     x_km = x/1000 # correlation is in km
     if x_km < 0.10
         a, b = 122.800, 0.94470
@@ -83,7 +83,7 @@ function vertical_dispersion(x::Number, ::Type{ClassA}, ::Type{ISC3Ruralσz})
     end
 end
 
-function vertical_dispersion(x::Number, ::Type{ClassB}, ::Type{ISC3Ruralσz})
+function vertical_dispersion(x::Number, ::ClassB, ::ISC3Ruralσz)
     x_km = x/1000 # correlation is in km
     if x_km ≤ 0.20
         a, b = 90.673, 0.93198
@@ -98,13 +98,13 @@ function vertical_dispersion(x::Number, ::Type{ClassB}, ::Type{ISC3Ruralσz})
     end
 end
 
-function vertical_dispersion(x::Number, ::Type{ClassC}, ::Type{ISC3Ruralσz})
+function vertical_dispersion(x::Number, ::ClassC, ::ISC3Ruralσz)
     x_km = x/1000 # correlation is in km
     sz = 61.141x_km^0.91465
     return min(sz, 5000)
 end
 
-function vertical_dispersion(x::Number, ::Type{ClassD}, ::Type{ISC3Ruralσz})
+function vertical_dispersion(x::Number, ::ClassD, ::ISC3Ruralσz)
     x_km = x/1000 # correlation is in km
     if x_km ≤ 0.30
         a, b = 34.459, 0.86974
@@ -127,7 +127,7 @@ function vertical_dispersion(x::Number, ::Type{ClassD}, ::Type{ISC3Ruralσz})
     end
 end
 
-function vertical_dispersion(x::Number, ::Type{ClassE}, ::Type{ISC3Ruralσz})
+function vertical_dispersion(x::Number, ::ClassE, ::ISC3Ruralσz)
     x_km = x/1000 # correlation is in km
     if x_km ≤ 0.10
         a, b = 24.260, 0.83660
@@ -159,7 +159,7 @@ function vertical_dispersion(x::Number, ::Type{ClassE}, ::Type{ISC3Ruralσz})
     end
 end
 
-function vertical_dispersion(x::Number, ::Type{ClassF}, ::Type{ISC3Ruralσz})
+function vertical_dispersion(x::Number, ::ClassF, ::ISC3Ruralσz)
     x_km = x/1000 # correlation is in km
     if x_km ≤ 0.20
         a, b = 15.209, 0.81558

@@ -1,7 +1,7 @@
 # defining type for dispatch
 struct IntPuff <: PuffModel end
 
-struct IntPuffSolution{F<:Number,N<:Number,S<:StabilityClass,E<:EquationSet} <: Puff
+struct IntPuffSolution{F<:Number,N<:Number,E<:EquationSet} <: Puff
     scenario::Scenario
     model::Symbol
     rate::F
@@ -10,13 +10,18 @@ struct IntPuffSolution{F<:Number,N<:Number,S<:StabilityClass,E<:EquationSet} <: 
     height::F
     windspeed::F
     npuffs::N
-    stability::Type{S}
     equationset::E
 end
-IntPuffSolution(s,m,r,ρ,d,h,u,n,stab,es) = IntPuffSolution(s,m,promote(r,ρ,d,h,u,)...,n,stab,es)
+IntPuffSolution(s,m,r,ρ,d,h,u,n,es) = IntPuffSolution(s,m,promote(r,ρ,d,h,u,)...,n,es)
+
+# for reverse compatibility
+function puff(s::Scenario, ::Type{IntPuff}, eqs=DefaultPuffSet; kwargs...)
+    @warn "puff(scenario, IntPuff, eqs) is deprecated, use puff(scenario, IntPuff(), eqs) instead."
+    return puff(s, IntPuff(), eqs; kwargs...)
+end
 
 @doc doc"""
-    puff(::Scenario, IntPuff[, ::EquationSet]; kwargs...)
+    puff(::Scenario, ::IntPuff[, ::EquationSet]; kwargs...)
 
 Returns the solution to an integrated Gaussian dispersion model, where the
 release is modeled as a sequence of Gaussian puffs, for the given scenario.
@@ -38,7 +43,7 @@ the puff is a gas at ambient conditions.
 - `n::Integer`: the number of discrete gaussian puffs, defaults to infinity
 
 """
-function puff(scenario::Scenario, ::Type{IntPuff}, eqs=DefaultPuffSet(); n::Number=Inf)
+function puff(scenario::Scenario, ::IntPuff, eqs=DefaultPuffSet; n::Number=Inf)
 
     stab = _stability(scenario)
     ṁ = _mass_rate(scenario)
@@ -56,10 +61,9 @@ function puff(scenario::Scenario, ::Type{IntPuff}, eqs=DefaultPuffSet(); n::Numb
             scenario,  #scenario::Scenario
             :intpuff, #model::Symbol
             :intpuff, #disp::Symbol
-            plume(scenario, GaussianPlume, eqs),
+            plume(scenario, GaussianPlume(), eqs),
             Δt,   # duration
             u,    # windspeed
-            stab, # stability class
             eqs   # equation set
         )
     elseif n > 1
@@ -72,7 +76,6 @@ function puff(scenario::Scenario, ::Type{IntPuff}, eqs=DefaultPuffSet(); n::Numb
             h,    # release height
             u,    # windspeed
             n,    # number of puffs
-            stab, # stability class
             eqs   # equation set
         )
     elseif n==1
@@ -83,7 +86,6 @@ function puff(scenario::Scenario, ::Type{IntPuff}, eqs=DefaultPuffSet(); n::Numb
             ρₐ,   # mass_to_vol
             h,    # release height
             u,    # windspeed
-            stab, # stability class
             eqs,  # equation set
         )
     else
@@ -92,7 +94,7 @@ function puff(scenario::Scenario, ::Type{IntPuff}, eqs=DefaultPuffSet(); n::Numb
 end
 
 
-function (ip::IntPuffSolution{F,<:Integer,S,E})(x,y,z,t) where {F<:Number,S<:StabilityClass,E<:EquationSet}
+function (ip::IntPuffSolution{F,<:Integer,E})(x,y,z,t) where {F,E}
     # domain check
     if (x<0)||(z<0)||(t<0)
         return zero(F)
@@ -103,6 +105,7 @@ function (ip::IntPuffSolution{F,<:Integer,S,E})(x,y,z,t) where {F<:Number,S<:Sta
     n = ip.npuffs # number of intervals = number of puffs - 1
     h = ip.height
     u = ip.windspeed
+    stab = _stability(ip.scenario)
 
     # Only account for puffs that have already been emitted
     Δt = min(t,Δt)
@@ -117,13 +120,13 @@ function (ip::IntPuffSolution{F,<:Integer,S,E})(x,y,z,t) where {F<:Number,S<:Sta
         t′ = t-i*δt
         xc = u*t′ # center of cloud
 
-        σx = downwind_dispersion(xc, S, ip.equationset)
+        σx = downwind_dispersion(xc, stab, ip.equationset)
         gx = t′>0 ? exp(-0.5*((x-u*t′)/σx)^2)/(√(2π)*σx) : 0
 
-        σy = crosswind_dispersion(xc, S, ip.equationset)
+        σy = crosswind_dispersion(xc, stab, ip.equationset)
         gy = exp(-0.5*(y/σy)^2)/(√(2π)*σy)
 
-        σz = vertical_dispersion(xc, S, ip.equationset)
+        σz = vertical_dispersion(xc, stab, ip.equationset)
         gz = ( exp(-0.5*((z-h)/σz)^2) + exp(-0.5*((z+h)/σz)^2) )/(√(2π)*σz)
 
         g = gx*gy*gz

@@ -12,7 +12,7 @@ plume
 ### Simple Gaussian Plume
 
 ```@docs
-plume(::Scenario{Substance,VerticalJet,Atmosphere}, ::Type{GaussianPlume})
+plume(::Scenario{Substance,VerticalJet,Atmosphere}, ::GaussianPlume)
 ```
 
 The simple gaussian plume model assumes that concentration profile in the crosswind (y) and vertical (z) directions follow gaussian distributions with dispersions $\sigma_y$ and $\sigma_z$, respectively. This model can be derived from an advection-diffusion equation, or simply taken as a given.
@@ -104,7 +104,7 @@ Patm = 101325 # Pa
 P1 = 4e5 + Patm # Pa
 T1 = 25 + 273.15 # K
 
-scn = scenario_builder(propane, JetSource; 
+scn = scenario_builder(propane, JetSource(); 
        phase = :gas,
        diameter = 0.01,  # m
        dischargecoef = 0.85,
@@ -142,14 +142,14 @@ SimpleAtmosphere atmosphere:
     u: 1.5 m/s
     h: 10.0 m
     rh: 0.0 %
-    stability: ClassF
+    stability: ClassF()
 
 ```
 
 And then pass it to the `plume` function
 
 ```jldoctest gaussplume; output = false, filter = r"(\d*)\.(\d{4})\d+" => s"\1.\2***"
-g = plume(scn, GaussianPlume)
+g = plume(scn, GaussianPlume())
 
 g(100,0,2)
 
@@ -177,7 +177,7 @@ Patm = 101325 # Pa
 P1 = 4e5 + Patm # Pa
 T1 = 25 + 273.15 # K
 
-scn = scenario_builder(propane, JetSource; 
+scn = scenario_builder(propane, JetSource(); 
        phase = :gas,
        diameter = 0.01,  # m
        dischargecoef = 0.85,
@@ -185,7 +185,7 @@ scn = scenario_builder(propane, JetSource;
        pressure = P1,    # Pa
        height = 3.5)     # m, height of hole above the ground
 
-g = plume(scn, GaussianPlume)
+g = plume(scn, GaussianPlume())
 ```
 
 ```@example gaussplume
@@ -213,7 +213,7 @@ plot(g, xlims=(0,50), ylims=(-10,10), height=3.5, clims=(0,LEL),
 ### Gaussian Plume within a Mixing Layer
 
 ```@docs
-plume(::Scenario{Substance,VerticalJet,Atmosphere}, ::Type{GaussianMixingLayer})
+plume(::Scenario{Substance,VerticalJet,Atmosphere}, ::GaussianMixingLayer)
 ```
 
 The gaussian mixing layer model allows for the plume to be contained entirely within a mixing layer of a given height. This can be done using either the method of images or a periodic boundary.
@@ -249,7 +249,7 @@ As `SimpleAtmosphere`s do not define mixing height, one is calculated based on t
 ### Simple Jet Model
 
 ```@docs
-plume(::Scenario{Substance,VerticalJet,Atmosphere}, ::Type{SimpleJet})
+plume(::Scenario, ::SimpleJet)
 ```
 
 Simple jet dispersion models are a useful tool for evaluating dispersion near the region where a jet release is occurring. They are based on a simplified model where the air is stationary and all of the momentum needed to mix the release is supplied by the jet. This is in some ways the opposite assumptions than are used in the Gaussian Plume model -- where the release is assumed to have negligible velocity and the momentum is entirely supplied by the wind.
@@ -286,7 +286,7 @@ the initial concentration is calculated from the mass flowrate and volumetric fl
 Suppose we wish to model the dispersion of gaseous propane using the same scenario, `scn`, worked out above.
 
 ```jldoctest gaussplume; output = true, filter = r"(\d*)\.(\d{4})\d+" => s"\1.\2***"
-j = plume(scn, SimpleJet)
+j = plume(scn, SimpleJet())
 j(100,0,2)
 
 # output
@@ -296,7 +296,7 @@ j(100,0,2)
 ```
 
 ```@example gaussplume
-j = plume(scn, SimpleJet) # hide
+j = plume(scn, SimpleJet()) # hide
 plot(j, xlims=(0,100), ylims=(-10,10), height=2)
 ```
 
@@ -305,7 +305,7 @@ plot(j, xlims=(0,100), ylims=(-10,10), height=2)
 ### Britter-McQuaid Model
 
 ```@docs
-plume(::Scenario, ::Type{BritterMcQuaidPlume})
+plume(::Scenario, ::BritterMcQuaidPlume)
 ```
 
 The Britter-McQuaid model is based on the *Workbook on the Dispersion of Dense Gases*([Britter and McQuaid 1988](references.md)) which uses a series of correlations relating maximum center-line concentrations to downwind distances based upon actual releases. The model of the plume is a series of rectangular slices with constant, average, concentration throughout -- giving a "top-hat" model. Points outside the defined plume are assumed to have zero concentration.
@@ -354,7 +354,7 @@ r = HorizontalJet( mass_rate = ṁ,
                   temperature = (273.15-162),
                   fraction_liquid = 0.0)
 
-a = SimpleAtmosphere(windspeed=10.9, temperature=298, stability=ClassF)
+a = SimpleAtmosphere(windspeed=10.9, temperature=298, stability=ClassF())
 
 scn = Scenario(lng,r,a)
 
@@ -387,7 +387,7 @@ SimpleAtmosphere atmosphere:
     u: 10.9 m/s 
     h: 10.0 m 
     rh: 0.0 % 
-    stability: ClassF  
+    stability: ClassF()  
 
 
 ```
@@ -395,7 +395,7 @@ SimpleAtmosphere atmosphere:
 Generating a solution using the Britter-McQuaid model is quite simple
 
 ```jldoctest burro; output = true, filter = r"(\d*)\.(\d{4})\d+" => s"\1.\2***"
-bm = plume(scn, BritterMcQuaidPlume)
+bm = plume(scn, BritterMcQuaidPlume())
 
 bm(367,0,0)
 

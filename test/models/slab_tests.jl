@@ -1,6 +1,6 @@
 @testset "SLAB puff tests" begin
 
-    @test GasDispersion._slab_stab.([ClassA,ClassB,ClassC,ClassD,ClassE,ClassF]) ≈ [1.0,2.0,3.0,4.0,5.0,6.0]
+    @test GasDispersion._slab_stab.([ClassA(),ClassB(),ClassC(),ClassD(),ClassE(),ClassF()]) ≈ [1.0,2.0,3.0,4.0,5.0,6.0]
 
 @testset "Antoine Coefficent Recovery" begin
     Base.isapprox(a::GasDispersion.Antoine, b::GasDispersion.Antoine) = all([
@@ -169,9 +169,9 @@ end
                 pressure = P,
                 temperature = T,
                 fraction_liquid = 0)
-    a = SimpleAtmosphere(windspeed=10.9, temperature=298, stability=ClassF)
+    a = SimpleAtmosphere(windspeed=10.9, temperature=298, stability=ClassF())
     scn = Scenario(s,r,a)
-    rls = puff(scn, SLAB; )
+    rls = puff(scn, SLAB(); )
 
     # basic checks that it returns the expected object
     @test isa(rls,GasDispersion.SLABSolution)
@@ -303,13 +303,13 @@ end
         windspeed=1.0,
         temperature=276.0,
         rel_humidity=30.0,
-        stability=ClassD
+        stability=ClassD()
     )
     tav = 1.0
     xffm = 10000.0
 
     inpr4 = Scenario(s,r,a)
-    rls = puff(inpr4, SLAB; t_av=tav, x_max=xffm)
+    rls = puff(inpr4, SLAB(); t_av=tav, x_max=xffm)
 
     @test rls.betax(17423.2) ≈ 4103.183379580039
 

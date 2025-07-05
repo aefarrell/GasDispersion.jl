@@ -9,7 +9,7 @@
     ljet = Scenario(s1, HorizontalJet(mass_rate=0.21691154763598,duration=Inf,
             diameter=0.01,velocity=5.636333880812954,height=1,pressure=101325,
             temperature=298.15,fraction_liquid=1), a)
-    @test ljet ≈ scenario_builder(s1,JetSource,a;phase=:liquid,dischargecoef=0.63,diameter=0.01,pressure=120935.0368,temperature=298.15,height=1)
+    @test ljet ≈ scenario_builder(s1,JetSource(),a;phase=:liquid,dischargecoef=0.63,diameter=0.01,pressure=120935.0368,temperature=298.15,height=1)
 
     # Gas jet example, *Guidelines for Consequence Analysis of Chemical
     # Releases* CCPS, 1999, pg 47
@@ -21,23 +21,23 @@
             diameter=0.01,velocity=208.58711308961637,height=1,
             pressure=287766.01316878956,temperature=277.2093023255814,
             fraction_liquid = 0),a)
-    @test gjet ≈ scenario_builder(s2,JetSource,a;phase=:gas,dischargecoef=0.85,diameter=0.01,pressure=501e3,temperature=298,height=1)
+    @test gjet ≈ scenario_builder(s2,JetSource(),a;phase=:gas,dischargecoef=0.85,diameter=0.01,pressure=501e3,temperature=298,height=1)
 
     # testing invalid phase
-    @test_throws ErrorException scenario_builder(s1,JetSource;phase=:fake,
+    @test_throws ErrorException scenario_builder(s1,JetSource();phase=:fake,
                         diameter=0,pressure=0,temperature=0,height=0)
 
     # testing default behaviour
-    @test ljet ≈ scenario_builder(s1,JetSource;phase=:liquid,dischargecoef=0.63,diameter=0.01,pressure=120935.0368,temperature=298.15,height=1)
+    @test ljet ≈ scenario_builder(s1,JetSource();phase=:liquid,dischargecoef=0.63,diameter=0.01,pressure=120935.0368,temperature=298.15,height=1)
 
     # testing VerticalJet
     vjet = Scenario(s2, VerticalJet(mass_rate=0.09002799947040846,duration=Inf,
             diameter=0.01,velocity=208.58711308961637,height=1,
             pressure=287766.01316878956,temperature=277.2093023255814,
             fraction_liquid = 0),a)
-    @test vjet ≈ scenario_builder(s2,JetSource,a;phase=:gas,dischargecoef=0.85,diameter=0.01,pressure=501e3,temperature=298,height=1,jet=:vertical)
+    @test vjet ≈ scenario_builder(s2,JetSource(),a;phase=:gas,dischargecoef=0.85,diameter=0.01,pressure=501e3,temperature=298,height=1,jet=:vertical)
 
     # testing invalid jet type
-    @test_throws ErrorException scenario_builder(s2,JetSource,a;phase=:gas,dischargecoef=0.85,diameter=0.01,pressure=501e3,temperature=298,height=1,jet=:fake)
+    @test_throws ErrorException scenario_builder(s2,JetSource(),a;phase=:gas,dischargecoef=0.85,diameter=0.01,pressure=501e3,temperature=298,height=1,jet=:fake)
     
 end

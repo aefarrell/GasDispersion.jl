@@ -1,23 +1,22 @@
 # defining type for dispatch
 struct Palazzi <: PuffModel end
 
-struct PalazziSolution{F<:Number,S<:StabilityClass,E<:EquationSet} <: Puff
+struct PalazziSolution{F<:Number,E<:EquationSet} <: Puff
     scenario::Scenario
     model::Symbol
     disp::Symbol
     plume::Plume
     duration::F
     windspeed::F
-    stability::Type{S}
     equationset::E
 end
 
-PalazziDefaultSet = BasicEquationSet{DefaultWind,Defaultσy,Defaultσy,Defaultσz}
+const PalazziDefaultSet = BasicEquationSet(DefaultWind(),Defaultσy(),Defaultσy(),Defaultσz())
 
-downwind_dispersion(x::Number, stab::Any, ::Type{Defaultσy}) = crosswind_dispersion(x, stab, Defaultσy)
+downwind_dispersion(x::Number, stab::StabilityClass, ::Defaultσy) = crosswind_dispersion(x, stab, Defaultσy())
 
 @doc doc"""
-    puff(::Scenario, Palazzi[, ::EquationSet]; kwargs...)
+    puff(::Scenario, ::Palazzi[, ::EquationSet]; kwargs...)
 
 Returns the solution to a short duration Gaussian puff dispersion model for the given scenario, based on the work of Palazzi *et al*.
 
@@ -45,7 +44,7 @@ downwind dispersion, σx, is calculated:
 + Palazzi, E, M De Faveri, Giuseppe Fumarola, and G Ferraiolo. “Diffusion from a Steady Source of Short Duration.” *Atmospheric Environment*. 16, no. 12 (1982): 2785–90.
 
 """
-function puff(scenario::Scenario, ::Type{Palazzi}, eqs=PalazziDefaultSet(); plume_model=GaussianPlume, disp_method=:default, kwargs...)
+function puff(scenario::Scenario, ::Palazzi, eqs=PalazziDefaultSet; plume_model=GaussianPlume(), disp_method=:default, kwargs...)
 
     stab = _stability(scenario)
     Δt = _duration(scenario)
@@ -59,13 +58,12 @@ function puff(scenario::Scenario, ::Type{Palazzi}, eqs=PalazziDefaultSet(); plum
         plume(scenario, plume_model, eqs; kwargs...), # plume model
         Δt,   # duration
         u,    # windspeed
-        stab, # stability class
         eqs   # equation set
     )
 end
 
 
-function (ps::PalazziSolution{F,S,E})(x,y,z,t) where {F<:Number,S<:StabilityClass,E<:EquationSet}
+function (ps::PalazziSolution{F,E})(x,y,z,t) where {F,E}
     # domain check
     if (x<0)||(z<0)||(t<0)
         return zero(F)
@@ -74,6 +72,7 @@ function (ps::PalazziSolution{F,S,E})(x,y,z,t) where {F<:Number,S<:StabilityClas
     χ = ps.plume(x,y,z,t)
     Δt = min(t,ps.duration)
     u = ps.windspeed
+    stab = _stability(ps.scenario)
 
     if ps.disp == :default
         xa = xb = x
@@ -89,8 +88,8 @@ function (ps::PalazziSolution{F,S,E})(x,y,z,t) where {F<:Number,S<:StabilityClas
     end
 
     # Gaussian dispersion in the x direction
-    σx_a = downwind_dispersion(xa, S, ps.equationset)
-    σx_b = downwind_dispersion(xb, S, ps.equationset)
+    σx_a = downwind_dispersion(xa, stab, ps.equationset)
+    σx_b = downwind_dispersion(xb, stab, ps.equationset)
     a  = (x-u*(t-Δt))/(√2*σx_a)
     b  = (x-u*t)/(√2*σx_b)
 

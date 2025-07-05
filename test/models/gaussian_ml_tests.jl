@@ -62,43 +62,43 @@
                  pressure=101325,
                  windspeed=2,
                  windspeed_height=10,
-                 stability=ClassF)
+                 stability=ClassF())
 
     neut = SimpleAtmosphere(temperature=298,
                  pressure=101325,
                  windspeed=2,
                  windspeed_height=10,
-                 stability=ClassD)
+                 stability=ClassD())
 
     
     # horizontal jet test default behaviour and type inheritance
-    @test plume(Scenario(sub,hj,stbl), GaussianMixingLayer).verticalterm isa GasDispersion.SimpleVerticalTerm
-    @test plume(Scenario(sub,hj,neut), GaussianMixingLayer).verticalterm isa GasDispersion.SimpleMixingLayer
-    @test plume(Scenario(sub,hj,neut), GaussianMixingLayer; method=:periodicmixinglayer).verticalterm isa GasDispersion.PeriodicMixingLayer
-    @test_throws ErrorException plume(Scenario(sub,hj,neut), GaussianMixingLayer; method=:someothermethod)
-    @test_throws ErrorException plume(Scenario(sub,hj_toohigh,neut), GaussianMixingLayer)
+    @test plume(Scenario(sub,hj,stbl), GaussianMixingLayer()).verticalterm isa GasDispersion.SimpleVerticalTerm
+    @test plume(Scenario(sub,hj,neut), GaussianMixingLayer()).verticalterm isa GasDispersion.SimpleMixingLayer
+    @test plume(Scenario(sub,hj,neut), GaussianMixingLayer(); method=:periodicmixinglayer).verticalterm isa GasDispersion.PeriodicMixingLayer
+    @test_throws ErrorException plume(Scenario(sub,hj,neut), GaussianMixingLayer(); method=:someothermethod)
+    @test_throws ErrorException plume(Scenario(sub,hj_toohigh,neut), GaussianMixingLayer())
     
     # vertical jet test default behaviour and type inheritance
-    @test plume(Scenario(sub,vj,stbl), GaussianMixingLayer).verticalterm isa GasDispersion.SimpleVerticalTerm
-    @test plume(Scenario(sub,vj,neut), GaussianMixingLayer).verticalterm isa GasDispersion.SimpleMixingLayer
-    @test plume(Scenario(sub,vj,neut), GaussianMixingLayer; method=:periodicmixinglayer).verticalterm isa GasDispersion.PeriodicMixingLayer
-    @test plume(Scenario(sub,vj,neut), GaussianMixingLayer; plumerise=false).plumerise isa GasDispersion.NoPlumeRise
-    @test_throws ErrorException plume(Scenario(sub,vj,neut), GaussianMixingLayer; method=:someothermethod)
-    @test_throws ErrorException plume(Scenario(sub,vj_toohigh,neut), GaussianMixingLayer)
+    @test plume(Scenario(sub,vj,stbl), GaussianMixingLayer()).verticalterm isa GasDispersion.SimpleVerticalTerm
+    @test plume(Scenario(sub,vj,neut), GaussianMixingLayer()).verticalterm isa GasDispersion.SimpleMixingLayer
+    @test plume(Scenario(sub,vj,neut), GaussianMixingLayer(); method=:periodicmixinglayer).verticalterm isa GasDispersion.PeriodicMixingLayer
+    @test plume(Scenario(sub,vj,neut), GaussianMixingLayer(); plumerise=false).plumerise isa GasDispersion.NoPlumeRise
+    @test_throws ErrorException plume(Scenario(sub,vj,neut), GaussianMixingLayer(); method=:someothermethod)
+    @test_throws ErrorException plume(Scenario(sub,vj_toohigh,neut), GaussianMixingLayer())
 
     # testing limit on plume rise
-    pl_rise = plume(Scenario(sub,vj_rh_high,neut), GaussianMixingLayer; downwash=false, plumerise=true)
+    pl_rise = plume(Scenario(sub,vj_rh_high,neut), GaussianMixingLayer(); downwash=false, plumerise=true)
     @test pl_rise.plumerise.final_rise ≈ pl_rise.verticalterm.mixing_height
-    pl_low_terms = plume(Scenario(sub,vj_rh_high,neut), GaussianMixingLayer; downwash=false, plumerise=true, n_terms=1)
+    pl_low_terms = plume(Scenario(sub,vj_rh_high,neut), GaussianMixingLayer(); downwash=false, plumerise=true, n_terms=1)
     @test pl_low_terms(pl_rise.plumerise.xf,0,0.9*pl_rise.verticalterm.mixing_height) < pl_rise(pl_rise.plumerise.xf,0,0.9*pl_rise.verticalterm.mixing_height)
     
     # integration test with a scenario -- simple mixing layer
-    pl_smpl = plume(Scenario(sub,vj,neut), GaussianMixingLayer; downwash=true, plumerise=true)
+    pl_smpl = plume(Scenario(sub,vj,neut), GaussianMixingLayer(); downwash=true, plumerise=true)
     @test pl_smpl.verticalterm.mixing_height ≈ 640.0311954829524
     @test pl_smpl(500, 0, 0) ≈ 1.7194314353343084e-5
 
     # integration test with a scenario -- periodic mixing layer
-    pl_per = plume(Scenario(sub,vj,neut), GaussianMixingLayer; downwash=true, plumerise=true, method=:periodicmixinglayer, n_terms=100_000_000)
+    pl_per = plume(Scenario(sub,vj,neut), GaussianMixingLayer(); downwash=true, plumerise=true, method=:periodicmixinglayer, n_terms=100_000_000)
     @test pl_per.verticalterm.mixing_height ≈ 640.0311954829524
     @test pl_per(500, 0, 0) ≈ 1.7194314353343084e-5
 
