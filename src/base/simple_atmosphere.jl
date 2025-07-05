@@ -45,9 +45,15 @@ struct SimpleAtmosphere{F<:Number,S<:StabilityClass} <: Atmosphere
     stability::S # Pasquill-Gifford stability class
 end
 SimpleAtmosphere(P,T,u,h,rh,stability) = SimpleAtmosphere(promote(P,T,u,h,rh,)...,stability)
-SimpleAtmosphere(; pressure=101325,temperature=298.15,windspeed=1.5,windspeed_height=10,
-                   rel_humidity=0.0,stability=ClassF()) = SimpleAtmosphere(pressure,
-                   temperature,windspeed,windspeed_height,rel_humidity,stability)
+
+function SimpleAtmosphere(; pressure=101325,temperature=298.15,windspeed=1.5,windspeed_height=10,
+                            rel_humidity=0.0,stability=ClassF())
+    if stability isa Type{<:StabilityClass}
+        @warn "Instantiating SimpleAtmosphere with a StabilityClass type is deprecated, use an instance instead. For example, use stability=ClassF() instead of stability=ClassF."
+        stability = stability()
+    end
+    return SimpleAtmosphere(pressure,temperature,windspeed,windspeed_height,rel_humidity,stability)
+end
 
 _lapse_rate(a::SimpleAtmosphere{<:Number,<:ClassE}) = 0.020
 _lapse_rate(a::SimpleAtmosphere{<:Number,<:ClassF}) = 0.035

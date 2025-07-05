@@ -15,7 +15,10 @@ end
 BritterMcQuaidPlumeSolution(s,m,c0,T,D,lb,xnf,xff,A,itp)=BritterMcQuaidPlumeSolution(s,m,promote(c0,T,D,lb,xnf,xff,A)...,itp)
 
 # for reverse compatibility
-plume(s::Scenario, ::Type{<:BritterMcQuaidPlume}, eqs=DefaultSet) = plume(s, BritterMcQuaidPlume(), eqs)
+function plume(s::Scenario, ::Type{BritterMcQuaidPlume}, eqs=DefaultSet)
+    @warn "plume(scenario, BritterMcQuaidPlume, eqs) is deprecated, use plume(scenario, BritterMcQuaidPlume(), eqs) instead."
+    return plume(s, BritterMcQuaidPlume(), eqs)
+end
 
 """
     plume(::Scenario, ::BritterMcQuaidPlume[, equationset::EquationSet])
@@ -81,7 +84,8 @@ function plume(scenario::Scenario, ::BritterMcQuaidPlume, eqs=DefaultSet)
     end
 
     # linear interpolation
-    itp = LinearInterpolation(concs, βs)
+    βperm = sortperm(βs)
+    itp = LinearInterpolation(concs[βperm], βs[βperm])
 
     # far field correlation
     # starts at last interpolation point and decays like x′^-2

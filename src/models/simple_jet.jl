@@ -18,7 +18,10 @@ _release_angle(::HorizontalJet) = 0.0
 _release_angle(::VerticalJet) = π/2
 
 # for reverse compatibility
-plume(scenario::Scenario, ::Type{<:SimpleJet}, eqs=DefaultSet; kwargs...) = plume(scenario, SimpleJet(), eqs; kwargs...)
+function plume(scenario::Scenario, ::Type{SimpleJet}, eqs=DefaultSet; kwargs...) 
+    @warn "plume(scenario, SimpleJet, eqs) is deprecated, use plume(scenario, SimpleJet(), eqs) instead."    
+    return plume(scenario, SimpleJet(), eqs; kwargs...)
+end
 
 @doc doc"""
     plume(::Scenario, SimpleJet; kwargs...)

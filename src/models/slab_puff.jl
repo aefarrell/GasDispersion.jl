@@ -64,8 +64,10 @@ function _slab_antoine(s::Scenario)
 end
 
 # for reverse compatibility
-puff(scenario::Scenario, ::Type{<:SLAB}, eqs::EquationSet=DefaultSet; kwargs...) = 
-    puff(scenario, SLAB(), eqs; kwargs...)
+function puff(scenario::Scenario, ::Type{SLAB}, eqs::EquationSet=DefaultSet; kwargs...)
+    @warn "puff(scenario, SLAB, eqs) is deprecated, use puff(scenario, SLAB(), eqs) instead."
+    return puff(scenario, SLAB(), eqs; kwargs...)
+end
 
 @doc doc"""
     puff(::Scenario, SLAB; kwargs...)

@@ -15,7 +15,10 @@ struct BritterMcQuaidPuffSolution{F<:Number,I} <: Puff
 end
 
 # For reverse compatibility
-puff(s::Scenario, ::Type{BritterMcQuaidPuff}, eqs=DefaultSet) = puff(s, BritterMcQuaidPuff(), eqs)
+function puff(s::Scenario, ::Type{BritterMcQuaidPuff}, eqs=DefaultSet)
+    @warn "puff(scenario, BritterMcQuaidPuff, eqs) is deprecated, use puff(scenario, BritterMcQuaidPuff(), eqs) instead."
+    return puff(s, BritterMcQuaidPuff(), eqs)
+end
 
 """
     puff(scenario::Scenario, ::BritterMcQuaidPuff[, equationset::EquationSet])
@@ -68,7 +71,8 @@ function puff(scenario::Scenario, ::BritterMcQuaidPuff, eqs=DefaultSet)
     xnf = 10^(minimum(βs))
 
     # linear interpolation
-    itp = LinearInterpolation(concs, βs)
+    βperm = sortperm(βs)
+    itp = LinearInterpolation(concs[βperm], βs[βperm])
 
     # far field correlation
     # starts at last interpolation point and decays like x′^-2

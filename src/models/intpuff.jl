@@ -15,7 +15,10 @@ end
 IntPuffSolution(s,m,r,ρ,d,h,u,n,es) = IntPuffSolution(s,m,promote(r,ρ,d,h,u,)...,n,es)
 
 # for reverse compatibility
-puff(s::Scenario, ::Type{<:IntPuff}, eqs=DefaultPuffSet; kwargs...) = puff(s, IntPuff(), eqs; kwargs...)
+function puff(s::Scenario, ::Type{IntPuff}, eqs=DefaultPuffSet; kwargs...)
+    @warn "puff(scenario, IntPuff, eqs) is deprecated, use puff(scenario, IntPuff(), eqs) instead."
+    return puff(s, IntPuff(), eqs; kwargs...)
+end
 
 @doc doc"""
     puff(::Scenario, ::IntPuff[, ::EquationSet]; kwargs...)

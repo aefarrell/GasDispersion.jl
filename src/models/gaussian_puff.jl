@@ -14,7 +14,10 @@ end
 GaussianPuffSolution(s,m,q,ρ,h,u,es) = GaussianPuffSolution(s,m,promote(q,ρ,h,u)...,es)
 
 # for reverse compatibility
-puff(s::Scenario, ::Type{<:GaussianPuff}, eqs=DefaultPuffSet; kwargs...) = puff(s, GaussianPuff(), eqs; kwargs...)
+function puff(s::Scenario, ::Type{<:GaussianPuff}, eqs=DefaultPuffSet; kwargs...) 
+    @warn "puff(scenario, GaussianPuff, eqs) is deprecated, use puff(scenario, GaussianPuff(), eqs) instead."
+    return puff(s, GaussianPuff(), eqs; kwargs...)
+end
 
 @doc doc"""
     puff(::Scenario, GaussianPuff[, ::EquationSet])

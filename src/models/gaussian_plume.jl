@@ -29,7 +29,10 @@ struct SimpleVerticalTerm <: GaussianVerticalTerm end
 vertical_term(z, h, σz, ::SimpleVerticalTerm) = ( exp(-0.5*((z-h)/σz)^2) + exp(-0.5*((z+h)/σz)^2) )/(√(2π)*σz)
 
 # for reverse compatibility
-plume(s::Scenario, ::Type{GaussianPlume}, eqs=DefaultSet; kwargs...) = plume(s, GaussianPlume(), eqs; kwargs...)
+function plume(s::Scenario, ::Type{GaussianPlume}, eqs=DefaultSet; kwargs...) 
+    @warn "plume(scenario, GaussianPlume, eqs) is deprecated, use plume(scenario, GaussianPlume(), eqs) instead."
+    return plume(s, GaussianPlume(), eqs; kwargs...)
+end
 
 @doc doc"""
     plume(::Scenario, ::GaussianPlume[, ::EquationSet]; kwargs...)
