@@ -34,7 +34,7 @@
     @test pf(x₁,0,h,t₁) ≈ 1.6373715867403676e-5
     @test pf(x₁,0,h,-t₁) == 0.0
 
-    pf1 = puff(scn, Palazzi(), DefaultPuffSet(); disp_method=:intpuff)
+    pf1 = puff(scn, Palazzi(), DefaultPuffSet; disp_method=:intpuff)
     @test pf1(x₁,0,h,t₁) ≈ 0.00035586710616021256/1.2268
 
     pf2 = puff(scn, Palazzi(); disp_method=:tno)

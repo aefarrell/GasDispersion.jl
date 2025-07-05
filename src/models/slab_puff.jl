@@ -63,6 +63,10 @@ function _slab_antoine(s::Scenario)
     end
 end
 
+# for reverse compatibility
+puff(scenario::Scenario, ::Type{<:SLAB}, eqs::EquationSet=DefaultSet; kwargs...) = 
+    puff(scenario, SLAB(), eqs; kwargs...)
+
 @doc doc"""
     puff(::Scenario, SLAB; kwargs...)
 
@@ -77,7 +81,7 @@ scenario.
 - `x_max::Number=2000`: maximum downwind distance, meters, this defines the problem domain
 
 """
-function puff(scenario::Scenario, ::SLAB, eqs::EquationSet=DefaultSet(); 
+function puff(scenario::Scenario, ::SLAB, eqs::EquationSet=DefaultSet; 
               t_av=10, x_max=2000)
     c_max = 1.0
     stab = _slab_stab( _stability(scenario) )
@@ -143,7 +147,7 @@ scenario.
 - `x_max::Number=2000`: maximum downwind distance, meters, this defines the problem domain
 
 """
-function puff(scenario::Scenario{<:AbstractSubstance,<:VerticalJet,<:Atmosphere}, ::SLAB, eqs::EquationSet=DefaultSet();
+function puff(scenario::Scenario{<:AbstractSubstance,<:VerticalJet,<:Atmosphere}, ::SLAB, eqs::EquationSet=DefaultSet;
               t_av=10, x_max=2000)
     c_max = 1.0
     stab = _slab_stab( _stability(scenario) )

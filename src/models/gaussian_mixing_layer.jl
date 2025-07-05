@@ -69,7 +69,7 @@ There are two methods for the mixing layer:
 + Seinfeld, John H. and Spyros N. Pandis. 2006. *Atmospheric Chemistry and Physics* 2nd Ed. New York: John Wiley and Sons.
 
 """
-function plume(scenario::Scenario, ::GaussianMixingLayer, eqs=DefaultSet(); 
+function plume(scenario::Scenario, ::GaussianMixingLayer, eqs=DefaultSet; 
                method=:simplemixinglayer, 
                h_min=1.0, 
                n_terms=10,
@@ -156,7 +156,7 @@ There are two methods for the mixing layer:
 
 """
 function plume(scenario::Scenario{<:AbstractSubstance,<:VerticalJet,<:Atmosphere}, 
-               ::GaussianMixingLayer, eqs=DefaultSet(); 
+               ::GaussianMixingLayer, eqs=DefaultSet; 
                downwash::Bool=false, plumerise::Bool=true,
                method=:simplemixinglayer,
                h_min=1.0, 

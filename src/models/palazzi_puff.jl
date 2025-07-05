@@ -11,7 +11,7 @@ struct PalazziSolution{F<:Number,E<:EquationSet} <: Puff
     equationset::E
 end
 
-PalazziDefaultSet() = BasicEquationSet(DefaultWind(),Defaultσy(),Defaultσy(),Defaultσz())
+const PalazziDefaultSet = BasicEquationSet(DefaultWind(),Defaultσy(),Defaultσy(),Defaultσz())
 
 downwind_dispersion(x::Number, stab::StabilityClass, ::Defaultσy) = crosswind_dispersion(x, stab, Defaultσy())
 
@@ -44,7 +44,7 @@ downwind dispersion, σx, is calculated:
 + Palazzi, E, M De Faveri, Giuseppe Fumarola, and G Ferraiolo. “Diffusion from a Steady Source of Short Duration.” *Atmospheric Environment*. 16, no. 12 (1982): 2785–90.
 
 """
-function puff(scenario::Scenario, ::Palazzi, eqs=PalazziDefaultSet(); plume_model=GaussianPlume(), disp_method=:default, kwargs...)
+function puff(scenario::Scenario, ::Palazzi, eqs=PalazziDefaultSet; plume_model=GaussianPlume(), disp_method=:default, kwargs...)
 
     stab = _stability(scenario)
     Δt = _duration(scenario)

@@ -13,6 +13,9 @@ struct GaussianPuffSolution{F<:Number,E<:EquationSet} <: Puff
 end
 GaussianPuffSolution(s,m,q,ρ,h,u,es) = GaussianPuffSolution(s,m,promote(q,ρ,h,u)...,es)
 
+# for reverse compatibility
+puff(s::Scenario, ::Type{<:GaussianPuff}, eqs=DefaultPuffSet; kwargs...) = puff(s, GaussianPuff(), eqs; kwargs...)
+
 @doc doc"""
     puff(::Scenario, GaussianPuff[, ::EquationSet])
 
@@ -34,7 +37,7 @@ is a gas at ambient conditions.
 # References
 + AIChE/CCPS. 1999. *Guidelines for Consequence Analysis of Chemical Releases*. New York: American Institute of Chemical Engineers
 """
-function puff(scenario::Scenario, ::GaussianPuff, eqs=DefaultPuffSet(); h_min=1.0)
+function puff(scenario::Scenario, ::GaussianPuff, eqs=DefaultPuffSet; h_min=1.0)
     m = _release_mass(scenario)
     Tₐ = _atmosphere_temperature(scenario)
     Pₐ = _atmosphere_pressure(scenario)

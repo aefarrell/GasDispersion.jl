@@ -1,6 +1,10 @@
 # defining type for dispatch
 struct JetSource <: SourceModel end
 
+# for reverse compatibility
+source(s::AbstractSubstance, ::Type{<:JetSource}, a::Atmosphere; kwargs...) =
+    scenario_builder(s, JetSource(), a; kwargs...)
+
 @doc doc"""
     scenario_builder(substance::AbstractSubstance, ::JetSource, atmosphere::Atmosphere; kwargs...)
 Returns returns a scenario for a simple jet from a circular hole. The

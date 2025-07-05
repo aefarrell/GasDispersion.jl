@@ -17,6 +17,9 @@ SimpleJetSolution(s,m,d,h,θ,c0,kd,k2,k3) = SimpleJetSolution(s,m,promote(d,h,θ
 _release_angle(::HorizontalJet) = 0.0
 _release_angle(::VerticalJet) = π/2
 
+# for reverse compatibility
+plume(scenario::Scenario, ::Type{<:SimpleJet}, eqs=DefaultSet; kwargs...) = plume(scenario, SimpleJet(), eqs; kwargs...)
+
 @doc doc"""
     plume(::Scenario, SimpleJet; kwargs...)
 
@@ -41,7 +44,7 @@ of images.
 - `k3::Number=5` parameter of the model, default value is recommended by Long
 
 """
-function plume(scenario::Scenario, ::SimpleJet, eqs::EquationSet=DefaultSet(); release_angle=nothing, k2=6.0, k3=5.0)
+function plume(scenario::Scenario, ::SimpleJet, eqs::EquationSet=DefaultSet; release_angle=nothing, k2=6.0, k3=5.0)
     # release angle
     if isnothing(release_angle)
         release_angle = _release_angle(scenario.release)

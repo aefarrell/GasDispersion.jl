@@ -28,6 +28,8 @@ cross_term(y, σy, ::SimpleCrossTerm) = exp(-0.5*(y/σy)^2)/(√(2π)*σy)
 struct SimpleVerticalTerm <: GaussianVerticalTerm end
 vertical_term(z, h, σz, ::SimpleVerticalTerm) = ( exp(-0.5*((z-h)/σz)^2) + exp(-0.5*((z+h)/σz)^2) )/(√(2π)*σz)
 
+# for reverse compatibility
+plume(s::Scenario, ::Type{GaussianPlume}, eqs=DefaultSet; kwargs...) = plume(s, GaussianPlume(), eqs; kwargs...)
 
 @doc doc"""
     plume(::Scenario, ::GaussianPlume[, ::EquationSet]; kwargs...)
@@ -50,7 +52,7 @@ is a gas at ambient conditions.
 + AIChE/CCPS. 1999. *Guidelines for Consequence Analysis of Chemical Releases*. New York: American Institute of Chemical Engineers
 
 """
-function plume(scenario::Scenario, ::GaussianPlume, eqs=DefaultSet(); h_min=1.0)
+function plume(scenario::Scenario, ::GaussianPlume, eqs=DefaultSet; h_min=1.0)
     # parameters of the jet
     hᵣ = _release_height(scenario)
     m  = _mass_rate(scenario)
@@ -112,7 +114,7 @@ is a gas at ambient conditions.
 + Briggs, Gary A. 1969. *Plume Rise* Oak Ridge: U.S. Atomic Energy Commission
 
 """
-function plume(scenario::Scenario{<:AbstractSubstance,<:VerticalJet,<:Atmosphere}, ::GaussianPlume, eqs=DefaultSet(); downwash::Bool=false, plumerise::Bool=true, h_min=1.0)  
+function plume(scenario::Scenario{<:AbstractSubstance,<:VerticalJet,<:Atmosphere}, ::GaussianPlume, eqs=DefaultSet; downwash::Bool=false, plumerise::Bool=true, h_min=1.0)  
     # parameters of the jet
     Dⱼ = _release_diameter(scenario)
     uⱼ = _release_velocity(scenario)

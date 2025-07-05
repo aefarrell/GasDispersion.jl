@@ -14,6 +14,9 @@ struct IntPuffSolution{F<:Number,N<:Number,E<:EquationSet} <: Puff
 end
 IntPuffSolution(s,m,r,ρ,d,h,u,n,es) = IntPuffSolution(s,m,promote(r,ρ,d,h,u,)...,n,es)
 
+# for reverse compatibility
+puff(s::Scenario, ::Type{<:IntPuff}, eqs=DefaultPuffSet; kwargs...) = puff(s, IntPuff(), eqs; kwargs...)
+
 @doc doc"""
     puff(::Scenario, ::IntPuff[, ::EquationSet]; kwargs...)
 
@@ -37,7 +40,7 @@ the puff is a gas at ambient conditions.
 - `n::Integer`: the number of discrete gaussian puffs, defaults to infinity
 
 """
-function puff(scenario::Scenario, ::IntPuff, eqs=DefaultPuffSet(); n::Number=Inf)
+function puff(scenario::Scenario, ::IntPuff, eqs=DefaultPuffSet; n::Number=Inf)
 
     stab = _stability(scenario)
     ṁ = _mass_rate(scenario)

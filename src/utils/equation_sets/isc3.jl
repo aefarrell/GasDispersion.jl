@@ -2,7 +2,7 @@
 
 # Correlations for urban terrain
 struct ISC3UrbanWind <: PowerLawWind end
-ISC3Urban() = BasicEquationSet(ISC3UrbanWind(),nothing,BriggsUrbanσy(),BriggsUrbanσz())
+const ISC3Urban = BasicEquationSet(ISC3UrbanWind(),nothing,BriggsUrbanσy(),BriggsUrbanσz())
 
 """
     windspeed(u0::Number,z0::Number,z::Number, stability, ISC3UrbanWind)
@@ -26,7 +26,7 @@ windspeed(u0::Number,z0::Number,z::Number,::ClassF,::ISC3UrbanWind) = u0*(z/z0)^
 # Correlations for rural terrain
 struct ISC3Ruralσy <: DispersionFunction end
 struct ISC3Ruralσz <: DispersionFunction end
-ISC3Rural() = BasicEquationSet(IrwinRural(),nothing,ISC3Ruralσy(),ISC3Ruralσz())
+const ISC3Rural = BasicEquationSet(IrwinRural(),nothing,ISC3Ruralσy(),ISC3Ruralσz())
 
 
 """

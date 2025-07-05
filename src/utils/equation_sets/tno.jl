@@ -4,7 +4,7 @@
 struct TNOWind <: MoninObukhovWind end
 struct TNOPlumeσy <: DispersionFunction end
 struct TNOPlumeσz <: DispersionFunction end
-TNOPlume() = BasicEquationSet(TNOWind(),nothing,TNOPlumeσy(),TNOPlumeσz())
+const TNOPlume = BasicEquationSet(TNOWind(),nothing,TNOPlumeσy(),TNOPlumeσz())
 
 # Default surface roughness for TNO models is 0.1
 function windspeed(a::SimpleAtmosphere,z::Number,es::BasicEquationSet{W,SX,SY,SZ}; k=0.4) where {W<:TNOWind,SX,SY,SZ}
@@ -97,7 +97,7 @@ vertical_dispersion(x::Number, ::ClassF, ::TNOPlumeσz) = 0.12x^0.67
 struct TNOPuffσx <: DispersionFunction end
 struct TNOPuffσy <: DispersionFunction end
 struct TNOPuffσz <: DispersionFunction end
-TNOPuff() = BasicEquationSet(TNOWind(),TNOPuffσx(),TNOPuffσy(),TNOPuffσz())
+const TNOPuff = BasicEquationSet(TNOWind(),TNOPuffσx(),TNOPuffσy(),TNOPuffσz())
 
 """
     crosswind_dispersion(x, StabilityClass, TNOPuffσy)

@@ -1,7 +1,7 @@
 # Correlations from Turner (1970)
 struct Turnerσy <: DispersionFunction end
 struct Turnerσz <: DispersionFunction end
-Turner() = BasicEquationSet(DefaultWind(),nothing,Turnerσy(),Turnerσz())
+const Turner = BasicEquationSet(DefaultWind(),nothing,Turnerσy(),Turnerσz())
 
 """
     crosswind_dispersion(x, StabilityClass, Turnerσy)

@@ -14,6 +14,9 @@ struct BritterMcQuaidPuffSolution{F<:Number,I} <: Puff
     itp::I
 end
 
+# For reverse compatibility
+puff(s::Scenario, ::Type{BritterMcQuaidPuff}, eqs=DefaultSet) = puff(s, BritterMcQuaidPuff(), eqs)
+
 """
     puff(scenario::Scenario, ::BritterMcQuaidPuff[, equationset::EquationSet])
 
@@ -28,7 +31,7 @@ a default power-law wind profile is used.
 + Britter, Rex E. and J. McQuaid. 1988. *Workbook on the Dispersion of Dense Gases. HSE Contract Research Report No. 17/1988*
 + AIChE/CCPS. 1999. *Guidelines for Consequence Analysis of Chemical Releases*. New York: American Institute of Chemical Engineers
 """
-function puff(scenario::Scenario, ::BritterMcQuaidPuff, eqs=DefaultSet())
+function puff(scenario::Scenario, ::BritterMcQuaidPuff, eqs=DefaultSet)
 
     Q = _release_flowrate(scenario)
     ṁ = _mass_rate(scenario)

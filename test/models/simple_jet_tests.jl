@@ -32,7 +32,7 @@
     c = 0.011276270392345168
 
     # horizontal jet
-    j = plume(scn, SimpleJet(); release_angle=0, k2=a, k3=b)
+    j = plume(scn, SimpleJet(); k2=a, k3=b)
     @test isa(j, GasDispersion.SimpleJetSolution)
     @test isa(j, Plume)
     @test j(x,y,z) ≈ c

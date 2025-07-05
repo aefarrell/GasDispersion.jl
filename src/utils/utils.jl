@@ -26,8 +26,8 @@ include("equation_sets/turner.jl")
 include("equation_sets/isc3.jl")
 
 # Default correlations
-DefaultSet() = BasicEquationSet(DefaultWind(),nothing,Defaultσy(),Defaultσz())
-DefaultPuffSet() = BasicEquationSet(DefaultWind(),CCPSPuffσx(),CCPSPuffσy(),CCPSPuffσz())
+const DefaultSet = BasicEquationSet(DefaultWind(),nothing,Defaultσy(),Defaultσz())
+const DefaultPuffSet = BasicEquationSet(DefaultWind(),CCPSPuffσx(),CCPSPuffσy(),CCPSPuffσz())
 
 # a lazy check for if x,y,z are in the domain
 struct ProblemDomain{F<:Number}

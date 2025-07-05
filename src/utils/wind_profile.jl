@@ -25,7 +25,7 @@ function windspeed(a::Atmosphere,z::Number,es::BasicEquationSet{W,SX,SY,SZ}) whe
     return windspeed(u0,z0,z,stab,wind)
 end
 
-windspeed(a::Atmosphere,z::Number) = windspeed(a,z,DefaultSet())
+windspeed(a::Atmosphere,z::Number) = windspeed(a,z,DefaultSet)
 
 # Monin-Obukhov similarity theory wind profiles
 struct BusingerWind <: MoninObukhovWind end
@@ -70,7 +70,7 @@ function windspeed(a::Atmosphere,z::Number,es::BasicEquationSet{W,SX,SY,SZ}; k=0
 end
 
 # friction velocity
-friction_velocity(a::Atmosphere) = friction_velocity(a,DefaultSet())
+friction_velocity(a::Atmosphere) = friction_velocity(a,DefaultSet)
 
 function friction_velocity(a::SimpleAtmosphere,es::BasicEquationSet{W,SX,SY,SZ}; k=0.35) where {W<:PowerLawWind,SX,SY,SZ}
     return 0.1*windspeed(a,10,es)
