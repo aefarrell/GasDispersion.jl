@@ -70,7 +70,7 @@ function puff(scenario::Scenario, ::Type{SLAB}, eqs::EquationSet=DefaultSet; kwa
 end
 
 @doc doc"""
-    puff(::Scenario, SLAB; kwargs...)
+    puff(::Scenario, ::SLAB; kwargs...)
 
 Returns the solution to the SLAB horizontal jet dispersion model for the given
 scenario.
@@ -136,7 +136,7 @@ end
 
 
 @doc doc"""
-    puff(::Scenario{Substance,VerticalJet,Atmosphere}, SLAB; kwargs...)
+    puff(::Scenario{Substance,VerticalJet,Atmosphere}, ::SLAB; kwargs...)
 
 Returns the solution to the SLAB vertical jet dispersion model for the given
 scenario.

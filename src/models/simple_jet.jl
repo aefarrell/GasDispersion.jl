@@ -24,7 +24,7 @@ function plume(scenario::Scenario, ::Type{SimpleJet}, eqs=DefaultSet; kwargs...)
 end
 
 @doc doc"""
-    plume(::Scenario, SimpleJet; kwargs...)
+    plume(::Scenario, ::SimpleJet; kwargs...)
 
 Returns the solution to a simple turbulent jet dispersion model for the given
 scenario.

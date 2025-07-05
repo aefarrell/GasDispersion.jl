@@ -42,7 +42,7 @@ function vertical_term(z, h, σz, ml::PeriodicMixingLayer)
 end
 
 @doc doc"""
-    plume(::Scenario, ::GaussianMixingLayer[, ::EquationSet]; **kwargs...)
+    plume(::Scenario, ::GaussianMixingLayer[, ::EquationSet]; kwargs...)
 
 Returns the solution to a Gaussian plume dispersion model with a simple reflective mixing layer.
 
@@ -126,7 +126,7 @@ function plume(scenario::Scenario, ::GaussianMixingLayer, eqs=DefaultSet;
 end
 
 @doc doc"""
-    plume(::Scenario{Substance,VerticalJet,Atmosphere}, GaussianMixingLayer[, ::EquationSet]; **kwargs...)
+    plume(::Scenario{Substance,VerticalJet,Atmosphere}, ::GaussianMixingLayer[, ::EquationSet]; kwargs...)
 
 Returns the solution to a Gaussian plume dispersion model with a simple reflective mixing layer.
 

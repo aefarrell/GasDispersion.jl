@@ -20,7 +20,7 @@ function puff(s::Scenario, ::Type{<:GaussianPuff}, eqs=DefaultPuffSet; kwargs...
 end
 
 @doc doc"""
-    puff(::Scenario, GaussianPuff[, ::EquationSet])
+    puff(::Scenario, ::GaussianPuff[, ::EquationSet])
 
 Returns the solution to a Gaussian puff dispersion model for the given scenario.
 
