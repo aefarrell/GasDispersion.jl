@@ -4,7 +4,7 @@ using DelimitedFiles: readdlm
 const GROUP = get(ENV,"GROUP","All")
 const VERSION = get(ENV,"VERSION","latest")
 
-if GROUP == "All" || GROUP == "Base"
+if GROUP ∈ ["All", "Base"]
     @testset "GasDispersion.jl tests" begin
         @test_throws MethodError scenario_builder()
 
@@ -17,15 +17,11 @@ if GROUP == "All" || GROUP == "Base"
 
     # testing plot recipes
     include("base/recipe_tests.jl")
-end
 
-if GROUP == "All" || GROUP == "Util"
     # testing utilities
     include("utils/util_tests.jl")
     include("depreciation/depreciation_tests.jl")
-end
 
-if GROUP == "All" || GROUP == "Model"
     # testing source models
     include("source_models/jet_source_tests.jl")
 
@@ -51,6 +47,6 @@ end
 
 # some doc tests don't work with julia 1.3, because of Documenter
 # but I still want to run them in the tests sometimes
-if GROUP == "Doc" && VERSION != "1.3"
+if GROUP ∈ ["All", "Doc"] && VERSION != "1.3"
     doctest(GasDispersion, fix=false)
 end
