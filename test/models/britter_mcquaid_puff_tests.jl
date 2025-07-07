@@ -18,11 +18,10 @@ end
 @testset "Britter-McQuaid puff tests" begin
     # Britter-McQuaid example, *Workbook on the Dispersion of Dense Gases*
     # Potchefstroom Accident
-    s = Substance(name = :ammonia,
-                  molar_weight=0,
+    s = Substance(name = :pseudo_ammonia_air_mix,
+                  molar_weight=0.017031,
                   vapor_pressure=0,
-                  gas_density = 1.434, # initial density of cloud
-                # gas_density = 0.88997,          # Ammonia, NIST Webbook
+                  gas_density = 1.434,
                   liquid_density = 681.63,        # Ammonia, NIST Webbook
                   reference_temp=(273.15-33.316), # boiling point of Ammonia, NIST Webbook
                   reference_pressure=101325,
@@ -31,7 +30,7 @@ end
                   latent_heat = 8.17/0.0160425,   # Ammonia, NIST Webbook
                   gas_heat_capacity = 1.6151,     # Ammonia, NIST Webbook
                   liquid_heat_capacity = 2.0564)  # Ammonia, NIST Webbook
-    r = HorizontalJet( mass_rate = 38e3,  # 38 tonnes of Ammonia
+    r = HorizontalJet( mass_rate = 7.25e4*1.434,
                  duration = 1,
                  diameter = 1,
                  velocity = 7.25e4/(0.25*π),
@@ -43,29 +42,35 @@ end
     scn = Scenario(s,r,a)
     # known answers
     # initial concentration
-    c₀ = 38e3/7.25e4
+    c₀ = 1/16.4
     # in the near-field
-    x₁, t₁, c₁ = 160, 200, 0.11109705839813348/1.434
-    # example, in the interpolation region
-    x₂, t₂, c₂ = 355, 200, 0.04368259217437896
-    # far field
-    x₃, t₃, c₃ = 3133, 3000, 0.0004464242323595325
+    x₁, t₁, c₁ = 160, 160/(0.4*2), 0.0030830245167018195
+    # examples, in the interpolation region
+    x₂, t₂, c₂ = 333, 124, 0.006097560975609757
+    x₃, t₃, c₃ = 333, 1396, 0.00018497619507887978
+    # example in the far-field
+    x₄, t₄, c₄ = 2500, 2500/(0.4*2), 0.0007259996788424369/16.4
 
     # test overall solution
-    pf = puff(scn, BritterMcQuaidPuff())
+    pf = puff(scn, BritterMcQuaidPuff(); temp_correction=false)
     @test isa(pf, GasDispersion.BritterMcQuaidPuffSolution)
     @test isa(pf, Puff)
-    @test pf(x₁,0,0,t₁) ≈ c₁
-    @test pf(x₂,0,0,t₂) ≈ c₂
-    @test pf(x₃,0,0,t₃) ≈ c₃
+    @test c₀*pf(x₁,0,0,t₁) ≈ c₁
+    @test c₀*pf(x₂,0,0,t₂) ≈ c₂
+    @test c₀*pf(x₃,0,0,t₃) ≈ c₃
+    @test c₀*pf(x₄,0,0,t₄) ≈ c₄
 
     # test puff extent
     R² = cbrt(3*pf.V₀/4π)^2 + 1.2*√(pf.gₒ*pf.V₀)*t₁
-    @test pf(x₁, √(R²), 0, t₁) ≈ c₁
+    @test c₀*pf(x₁, √(R²), 0, t₁) ≈ c₁
     @test pf(x₁, √(R²) + 1, 0, t₁) == 0.0
 
-    H = (pf.c₀*pf.V₀)/(c₁*π*R²)
-    @test pf(x₁, 0, H, t₁) ≈ c₁
+    H = (c₀*pf.V₀)/(c₁*π*R²)
+    @test c₀*pf(x₁, 0, H, t₁) ≈ c₁
     @test pf(x₁, 0, H + 1, t₁) == 0.0
+
+    # test temperature correction
+    pf = puff(scn, BritterMcQuaidPuff(); temp_correction=true)
+    @test pf.T′ ≈ (273.15-33.316) / 293.15
 
 end

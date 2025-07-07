@@ -21,7 +21,7 @@ function puff(s::Scenario, ::Type{BritterMcQuaidPuff}, eqs=DefaultSet)
 end
 
 """
-    puff(scenario::Scenario, ::BritterMcQuaidPuff[, equationset::EquationSet])
+    puff(scenario::Scenario, ::BritterMcQuaidPuff[, equationset::EquationSet]; kwargs...)
 
 Returns the solution to the Britter-McQuaid instantaneous ground level release
 model for the given scenario.
@@ -30,16 +30,19 @@ The `equationset` is used to calculate the windspeed at 10m, all other
 correlations are as per the Britter-McQuaid model. Unless otherwise specified
 a default power-law wind profile is used.
 
+# Keyword Arguments
+- `temp_correction=true`:  Adds a correction for non-isothermal releases, per workbook section 5.5
+
 # References
 + Britter, Rex E. and J. McQuaid. 1988. *Workbook on the Dispersion of Dense Gases. HSE Contract Research Report No. 17/1988*
 + AIChE/CCPS. 1999. *Guidelines for Consequence Analysis of Chemical Releases*. New York: American Institute of Chemical Engineers
 """
-function puff(scenario::Scenario, ::BritterMcQuaidPuff, eqs=DefaultSet)
+function puff(scenario::Scenario, ::BritterMcQuaidPuff, eqs=DefaultSet; temp_correction=true)
 
     Q = _release_flowrate(scenario)
-    ṁ = _mass_rate(scenario)
+    m = _release_mass(scenario)
     t = _duration(scenario)
-    ρⱼ = _release_density(scenario)
+    ρᵣ = _release_density(scenario)
     Tᵣ = _release_temperature(scenario)
 
     u₁₀ = windspeed(scenario, 10.0, eqs)
@@ -50,15 +53,22 @@ function puff(scenario::Scenario, ::BritterMcQuaidPuff, eqs=DefaultSet)
     V₀ = Q*t
 
     # initial concentration
-    Qi = ṁ/ρⱼ
-    c₀ = min(Qi/Q,1.0)
+    Vi = m/ρᵣ
+    c₀ = min(Vi/V₀,1.0)
 
     # temperature correction
-    T′ = Tᵣ/Tₐ
+    if temp_correction
+        # non-isothermal correction, per workbook section 5.5
+        T′ = Tᵣ/Tₐ
+    else
+        # no temperature correction
+        # T′ = 1.0
+        T′ = 1.0
+    end
 
     # relative density
     g = 9.80616  # gravity, m/s^2
-    gₒ = g * ((ρⱼ - ρₐ)/ ρₐ)
+    gₒ = g * ((ρᵣ - ρₐ)/ ρₐ)
 
     # correlation parameter
     α = 0.5*log10( gₒ * cbrt(V₀) / u₁₀^2 )
@@ -95,7 +105,7 @@ function puff(scenario::Scenario, ::BritterMcQuaidPuff, eqs=DefaultSet)
 
 end
 
-function (pf::BritterMcQuaidPuffSolution{F,I})(x,y,z,t) where{F,I}
+function (pf::BritterMcQuaidPuffSolution{F,I})(x,y,z,t)::F where{F<:Number,I}
 
     R₀ = cbrt(3*pf.V₀/4π)
     xc = 0.4*pf.u₁₀*t
@@ -104,13 +114,13 @@ function (pf::BritterMcQuaidPuffSolution{F,I})(x,y,z,t) where{F,I}
 
     #domain check
     if r² > R² || z < 0
-        return 0.0
+        return zero(F)
     end
 
-    x′ = x/cbrt(pf.V₀)
+    x′ = (xc+√(R²))/cbrt(pf.V₀)
     if x′ ≤ pf.xnf
         # use near-field correlation
-        c′ = x′ > 0 ? 3.24 / (3.24 + x′^2) : 1.0
+        c′ = x′ > 0 ? 3.24 / (3.24 + x′^2) : one(F)
 
         # don't drop below the first correlation concentration
         c′ = max(c′, maximum(pf.itp.u))
@@ -133,6 +143,6 @@ function (pf::BritterMcQuaidPuffSolution{F,I})(x,y,z,t) where{F,I}
     if z ≤ H
         return c
     else
-        return 0.0
+        return zero(F)
     end
 end
