@@ -285,8 +285,47 @@ the initial concentration is calculated from the mass flowrate and volumetric fl
 
 Suppose we wish to model the dispersion of gaseous propane using the same scenario, `scn`, worked out above.
 
-```jldoctest gaussplume; output = true, filter = r"(\d*)\.(\d{4})\d+" => s"\1.\2***"
+```jldoctest gaussplume; output = false, filter = r"(\d*)\.(\d{4})\d+" => s"\1.\2***"
 j = plume(scn, SimpleJet())
+
+# output
+
+Plume model - subtype simple_jet:
+    k2: 6.0
+    k3: 5.0
+    angle: -0.0 rad
+Substance: propane
+    MW: 0.044096 kg/mol
+    P_v: GasDispersion.Antoine{Float64}(9.773719865868816, 2257.9247634130143, 0.0) Pa
+    ρ_g: 1.864931992847327 kg/m^3
+    ρ_l: 526.13 kg/m^3
+    T_ref: 288.15 K
+    P_ref: 101325.0 Pa
+    k: 1.142
+    T_b: 231.02 K
+    Δh_v: 425740 J/kg
+    Cp_g: 1678 J/kg/K
+    Cp_l: 2520 J/kg/K
+HorizontalJet release:
+    ṁ: 0.08991798763471508 kg/s
+    Δt: Inf s
+    d: 0.01 m
+    u: 208.10961399327573 m/s
+    h: 3.5 m
+    P: 288765.2212333958 Pa
+    T: 278.3846872082166 K
+    f_l: 0.0
+SimpleAtmosphere atmosphere:
+    P: 101325.0 Pa
+    T: 298.15 K
+    u: 1.5 m/s
+    h: 10.0 m
+    rh: 0.0 %
+    stability: ClassF()
+
+```
+
+```jldoctest gaussplume; output = true, filter = r"(\d*)\.(\d{4})\d+" => s"\1.\2***"
 j(100,0,2)
 
 # output
@@ -394,8 +433,45 @@ SimpleAtmosphere atmosphere:
 
 Generating a solution using the Britter-McQuaid model is quite simple
 
-```jldoctest burro; output = true, filter = r"(\d*)\.(\d{4})\d+" => s"\1.\2***"
+```jldoctest burro; output = false, filter = r"(\d*)\.(\d{4})\d+" => s"\1.\2***"
 bm = plume(scn, BritterMcQuaidPlume())
+
+# output
+
+Plume model - subtype brittermcquaid:
+Substance: LNG 
+    MW: 0.01604 kg/mol 
+    P_v: GasDispersion.Antoine{Float64}(8.814018574933064, 983.6444729625298, 0.0) Pa 
+    ρ_g: 1.76 kg/m^3 
+    ρ_l: 425.6 kg/m^3 
+    T_ref: 111.14999999999998 K 
+    P_ref: 101325.0 Pa 
+    k: 1.4  
+    T_b: 111.6 K 
+    Δh_v: 509880.0 J/kg 
+    Cp_g: 2240.0 J/kg/K 
+    Cp_l: 3349.0 J/kg/K 
+HorizontalJet release:
+    ṁ: 97.888 kg/s 
+    Δt: 174.0 s 
+    d: 1.0 m 
+    u: 70.81526849717933 m/s 
+    h: 0.0 m 
+    P: 101325.0 Pa 
+    T: 111.14999999999998 K 
+    f_l: 0.0  
+SimpleAtmosphere atmosphere:
+    P: 101325.0 Pa 
+    T: 298.0 K 
+    u: 10.9 m/s 
+    h: 10.0 m 
+    rh: 0.0 % 
+    stability: ClassF()  
+
+
+```
+
+```jldoctest burro; output = true, filter = r"(\d*)\.(\d{4})\d+" => s"\1.\2***"
 
 bm(367,0,0)
 
