@@ -117,7 +117,44 @@ dflt = plume(scn, GaussianPlume(), DefaultSet)
 
 # output
 
-GasDispersion.GaussianPlumeSolution{Float64, GasDispersion.SimpleCrossTerm, GasDispersion.SimpleVerticalTerm, GasDispersion.NoPlumeRise, BasicEquationSet{DefaultWind, Nothing, Defaultσy, Defaultσz}, GasDispersion.ProblemDomain{Float64}}(Scenario{Substance{String, Float64, GasDispersion.Antoine{Float64}, Float64, Float64, Int64, Int64, Int64}, HorizontalJet{Float64}, SimpleAtmosphere{Float64, ClassF}}(Substance{String, Float64, GasDispersion.Antoine{Float64}, Float64, Float64, Int64, Int64, Int64}("propane", 0.044096, GasDispersion.Antoine{Float64}(9.773719865868816, 2257.9247634130143, 0.0), 1.864931992847327, 526.13, 288.15, 101325.0, 1.142, 231.02, 425740, 1678, 2520), HorizontalJet{Float64}(0.08991798763471508, Inf, 0.01, 208.10961399327573, 3.5, 288765.2212333958, 278.3846872082166, 0.0), SimpleAtmosphere{Float64, ClassF}(101325.0, 298.15, 1.5, 10.0, 0.0, ClassF())), :gaussian, 0.08991798763471508, 0.9999999999999998, 1.8023818673116125, 1.150112899011524, 3.5, GasDispersion.SimpleCrossTerm(), GasDispersion.SimpleVerticalTerm(), GasDispersion.NoPlumeRise(), BasicEquationSet{DefaultWind, Nothing, Defaultσy, Defaultσz}(DefaultWind(), nothing, Defaultσy(), Defaultσz()), GasDispersion.ProblemDomain{Float64}(0.0, Inf, -Inf, Inf, 0.0, Inf))
+Gaussian Plume model - subtype gaussian:
+    mass rate: 0.08991798763471508 kg/s
+    windspeed: 1.150112899011524 m/s
+    effective stack height: 3.5 m
+    plume rise model: GasDispersion.NoPlumeRise()
+Basic Equation Set:
+    wind equation: DefaultWind()
+    σx equation: nothing
+    σy equation: Defaultσy()
+    σz equation: Defaultσz()
+Substance: propane
+    MW: 0.044096 kg/mol
+    P_v: GasDispersion.Antoine{Float64}(9.773719865868816, 2257.9247634130143, 0.0) Pa
+    ρ_g: 1.864931992847327 kg/m^3
+    ρ_l: 526.13 kg/m^3
+    T_ref: 288.15 K
+    P_ref: 101325.0 Pa
+    k: 1.142
+    T_b: 231.02 K
+    Δh_v: 425740 J/kg
+    Cp_g: 1678 J/kg/K
+    Cp_l: 2520 J/kg/K
+HorizontalJet release:
+    ṁ: 0.08991798763471508 kg/s
+    Δt: Inf s
+    d: 0.01 m
+    u: 208.10961399327573 m/s
+    h: 3.5 m
+    P: 288765.2212333958 Pa
+    T: 278.3846872082166 K
+    f_l: 0.0
+SimpleAtmosphere atmosphere:
+    P: 101325.0 Pa
+    T: 298.15 K
+    u: 1.5 m/s
+    h: 10.0 m
+    rh: 0.0 %
+    stability: ClassF()
 
 ```
 
@@ -128,7 +165,44 @@ ccps_rurl = plume(scn, GaussianPlume(), CCPSRural)
 
 # output
 
-GasDispersion.GaussianPlumeSolution{Float64, GasDispersion.SimpleCrossTerm, GasDispersion.SimpleVerticalTerm, GasDispersion.NoPlumeRise, BasicEquationSet{IrwinRural, Nothing, BriggsRuralσy, BriggsRuralσz}, GasDispersion.ProblemDomain{Float64}}(Scenario{Substance{String, Float64, GasDispersion.Antoine{Float64}, Float64, Float64, Int64, Int64, Int64}, HorizontalJet{Float64}, SimpleAtmosphere{Float64, ClassF}}(Substance{String, Float64, GasDispersion.Antoine{Float64}, Float64, Float64, Int64, Int64, Int64}("propane", 0.044096, GasDispersion.Antoine{Float64}(9.773719865868816, 2257.9247634130143, 0.0), 1.864931992847327, 526.13, 288.15, 101325.0, 1.142, 231.02, 425740, 1678, 2520), HorizontalJet{Float64}(0.08991798763471508, Inf, 0.01, 208.10961399327573, 3.5, 288765.2212333958, 278.3846872082166, 0.0), SimpleAtmosphere{Float64, ClassF}(101325.0, 298.15, 1.5, 10.0, 0.0, ClassF())), :gaussian, 0.08991798763471508, 0.9999999999999998, 1.8023818673116125, 0.8420321686971456, 3.5, GasDispersion.SimpleCrossTerm(), GasDispersion.SimpleVerticalTerm(), GasDispersion.NoPlumeRise(), BasicEquationSet{IrwinRural, Nothing, BriggsRuralσy, BriggsRuralσz}(IrwinRural(), nothing, BriggsRuralσy(), BriggsRuralσz()), GasDispersion.ProblemDomain{Float64}(0.0, Inf, -Inf, Inf, 0.0, Inf))
+Gaussian Plume model - subtype gaussian:
+    mass rate: 0.08991798763471508 kg/s
+    windspeed: 0.8420321686971456 m/s
+    effective stack height: 3.5 m
+    plume rise model: GasDispersion.NoPlumeRise()
+Basic Equation Set:
+    wind equation: IrwinRural()
+    σx equation: nothing
+    σy equation: BriggsRuralσy()
+    σz equation: BriggsRuralσz()
+Substance: propane
+    MW: 0.044096 kg/mol
+    P_v: GasDispersion.Antoine{Float64}(9.773719865868816, 2257.9247634130143, 0.0) Pa
+    ρ_g: 1.864931992847327 kg/m^3
+    ρ_l: 526.13 kg/m^3
+    T_ref: 288.15 K
+    P_ref: 101325.0 Pa
+    k: 1.142
+    T_b: 231.02 K
+    Δh_v: 425740 J/kg
+    Cp_g: 1678 J/kg/K
+    Cp_l: 2520 J/kg/K
+HorizontalJet release:
+    ṁ: 0.08991798763471508 kg/s
+    Δt: Inf s
+    d: 0.01 m
+    u: 208.10961399327573 m/s
+    h: 3.5 m
+    P: 288765.2212333958 Pa
+    T: 278.3846872082166 K
+    f_l: 0.0
+SimpleAtmosphere atmosphere:
+    P: 101325.0 Pa
+    T: 298.15 K
+    u: 1.5 m/s
+    h: 10.0 m
+    rh: 0.0 %
+    stability: ClassF()
 
 ```
 
@@ -137,7 +211,44 @@ ccps_urb = plume(scn, GaussianPlume(), CCPSUrban)
 
 # output
 
-GasDispersion.GaussianPlumeSolution{Float64, GasDispersion.SimpleCrossTerm, GasDispersion.SimpleVerticalTerm, GasDispersion.NoPlumeRise, BasicEquationSet{IrwinUrban, Nothing, BriggsUrbanσy, BriggsUrbanσz}, GasDispersion.ProblemDomain{Float64}}(Scenario{Substance{String, Float64, GasDispersion.Antoine{Float64}, Float64, Float64, Int64, Int64, Int64}, HorizontalJet{Float64}, SimpleAtmosphere{Float64, ClassF}}(Substance{String, Float64, GasDispersion.Antoine{Float64}, Float64, Float64, Int64, Int64, Int64}("propane", 0.044096, GasDispersion.Antoine{Float64}(9.773719865868816, 2257.9247634130143, 0.0), 1.864931992847327, 526.13, 288.15, 101325.0, 1.142, 231.02, 425740, 1678, 2520), HorizontalJet{Float64}(0.08991798763471508, Inf, 0.01, 208.10961399327573, 3.5, 288765.2212333958, 278.3846872082166, 0.0), SimpleAtmosphere{Float64, ClassF}(101325.0, 298.15, 1.5, 10.0, 0.0, ClassF())), :gaussian, 0.08991798763471508, 0.9999999999999998, 1.8023818673116125, 0.7989729675905327, 3.5, GasDispersion.SimpleCrossTerm(), GasDispersion.SimpleVerticalTerm(), GasDispersion.NoPlumeRise(), BasicEquationSet{IrwinUrban, Nothing, BriggsUrbanσy, BriggsUrbanσz}(IrwinUrban(), nothing, BriggsUrbanσy(), BriggsUrbanσz()), GasDispersion.ProblemDomain{Float64}(0.0, Inf, -Inf, Inf, 0.0, Inf))
+Gaussian Plume model - subtype gaussian:
+    mass rate: 0.08991798763471508 kg/s
+    windspeed: 0.7989729675905327 m/s
+    effective stack height: 3.5 m
+    plume rise model: GasDispersion.NoPlumeRise()
+Basic Equation Set:
+    wind equation: IrwinUrban()
+    σx equation: nothing
+    σy equation: BriggsUrbanσy()
+    σz equation: BriggsUrbanσz()
+Substance: propane
+    MW: 0.044096 kg/mol
+    P_v: GasDispersion.Antoine{Float64}(9.773719865868816, 2257.9247634130143, 0.0) Pa
+    ρ_g: 1.864931992847327 kg/m^3
+    ρ_l: 526.13 kg/m^3
+    T_ref: 288.15 K
+    P_ref: 101325.0 Pa
+    k: 1.142
+    T_b: 231.02 K
+    Δh_v: 425740 J/kg
+    Cp_g: 1678 J/kg/K
+    Cp_l: 2520 J/kg/K
+HorizontalJet release:
+    ṁ: 0.08991798763471508 kg/s
+    Δt: Inf s
+    d: 0.01 m
+    u: 208.10961399327573 m/s
+    h: 3.5 m
+    P: 288765.2212333958 Pa
+    T: 278.3846872082166 K
+    f_l: 0.0
+SimpleAtmosphere atmosphere:
+    P: 101325.0 Pa
+    T: 298.15 K
+    u: 1.5 m/s
+    h: 10.0 m
+    rh: 0.0 %
+    stability: ClassF()
 
 ```
 
@@ -146,7 +257,44 @@ isc3_rurl = plume(scn, GaussianPlume(), ISC3Rural)
 
 # output
 
-GasDispersion.GaussianPlumeSolution{Float64, GasDispersion.SimpleCrossTerm, GasDispersion.SimpleVerticalTerm, GasDispersion.NoPlumeRise, BasicEquationSet{IrwinRural, Nothing, ISC3Ruralσy, ISC3Ruralσz}, GasDispersion.ProblemDomain{Float64}}(Scenario{Substance{String, Float64, GasDispersion.Antoine{Float64}, Float64, Float64, Int64, Int64, Int64}, HorizontalJet{Float64}, SimpleAtmosphere{Float64, ClassF}}(Substance{String, Float64, GasDispersion.Antoine{Float64}, Float64, Float64, Int64, Int64, Int64}("propane", 0.044096, GasDispersion.Antoine{Float64}(9.773719865868816, 2257.9247634130143, 0.0), 1.864931992847327, 526.13, 288.15, 101325.0, 1.142, 231.02, 425740, 1678, 2520), HorizontalJet{Float64}(0.08991798763471508, Inf, 0.01, 208.10961399327573, 3.5, 288765.2212333958, 278.3846872082166, 0.0), SimpleAtmosphere{Float64, ClassF}(101325.0, 298.15, 1.5, 10.0, 0.0, ClassF())), :gaussian, 0.08991798763471508, 0.9999999999999998, 1.8023818673116125, 0.8420321686971456, 3.5, GasDispersion.SimpleCrossTerm(), GasDispersion.SimpleVerticalTerm(), GasDispersion.NoPlumeRise(), BasicEquationSet{IrwinRural, Nothing, ISC3Ruralσy, ISC3Ruralσz}(IrwinRural(), nothing, ISC3Ruralσy(), ISC3Ruralσz()), GasDispersion.ProblemDomain{Float64}(0.0, Inf, -Inf, Inf, 0.0, Inf))
+Gaussian Plume model - subtype gaussian:
+    mass rate: 0.08991798763471508 kg/s
+    windspeed: 0.8420321686971456 m/s
+    effective stack height: 3.5 m
+    plume rise model: GasDispersion.NoPlumeRise()
+Basic Equation Set:
+    wind equation: IrwinRural()
+    σx equation: nothing
+    σy equation: ISC3Ruralσy()
+    σz equation: ISC3Ruralσz()
+Substance: propane
+    MW: 0.044096 kg/mol
+    P_v: GasDispersion.Antoine{Float64}(9.773719865868816, 2257.9247634130143, 0.0) Pa
+    ρ_g: 1.864931992847327 kg/m^3
+    ρ_l: 526.13 kg/m^3
+    T_ref: 288.15 K
+    P_ref: 101325.0 Pa
+    k: 1.142
+    T_b: 231.02 K
+    Δh_v: 425740 J/kg
+    Cp_g: 1678 J/kg/K
+    Cp_l: 2520 J/kg/K
+HorizontalJet release:
+    ṁ: 0.08991798763471508 kg/s
+    Δt: Inf s
+    d: 0.01 m
+    u: 208.10961399327573 m/s
+    h: 3.5 m
+    P: 288765.2212333958 Pa
+    T: 278.3846872082166 K
+    f_l: 0.0
+SimpleAtmosphere atmosphere:
+    P: 101325.0 Pa
+    T: 298.15 K
+    u: 1.5 m/s
+    h: 10.0 m
+    rh: 0.0 %
+    stability: ClassF()
 
 ```
 
@@ -155,7 +303,44 @@ isc3_urb = plume(scn, GaussianPlume(), ISC3Urban)
 
 # output
 
-GasDispersion.GaussianPlumeSolution{Float64, GasDispersion.SimpleCrossTerm, GasDispersion.SimpleVerticalTerm, GasDispersion.NoPlumeRise, BasicEquationSet{ISC3UrbanWind, Nothing, BriggsUrbanσy, BriggsUrbanσz}, GasDispersion.ProblemDomain{Float64}}(Scenario{Substance{String, Float64, GasDispersion.Antoine{Float64}, Float64, Float64, Int64, Int64, Int64}, HorizontalJet{Float64}, SimpleAtmosphere{Float64, ClassF}}(Substance{String, Float64, GasDispersion.Antoine{Float64}, Float64, Float64, Int64, Int64, Int64}("propane", 0.044096, GasDispersion.Antoine{Float64}(9.773719865868816, 2257.9247634130143, 0.0), 1.864931992847327, 526.13, 288.15, 101325.0, 1.142, 231.02, 425740, 1678, 2520), HorizontalJet{Float64}(0.08991798763471508, Inf, 0.01, 208.10961399327573, 3.5, 288765.2212333958, 278.3846872082166, 0.0), SimpleAtmosphere{Float64, ClassF}(101325.0, 298.15, 1.5, 10.0, 0.0, ClassF())), :gaussian, 0.08991798763471508, 0.9999999999999998, 1.8023818673116125, 1.0947417281650496, 3.5, GasDispersion.SimpleCrossTerm(), GasDispersion.SimpleVerticalTerm(), GasDispersion.NoPlumeRise(), BasicEquationSet{ISC3UrbanWind, Nothing, BriggsUrbanσy, BriggsUrbanσz}(ISC3UrbanWind(), nothing, BriggsUrbanσy(), BriggsUrbanσz()), GasDispersion.ProblemDomain{Float64}(0.0, Inf, -Inf, Inf, 0.0, Inf))
+Gaussian Plume model - subtype gaussian:
+    mass rate: 0.08991798763471508 kg/s
+    windspeed: 1.0947417281650496 m/s
+    effective stack height: 3.5 m
+    plume rise model: GasDispersion.NoPlumeRise()
+Basic Equation Set:
+    wind equation: ISC3UrbanWind()
+    σx equation: nothing
+    σy equation: BriggsUrbanσy()
+    σz equation: BriggsUrbanσz()
+Substance: propane
+    MW: 0.044096 kg/mol
+    P_v: GasDispersion.Antoine{Float64}(9.773719865868816, 2257.9247634130143, 0.0) Pa
+    ρ_g: 1.864931992847327 kg/m^3
+    ρ_l: 526.13 kg/m^3
+    T_ref: 288.15 K
+    P_ref: 101325.0 Pa
+    k: 1.142
+    T_b: 231.02 K
+    Δh_v: 425740 J/kg
+    Cp_g: 1678 J/kg/K
+    Cp_l: 2520 J/kg/K
+HorizontalJet release:
+    ṁ: 0.08991798763471508 kg/s
+    Δt: Inf s
+    d: 0.01 m
+    u: 208.10961399327573 m/s
+    h: 3.5 m
+    P: 288765.2212333958 Pa
+    T: 278.3846872082166 K
+    f_l: 0.0
+SimpleAtmosphere atmosphere:
+    P: 101325.0 Pa
+    T: 298.15 K
+    u: 1.5 m/s
+    h: 10.0 m
+    rh: 0.0 %
+    stability: ClassF()
 
 ```
 
@@ -164,7 +349,44 @@ tno = plume(scn, GaussianPlume(), TNOPlume)
 
 # output
 
-GasDispersion.GaussianPlumeSolution{Float64, GasDispersion.SimpleCrossTerm, GasDispersion.SimpleVerticalTerm, GasDispersion.NoPlumeRise, BasicEquationSet{TNOWind, Nothing, TNOPlumeσy, TNOPlumeσz}, GasDispersion.ProblemDomain{Float64}}(Scenario{Substance{String, Float64, GasDispersion.Antoine{Float64}, Float64, Float64, Int64, Int64, Int64}, HorizontalJet{Float64}, SimpleAtmosphere{Float64, ClassF}}(Substance{String, Float64, GasDispersion.Antoine{Float64}, Float64, Float64, Int64, Int64, Int64}("propane", 0.044096, GasDispersion.Antoine{Float64}(9.773719865868816, 2257.9247634130143, 0.0), 1.864931992847327, 526.13, 288.15, 101325.0, 1.142, 231.02, 425740, 1678, 2520), HorizontalJet{Float64}(0.08991798763471508, Inf, 0.01, 208.10961399327573, 3.5, 288765.2212333958, 278.3846872082166, 0.0), SimpleAtmosphere{Float64, ClassF}(101325.0, 298.15, 1.5, 10.0, 0.0, ClassF())), :gaussian, 0.08991798763471508, 0.9999999999999998, 1.8023818673116125, 0.8753751236458281, 3.5, GasDispersion.SimpleCrossTerm(), GasDispersion.SimpleVerticalTerm(), GasDispersion.NoPlumeRise(), BasicEquationSet{TNOWind, Nothing, TNOPlumeσy, TNOPlumeσz}(TNOWind(), nothing, TNOPlumeσy(), TNOPlumeσz()), GasDispersion.ProblemDomain{Float64}(0.0, Inf, -Inf, Inf, 0.0, Inf))
+Gaussian Plume model - subtype gaussian:
+    mass rate: 0.08991798763471508 kg/s
+    windspeed: 0.8753751236458281 m/s
+    effective stack height: 3.5 m
+    plume rise model: GasDispersion.NoPlumeRise()
+Basic Equation Set:
+    wind equation: TNOWind()
+    σx equation: nothing
+    σy equation: TNOPlumeσy()
+    σz equation: TNOPlumeσz()
+Substance: propane
+    MW: 0.044096 kg/mol
+    P_v: GasDispersion.Antoine{Float64}(9.773719865868816, 2257.9247634130143, 0.0) Pa
+    ρ_g: 1.864931992847327 kg/m^3
+    ρ_l: 526.13 kg/m^3
+    T_ref: 288.15 K
+    P_ref: 101325.0 Pa
+    k: 1.142
+    T_b: 231.02 K
+    Δh_v: 425740 J/kg
+    Cp_g: 1678 J/kg/K
+    Cp_l: 2520 J/kg/K
+HorizontalJet release:
+    ṁ: 0.08991798763471508 kg/s
+    Δt: Inf s
+    d: 0.01 m
+    u: 208.10961399327573 m/s
+    h: 3.5 m
+    P: 288765.2212333958 Pa
+    T: 278.3846872082166 K
+    f_l: 0.0
+SimpleAtmosphere atmosphere:
+    P: 101325.0 Pa
+    T: 298.15 K
+    u: 1.5 m/s
+    h: 10.0 m
+    rh: 0.0 %
+    stability: ClassF()
 
 ```
 
@@ -173,7 +395,44 @@ turner = plume(scn, GaussianPlume(), Turner)
 
 # output
 
-GasDispersion.GaussianPlumeSolution{Float64, GasDispersion.SimpleCrossTerm, GasDispersion.SimpleVerticalTerm, GasDispersion.NoPlumeRise, BasicEquationSet{DefaultWind, Nothing, Turnerσy, Turnerσz}, GasDispersion.ProblemDomain{Float64}}(Scenario{Substance{String, Float64, GasDispersion.Antoine{Float64}, Float64, Float64, Int64, Int64, Int64}, HorizontalJet{Float64}, SimpleAtmosphere{Float64, ClassF}}(Substance{String, Float64, GasDispersion.Antoine{Float64}, Float64, Float64, Int64, Int64, Int64}("propane", 0.044096, GasDispersion.Antoine{Float64}(9.773719865868816, 2257.9247634130143, 0.0), 1.864931992847327, 526.13, 288.15, 101325.0, 1.142, 231.02, 425740, 1678, 2520), HorizontalJet{Float64}(0.08991798763471508, Inf, 0.01, 208.10961399327573, 3.5, 288765.2212333958, 278.3846872082166, 0.0), SimpleAtmosphere{Float64, ClassF}(101325.0, 298.15, 1.5, 10.0, 0.0, ClassF())), :gaussian, 0.08991798763471508, 0.9999999999999998, 1.8023818673116125, 1.150112899011524, 3.5, GasDispersion.SimpleCrossTerm(), GasDispersion.SimpleVerticalTerm(), GasDispersion.NoPlumeRise(), BasicEquationSet{DefaultWind, Nothing, Turnerσy, Turnerσz}(DefaultWind(), nothing, Turnerσy(), Turnerσz()), GasDispersion.ProblemDomain{Float64}(0.0, Inf, -Inf, Inf, 0.0, Inf))
+Gaussian Plume model - subtype gaussian:
+    mass rate: 0.08991798763471508 kg/s
+    windspeed: 1.150112899011524 m/s
+    effective stack height: 3.5 m
+    plume rise model: GasDispersion.NoPlumeRise()
+Basic Equation Set:
+    wind equation: DefaultWind()
+    σx equation: nothing
+    σy equation: Turnerσy()
+    σz equation: Turnerσz()
+Substance: propane
+    MW: 0.044096 kg/mol
+    P_v: GasDispersion.Antoine{Float64}(9.773719865868816, 2257.9247634130143, 0.0) Pa
+    ρ_g: 1.864931992847327 kg/m^3
+    ρ_l: 526.13 kg/m^3
+    T_ref: 288.15 K
+    P_ref: 101325.0 Pa
+    k: 1.142
+    T_b: 231.02 K
+    Δh_v: 425740 J/kg
+    Cp_g: 1678 J/kg/K
+    Cp_l: 2520 J/kg/K
+HorizontalJet release:
+    ṁ: 0.08991798763471508 kg/s
+    Δt: Inf s
+    d: 0.01 m
+    u: 208.10961399327573 m/s
+    h: 3.5 m
+    P: 288765.2212333958 Pa
+    T: 278.3846872082166 K
+    f_l: 0.0
+SimpleAtmosphere atmosphere:
+    P: 101325.0 Pa
+    T: 298.15 K
+    u: 1.5 m/s
+    h: 10.0 m
+    rh: 0.0 %
+    stability: ClassF()
 
 ```
 

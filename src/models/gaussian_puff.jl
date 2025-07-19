@@ -13,6 +13,16 @@ struct GaussianPuffSolution{F<:Number,E<:EquationSet} <: Puff
 end
 GaussianPuffSolution(s,m,q,ρ,h,u,es) = GaussianPuffSolution(s,m,promote(q,ρ,h,u)...,es)
 
+function Base.show(io::IO, mime::MIME"text/plain", p::GaussianPuffSolution)
+    p_type = string(p.model)
+    print(io, "Gaussian Puff model - subtype $p_type:\n")
+    print(io, "    total mass: $(p.mass) kg\n")
+    print(io, "    release windspeed: $(p.windspeed) m/s\n")
+    print(io, "    release height: $(p.height) m\n")
+    show(io,mime,p.equationset)
+    show(io,mime,p.scenario)
+end
+
 # for reverse compatibility
 function puff(s::Scenario, ::Type{<:GaussianPuff}, eqs=DefaultPuffSet; kwargs...) 
     @warn "puff(scenario, GaussianPuff, eqs) is deprecated, use puff(scenario, GaussianPuff(), eqs) instead."
