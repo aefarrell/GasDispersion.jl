@@ -22,6 +22,17 @@ struct GaussianPlumeSolution{F<:Number,C<:GaussianCrossTerm,V<:GaussianVerticalT
 end
 GaussianPlumeSolution(s,m,Q,c,ρ,u,h_eff,cross,vert,pr,es,dom) = GaussianPlumeSolution(s,m,promote(Q,c,ρ,u,h_eff)...,cross,vert,pr,es,dom)
 
+function Base.show(io::IO, mime::MIME"text/plain", p::GaussianPlumeSolution)
+    p_type = string(p.model)
+    print(io, "Gaussian Plume model - subtype $p_type:\n")
+    print(io, "    mass rate: $(p.rate) kg/s\n")
+    print(io, "    windspeed: $(p.windspeed) m/s\n")
+    print(io, "    effective stack height: $(p.effective_stack_height) m\n")
+    print(io, "    plume rise model: $(p.plumerise)\n")
+    show(io,mime,p.equationset)
+    show(io,mime,p.scenario)
+end
+
 struct SimpleCrossTerm <:  GaussianCrossTerm end
 cross_term(y, σy, ::SimpleCrossTerm) = exp(-0.5*(y/σy)^2)/(√(2π)*σy)
 

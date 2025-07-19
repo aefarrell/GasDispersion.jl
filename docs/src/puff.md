@@ -156,7 +156,43 @@ g = puff(scn, GaussianPuff())
 
 # output
 
-GasDispersion.GaussianPuffSolution{Float64, BasicEquationSet{DefaultWind, CCPSPuffσx, CCPSPuffσy, CCPSPuffσz}}(Scenario{Substance{String, Float64, GasDispersion.Antoine{Float64}, Float64, Float64, Int64, Int64, Int64}, HorizontalJet{Float64}, SimpleAtmosphere{Float64, ClassF}}(Substance{String, Float64, GasDispersion.Antoine{Float64}, Float64, Float64, Int64, Int64, Int64}("propane", 0.044096, GasDispersion.Antoine{Float64}(9.773719865868816, 2257.9247634130143, 0.0), 1.864931992847327, 526.13, 288.15, 101325.0, 1.142, 231.02, 425740, 1678, 2520), HorizontalJet{Float64}(0.08991798763471508, 10.0, 0.01, 208.10961399327573, 3.5, 288765.2212333958, 278.3846872082166, 0.0), SimpleAtmosphere{Float64, ClassF}(101325.0, 298.15, 1.5, 10.0, 0.0, ClassF())), :gaussian, 0.8991798763471508, 1.8023818673116125, 3.5, 1.150112899011524, BasicEquationSet{DefaultWind, CCPSPuffσx, CCPSPuffσy, CCPSPuffσz}(DefaultWind(), CCPSPuffσx(), CCPSPuffσy(), CCPSPuffσz()))
+Gaussian Puff model - subtype gaussian:
+    total mass: 0.8991798763471508 kg
+    release windspeed: 1.150112899011524 m/s
+    release height: 3.5 m
+Basic Equation Set:
+    wind equation: DefaultWind()
+    σx equation: CCPSPuffσx()
+    σy equation: CCPSPuffσy()
+    σz equation: CCPSPuffσz()
+Substance: propane
+    MW: 0.044096 kg/mol
+    P_v: GasDispersion.Antoine{Float64}(9.773719865868816, 2257.9247634130143, 0.0) Pa
+    ρ_g: 1.864931992847327 kg/m^3
+    ρ_l: 526.13 kg/m^3
+    T_ref: 288.15 K
+    P_ref: 101325.0 Pa
+    k: 1.142
+    T_b: 231.02 K
+    Δh_v: 425740 J/kg
+    Cp_g: 1678 J/kg/K
+    Cp_l: 2520 J/kg/K
+HorizontalJet release:
+    ṁ: 0.08991798763471508 kg/s
+    Δt: 10.0 s
+    d: 0.01 m
+    u: 208.10961399327573 m/s
+    h: 3.5 m
+    P: 288765.2212333958 Pa
+    T: 278.3846872082166 K
+    f_l: 0.0
+SimpleAtmosphere atmosphere:
+    P: 101325.0 Pa
+    T: 298.15 K
+    u: 1.5 m/s
+    h: 10.0 m
+    rh: 0.0 %
+    stability: ClassF()
 
 ```
 
@@ -273,7 +309,35 @@ ig = puff(scn, IntPuff(); n=100)
 
 # output
 
-GasDispersion.IntPuffSolution{Float64, Int64, BasicEquationSet{DefaultWind, CCPSPuffσx, CCPSPuffσy, CCPSPuffσz}}(Scenario{Substance{String, Float64, GasDispersion.Antoine{Float64}, Float64, Float64, Int64, Int64, Int64}, HorizontalJet{Float64}, SimpleAtmosphere{Float64, ClassF}}(Substance{String, Float64, GasDispersion.Antoine{Float64}, Float64, Float64, Int64, Int64, Int64}("propane", 0.044096, GasDispersion.Antoine{Float64}(9.773719865868816, 2257.9247634130143, 0.0), 1.864931992847327, 526.13, 288.15, 101325.0, 1.142, 231.02, 425740, 1678, 2520), HorizontalJet{Float64}(0.08991798763471508, 10.0, 0.01, 208.10961399327573, 3.5, 288765.2212333958, 278.3846872082166, 0.0), SimpleAtmosphere{Float64, ClassF}(101325.0, 298.15, 1.5, 10.0, 0.0, ClassF())), :intpuff, 0.08991798763471508, 1.8023818673116125, 10.0, 3.5, 1.150112899011524, 100, BasicEquationSet{DefaultWind, CCPSPuffσx, CCPSPuffσy, CCPSPuffσz}(DefaultWind(), CCPSPuffσx(), CCPSPuffσy(), CCPSPuffσz()))
+Puff model - subtype intpuff:
+Substance: propane
+    MW: 0.044096 kg/mol
+    P_v: GasDispersion.Antoine{Float64}(9.773719865868816, 2257.9247634130143, 0.0) Pa
+    ρ_g: 1.864931992847327 kg/m^3
+    ρ_l: 526.13 kg/m^3
+    T_ref: 288.15 K
+    P_ref: 101325.0 Pa
+    k: 1.142
+    T_b: 231.02 K
+    Δh_v: 425740 J/kg
+    Cp_g: 1678 J/kg/K
+    Cp_l: 2520 J/kg/K
+HorizontalJet release:
+    ṁ: 0.08991798763471508 kg/s
+    Δt: 10.0 s
+    d: 0.01 m
+    u: 208.10961399327573 m/s
+    h: 3.5 m
+    P: 288765.2212333958 Pa
+    T: 278.3846872082166 K
+    f_l: 0.0
+SimpleAtmosphere atmosphere:
+    P: 101325.0 Pa
+    T: 298.15 K
+    u: 1.5 m/s
+    h: 10.0 m
+    rh: 0.0 %
+    stability: ClassF()
 ```
 
 At the same point as above the concentration has dropped
@@ -287,7 +351,7 @@ ig(100,0,2,86)
 ```
 
 ```@setup propaneleak
-ig = puff(scn, IntPuff; n=100)
+ig = puff(scn, IntPuff(); n=100)
 ```
 
 ```@example propaneleak
@@ -299,7 +363,7 @@ plot(ig, 86; xlims=(90,110), ylims=(-10,10), aspect_ratio=:equal)
 For short duration releases the model approximates the integral when $n \to \infty$ this is the default behaviour or when `n=Inf`
 
 ```@example propaneleak
-ig_inf = puff(scn, IntPuff)
+ig_inf = puff(scn, IntPuff())
 
 plot(ig_inf, 86; xlims=(90,110), ylims=(-10,10), aspect_ratio=:equal)
 ```

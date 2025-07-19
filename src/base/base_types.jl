@@ -340,7 +340,29 @@ struct BasicEquationSet{WIND,SIGMAX,SIGMAY,SIGMAZ} <: EquationSet
     sigmaz::SIGMAZ
 end
 
+function Base.show(io::IO, mime::MIME"text/plain", eqs::BasicEquationSet)
+    print(io, "Basic Equation Set:\n")
+    print(io, "    wind equation: $(eqs.wind)\n")
+    print(io, "    σx equation: $(eqs.sigmax)\n")
+    print(io, "    σy equation: $(eqs.sigmay)\n")
+    print(io, "    σz equation: $(eqs.sigmaz)\n")
+end
+
 _wind_equation(eqs::BasicEquationSet) = eqs.wind
 _sigma_x(eqs::BasicEquationSet) = eqs.sigmax
 _sigma_y(eqs::BasicEquationSet) = eqs.sigmay
 _sigma_z(eqs::BasicEquationSet) = eqs.sigmaz
+
+
+# Plume and Puff utils
+function Base.show(io::IO, mime::MIME"text/plain", p::Plume)
+    p_type = string(p.model)
+    print(io, "Plume model - subtype $p_type:\n")
+    show(io,mime,p.scenario)
+end
+
+function Base.show(io::IO, mime::MIME"text/plain", p::Puff)
+    p_type = string(p.model)
+    print(io, "Puff model - subtype $p_type:\n")
+    show(io,mime,p.scenario)
+end

@@ -123,7 +123,7 @@ function puff(scenario::Scenario, ::SLAB, eqs::EquationSet=DefaultSet;
     # since v8.0.1 this causes DataInterpolations to error
     xperm = sortperm(out.cc.x)
     tperm = sortperm(out.cc.t)
-    return SLABSolution(scenario,:SLAB,inp,out,c_max,
+    return SLABSolution(scenario,:SLAB_HorizontalJet,inp,out,c_max,
                         AkimaInterpolation(out.cc.cc[xperm], out.cc.x[xperm]),
                         AkimaInterpolation(out.cc.b[xperm], out.cc.x[xperm]),
                         AkimaInterpolation(out.cc.betac[xperm], out.cc.x[xperm]),
@@ -188,7 +188,7 @@ function puff(scenario::Scenario{<:AbstractSubstance,<:VerticalJet,<:Atmosphere}
     # since v8.0.1 this causes DataInterpolations to error
     xperm = sortperm(out.cc.x)
     tperm = sortperm(out.cc.t)
-    return SLABSolution(scenario,:SLAB,inp,out,c_max,
+    return SLABSolution(scenario,:SLAB_VerticalJet,inp,out,c_max,
                         AkimaInterpolation(out.cc.cc[xperm], out.cc.x[xperm]),
                         AkimaInterpolation(out.cc.b[xperm], out.cc.x[xperm]),
                         AkimaInterpolation(out.cc.betac[xperm], out.cc.x[xperm]),

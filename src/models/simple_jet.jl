@@ -14,6 +14,15 @@ struct SimpleJetSolution{F<:Number} <: Plume
 end
 SimpleJetSolution(s,m,d,h,θ,c0,kd,k2,k3) = SimpleJetSolution(s,m,promote(d,h,θ,c0,kd,k2,k3)...)
 
+function Base.show(io::IO, mime::MIME"text/plain", p::SimpleJetSolution)
+    p_type = string(p.model)
+    print(io, "Plume model - subtype $p_type:\n")
+    print(io, "    k2: $(p.k2)\n")
+    print(io, "    k3: $(p.k3)\n")
+    print(io, "    angle: $(p.angle) rad\n")
+    show(io,mime,p.scenario)
+end
+
 _release_angle(::HorizontalJet) = 0.0
 _release_angle(::VerticalJet) = π/2
 
