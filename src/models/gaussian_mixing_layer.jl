@@ -4,6 +4,7 @@ struct GaussianMixingLayer <: PlumeModel end
 # mixing layer vertical term -- method of images
 struct SimpleMixingLayer{N<:Integer,F<:Number} <: GaussianVerticalTerm
     nterms::N
+    rtol::F
     mixing_height::F
 end
 
@@ -16,7 +17,7 @@ function vertical_term(z, h, σz, ml::SimpleMixingLayer)
         H₄ = z + (2*i*ml.mixing_height + h)
         next_term = exp(-0.5*(H₁/σz)^2) + exp(-0.5*(H₂/σz)^2) + exp(-0.5*(H₃/σz)^2) + exp(-0.5*(H₄/σz)^2)
         Fz += next_term
-        if next_term ≈ 0
+        if isapprox(next_term,0;rtol=ml.rtol)
             break
         end
     end
@@ -26,6 +27,7 @@ end
 # mixing layer vertical term -- periodic
 struct PeriodicMixingLayer{N<:Integer,F<:Number} <: GaussianVerticalTerm
     nterms::N
+    rtol::F
     mixing_height::F
 end
 
@@ -34,7 +36,7 @@ function vertical_term(z, h, σz, ml::PeriodicMixingLayer)
     for n=1:ml.nterms
         next_term = cos(n*π*z/ml.mixing_height)*cos(n*π*h/ml.mixing_height)*exp(-0.5*(n*π*σz/ml.mixing_height)^2)
         Fz += next_term
-        if next_term ≈ 0
+        if isapprox(next_term,0;rtol=ml.rtol)
             break
         end
     end
@@ -61,6 +63,7 @@ There are two methods for the mixing layer:
 - `h_min=1.0`:  Minimum height for windspeed calculations.
 - `method=:simplemixinglayer`: The method used for the mixing layer.
 - `n_terms=10`: Number terms in the series calculation of $ F_z $.
+- `rtol=√eps` : The relative tolerance for the series calculation of $ F_z $.
 - `mixing_limit=10_000.0`: Limit for the mixing height, in meters. Mixing heights above this are treated as infinite.
 
 # References
@@ -73,7 +76,9 @@ function plume(scenario::Scenario, ::GaussianMixingLayer, eqs=DefaultSet;
                method=:simplemixinglayer, 
                h_min=1.0, 
                n_terms=10,
+               rtol=nothing,
                mixing_limit=10_000.0)
+
     # parameters of the jet
     hᵣ = _release_height(scenario)
     m  = _mass_rate(scenario)
@@ -94,15 +99,20 @@ function plume(scenario::Scenario, ::GaussianMixingLayer, eqs=DefaultSet;
     c_max = m/Qᵒ
     c_max = c_max/ρₐ
 
+    # series tolerance
+    if isnothing(rtol)
+        rtol = √( eps(m) )
+    end
+
     # mixing layer
     if hₘ > mixing_limit
         # infinite mixing height
         @warn "Mixing height $hₘ exceeds limit $mixing_limit, using infinite mixing height."
         ml = SimpleVerticalTerm()
     elseif method == :simplemixinglayer
-        ml = SimpleMixingLayer(n_terms, hₘ)
+        ml = SimpleMixingLayer(n_terms, rtol, hₘ)
     elseif method == :periodicmixinglayer
-        ml = PeriodicMixingLayer(n_terms, hₘ)
+        ml = PeriodicMixingLayer(n_terms, rtol, hₘ)
     else
         error("Unknown mixing layer method: $method")
     end
@@ -146,6 +156,7 @@ There are two methods for the mixing layer:
 - `h_min=1.0`: Minimum height, in meters, for windspeed calculations.
 - `method=:simplemixinglayer`: The method used for the mixing layer.
 - `n_terms=10`: Number terms in the series calculation of $ F_z $.
+- `rtol=√eps` : The relative tolerance for the series calculation of $ F_z $.
 - `mixing_limit=10_000.0`: Limit for the mixing height, in meters. Mixing heights above this are treated as infinite.
 
 # References
@@ -161,6 +172,7 @@ function plume(scenario::Scenario{<:AbstractSubstance,<:VerticalJet,<:Atmosphere
                method=:simplemixinglayer,
                h_min=1.0, 
                n_terms=10,
+               rtol=nothing,
                mixing_limit=10_000.0)  
     # parameters of the jet
     Dⱼ = _release_diameter(scenario)
@@ -210,15 +222,20 @@ function plume(scenario::Scenario{<:AbstractSubstance,<:VerticalJet,<:Atmosphere
         plume = NoPlumeRise()
     end
 
+    # series tolerance
+    if isnothing(rtol)
+        rtol = √( eps(m) )
+    end
+
     # mixing layer
     if hₘ > mixing_limit
         # infinite mixing height
         @warn "Mixing height $hₘ exceeds limit $mixing_limit, using infinite mixing height."
         ml = SimpleVerticalTerm()
     elseif method == :simplemixinglayer
-        ml = SimpleMixingLayer(n_terms, hₘ)
+        ml = SimpleMixingLayer(n_terms, rtol, hₘ)
     elseif method == :periodicmixinglayer
-        ml = PeriodicMixingLayer(n_terms, hₘ)
+        ml = PeriodicMixingLayer(n_terms, rtol, hₘ)
     else
         error("Unknown mixing layer method: $method")
     end
