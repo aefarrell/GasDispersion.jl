@@ -16,7 +16,7 @@ end
 
 # For reverse compatibility
 function puff(s::Scenario, ::Type{BritterMcQuaidPuff}, eqs=DefaultSet)
-    @warn "puff(scenario, BritterMcQuaidPuff, eqs) is deprecated, use puff(scenario, BritterMcQuaidPuff(), eqs) instead."
+    Base.depwarn("puff(scenario, BritterMcQuaidPuff, eqs) is deprecated, use puff(scenario, BritterMcQuaidPuff(), eqs) instead.", :puff)
     return puff(s, BritterMcQuaidPuff(), eqs)
 end
 

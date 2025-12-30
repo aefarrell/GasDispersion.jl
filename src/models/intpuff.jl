@@ -16,7 +16,7 @@ IntPuffSolution(s,m,r,ρ,d,h,u,n,es) = IntPuffSolution(s,m,promote(r,ρ,d,h,u,).
 
 # for reverse compatibility
 function puff(s::Scenario, ::Type{IntPuff}, eqs=DefaultPuffSet; kwargs...)
-    @warn "puff(scenario, IntPuff, eqs) is deprecated, use puff(scenario, IntPuff(), eqs) instead."
+    Base.depwarn("puff(scenario, IntPuff, eqs) is deprecated, use puff(scenario, IntPuff(), eqs) instead.", :puff)
     return puff(s, IntPuff(), eqs; kwargs...)
 end
 

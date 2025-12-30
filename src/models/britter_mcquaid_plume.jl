@@ -16,7 +16,7 @@ BritterMcQuaidPlumeSolution(s,m,c0,T,D,lb,xnf,xff,A,itp)=BritterMcQuaidPlumeSolu
 
 # for reverse compatibility
 function plume(s::Scenario, ::Type{BritterMcQuaidPlume}, eqs=DefaultSet)
-    @warn "plume(scenario, BritterMcQuaidPlume, eqs) is deprecated, use plume(scenario, BritterMcQuaidPlume(), eqs) instead."
+    Base.depwarn("plume(scenario, BritterMcQuaidPlume, eqs) is deprecated, use plume(scenario, BritterMcQuaidPlume(), eqs) instead.", :plume)
     return plume(s, BritterMcQuaidPlume(), eqs)
 end
 

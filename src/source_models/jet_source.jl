@@ -3,7 +3,7 @@ struct JetSource <: SourceModel end
 
 # for reverse compatibility
 function scenario_builder(s::AbstractSubstance, ::Type{JetSource}, a::Atmosphere; kwargs...)
-    @warn "scenario_builder(substance, JetSource, atmosphere) is deprecated, use scenario_builder(substance, JetSource(), atmosphere) instead."
+    Base.depwarn("scenario_builder(substance, JetSource, atmosphere) is deprecated, use scenario_builder(substance, JetSource(), atmosphere) instead.", :scenario_builder)
     return scenario_builder(s, JetSource(), a; kwargs...)
 end
 

@@ -25,7 +25,7 @@ end
 
 # for reverse compatibility
 function puff(s::Scenario, ::Type{<:GaussianPuff}, eqs=DefaultPuffSet; kwargs...) 
-    @warn "puff(scenario, GaussianPuff, eqs) is deprecated, use puff(scenario, GaussianPuff(), eqs) instead."
+    Base.depwarn("puff(scenario, GaussianPuff, eqs) is deprecated, use puff(scenario, GaussianPuff(), eqs) instead.", :puff)
     return puff(s, GaussianPuff(), eqs; kwargs...)
 end
 
