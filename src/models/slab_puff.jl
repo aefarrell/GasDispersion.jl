@@ -65,7 +65,7 @@ end
 
 # for reverse compatibility
 function puff(scenario::Scenario, ::Type{SLAB}, eqs::EquationSet=DefaultSet; kwargs...)
-    @warn "puff(scenario, SLAB, eqs) is deprecated, use puff(scenario, SLAB(), eqs) instead."
+    Base.depwarn("puff(scenario, SLAB, eqs) is deprecated, use puff(scenario, SLAB(), eqs) instead.", :puff)
     return puff(scenario, SLAB(), eqs; kwargs...)
 end
 
