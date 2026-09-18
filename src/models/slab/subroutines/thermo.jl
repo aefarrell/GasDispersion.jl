@@ -98,7 +98,8 @@ function _slab_sub_thermo(p::SLAB_Params,idpf,xn,timn,rmi,t0,cmev0,cm0,cmw0,cmwv
             alfs = wms*(cmda/wma + cmwv/wmw)
             ab2 = 0.5*((1 - fft)/ffpr + (dhe0/_cp)*(alfs+cmevt))
             ac = dhe0*(alfs - (1 - fft)*cmevt)/(_cp*ffpr)
-            dlti = ab2 - sqrt(ab2*ab2 + ac)
+            discriminant = ab2*ab2 + ac
+            dlti = discriminant > 0 ? ab2 - sqrt(discriminant) : 0
             dltm = dhe0*(cmevt-cm)/_cp
             dlti = max(dltm,dlti)
             t = t + dlti
@@ -127,6 +128,9 @@ function _slab_sub_thermo(p::SLAB_Params,idpf,xn,timn,rmi,t0,cmev0,cm0,cmw0,cmwv
                     if fft < fftt
                         cmevs = alfs*fft/(1 - fft)
                         cmevspr = spb*cmevs/((1 - fft)*(tstr+spc)*(tstr+spc))
+                    elseif fftt >= 1
+                        cmevs = cmev
+                        cmevspr = 0.0
                     else
                         tesrt = spb/(spa-log(fftt)) - spc
                         cmevspr = spb*cm/((1 - fftt)*(tesrt+spc)*(tesrt+spc))
@@ -146,6 +150,9 @@ function _slab_sub_thermo(p::SLAB_Params,idpf,xn,timn,rmi,t0,cmev0,cm0,cmw0,cmwv
                     if ggt < ggtt
                         cmwvs = alfw*ggt/(1 - ggt)
                         cmwvspr = spbw*cmwvs/((1 - ggt)*tstr*tstr)
+                    elseif ggtt >= 1
+                        cmwvs = cmwv
+                        cmwvspr = 0.0
                     else
                         twsrt = spbw/(spaw-log(ggtt))
                         cmwvspr = spbw*cmw/((1 - ggtt)*twsrt*twsrt)
