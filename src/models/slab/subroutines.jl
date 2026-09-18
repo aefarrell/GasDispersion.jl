@@ -10,6 +10,7 @@ include("subroutines/evalpf.jl")
 include("subroutines/entran.jl")
 include("subroutines/store.jl")
 include("subroutines/editcc.jl")
+include("subroutines/steady_rhs.jl")
 
 # integration routines
 include("subroutines/integrate_steadystate.jl")

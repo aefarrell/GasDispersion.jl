@@ -1,6 +1,50 @@
+const _SLAB_STEADY_STATE_SIZE = 11
+
+function _slab_steady_rhs(u, p, x)
+    dy = u .- p.u0
+    bbv,bv,qint,zc,r,g,gw,sft,sfu,sfy,sfz = _slab_sub_solve(
+        p.params, dy, p.u0[2], p.u0[3], p.u0[8], p.u0[1], p.h, p.u0[9])
+    cm,cv,cmw,cmwv,cmev,t,rho,cp = _slab_sub_thermo(
+        p.params, p.idpf, x, zero(eltype(u)), p.rmi, p.t0, p.cmev0, p.cm0,
+        p.cmw0, p.cmwv0, p.cp0, r, p.u0[1], sft, p.bse)
+    uvel,uab,b,bb,beta,h,zc,vg,vg0,wc,htp = _slab_sub_eval(
+        p.params, x, p.alfg, p.sru0, zc, p.h0, p.uvel0, p.uab0, p.b0,
+        p.bb0, r, p.u0[1], bv, p.u0[3], bbv, p.u0[2], rho, p.rho0,
+        p.vg0, p.wc0, cm, p.htp0, p.b0, p.htp0, p.uab0, p.beta0, p.vg0, p.wc0, p.h,
+        p.uvel0, p.bb0, sfu, sfz, sfy, g, gw, p.bse)
+    w,v,vx,ubs2,fug,ft,fu,fv,fw = _slab_sub_entran(
+        p.params, p.idpf, x, zero(eltype(u)), zero(eltype(u)), zero(eltype(u)), p.ubs20, uvel,
+        p.ug, vg, uab, rho, zc, t, h, htp, bb, p.bbx, wc, cp, p.tgon,
+        p.bse, p.urf, p.rcf, p.afa)
+    f = zeros(typeof(rho), _SLAB_STEADY_STATE_SIZE)
+    _slab_sub_slope!(f, p.params, rho, x, h, v, w, b, bb, vg, uvel, wc, cm,
+                     p.ft, p.fu, p.fv, p.fw, p.bse)
+    return SVector{_SLAB_STEADY_STATE_SIZE}(f)
+end
+
+function _slab_steady_values(u, p, x)
+    dy = u .- p.u0
+    bbv,bv,qint,zc,r,g,gw,sft,sfu,sfy,sfz = _slab_sub_solve(
+        p.params, dy, p.u0[2], p.u0[3], p.u0[8], p.u0[1], p.h, p.u0[9])
+    cm,cv,cmw,cmwv,cmev,t,rho,cp = _slab_sub_thermo(
+        p.params, p.idpf, x, zero(eltype(u)), p.rmi, p.t0, p.cmev0, p.cm0,
+        p.cmw0, p.cmwv0, p.cp0, r, p.u0[1], sft, p.bse)
+    uvel,uab,b,bb,beta,h,zc,vg,vg0,wc,htp = _slab_sub_eval(
+        p.params, x, p.alfg, p.sru0, zc, p.h0, p.uvel0, p.uab0, p.b0,
+        p.bb0, r, p.u0[1], bv, p.u0[3], bbv, p.u0[2], rho, p.rho0,
+        p.vg0, p.wc0, cm, p.htp0, p.b0, p.htp0, p.uab0, p.beta0, p.vg0, p.wc0, p.h,
+        p.uvel0, p.bb0, sfu, sfz, sfy, g, gw, p.bse)
+    w,v,vx,ubs2,fug,ft,fu,fv,fw = _slab_sub_entran(
+        p.params, p.idpf, x, zero(eltype(u)), zero(eltype(u)), zero(eltype(u)), p.ubs20, uvel,
+        p.ug, vg, uab, rho, zc, t, h, htp, bb, p.bbx, wc, cp, p.tgon,
+        p.bse, p.urf, p.rcf, p.afa)
+    return (; bbv,bv,qint,zc,r,g,gw,sft,sfu,sfy,sfz,cm,cv,cmw,cmwv,cmev,t,rho,cp,
+            u=uvel,uab,b,bb,beta,h,vg,wc,htp,w,v,vx,ubs2,fug,ft,fu,fv,fw)
+end
 
 function _slab_int_steady_state!(vecs::SLAB_Vecs{F,A},vars::SLAB_Loop_Init{I,F},
-                                  params::SLAB_Params{I,F,A},idpf::I,nxtr::I) where {
+                                  params::SLAB_Params{I,F,A},idpf::I,nxtr::I;
+                                  backend::Symbol=:legacy, alg=RK4(), solver_kwargs=(;)) where {
                                   I <: Integer, F <: AbstractFloat, A <: AbstractVector{F}}
                              
     # unpack parameters
@@ -43,22 +87,19 @@ function _slab_int_steady_state!(vecs::SLAB_Vecs{F,A},vars::SLAB_Loop_Init{I,F},
     xn = timn = xstr = zero(F)
     r = g = gw = sft = sfu = sfy = sfz = zero(F)
     betax = zero(F)
+    steady_state = nothing
+    transient_started = false
+    transient_vars = nothing
+    transient_dt = zero(F)
 
-    # intialize boundaries and step size
     msfm = vars.msfm
     mnfm = vars.mnfm
     mffm = vars.mffm
     nxi = vars.nxi
     gam = vars.gam
     nssm = params.xtra.nssm
-    xffm = params.fld.xffm
-    nstp = nssm*mnfm
-    dx = (gam - 1) * (xffm - vecs.x[msfm])/((gam^nstp) - 1)
-    
-    # initial state variable location
-    n = max(1, nxi)
 
-    # initialize state variables
+    n = max(1, nxi)
     x = vecs.x[n]
     zc = zc0 = vecs.zc[n]
     h = h0 = vecs.h[n]
@@ -75,7 +116,7 @@ function _slab_int_steady_state!(vecs::SLAB_Vecs{F,A},vars::SLAB_Loop_Init{I,F},
     cmwv = cmwv0 = vecs.cmwv[n]
     wc = wc0 = vecs.wc[n]
     vg = vg0 = vecs.vg[n]
-    ug = ug0 = vecs.ug[n]
+    ug = vecs.ug[n]
     w = vecs.w[n]
     v = vecs.v[n]
     vx = vecs.vx[n]
@@ -83,70 +124,65 @@ function _slab_int_steady_state!(vecs::SLAB_Vecs{F,A},vars::SLAB_Loop_Init{I,F},
     beta = vecs.beta[n]
     qint = qint0 = vecs.qint[n]
 
-    # initializing arrays for integration
-    dxxi = zeros(F,3)
-    dxrk = zeros(F,4)
-    _sum = zeros(F,11)
-    dy = zeros(F,11)
-    f = zeros(F,11)
-    
-    #do 675 nx=nxi,mffm
+    xffm = params.fld.xffm
+    nstp = nssm*mnfm
+    dx = (gam - 1) * (xffm - vecs.x[msfm])/((gam^nstp) - 1)
+
+    dxxi = zeros(F, 3)
+    dxrk = zeros(F, 4)
+    _sum = zeros(F, 11)
+    dy = zeros(F, 11)
+    f = zeros(F, 11)
+
     for nx in nxi:mffm
-        #do 660 ns = 1,nssm
         for ns in 1:nssm
-            #do 636 i=1,11
-            #636 sum(i) = 0.
-            for i in 1:11
-                _sum[i] = 0.0
-            end
+            fill!(_sum, zero(F))
+            dxxi .= (dx/2, dx/2, dx)
+            dxrk .= (dx/6, dx/3, dx/3, dx/6)
 
-            dxxi[1] = 0.5*dx
-            dxxi[2] = 0.5*dx
-            dxxi[3] = dx
-
-            dxrk[1] = dx/6
-            dxrk[2] = dx/3
-            dxrk[3] = dx/3
-            dxrk[4] = dx/6
-
-            #do 655 k=1,4
-            for k in 1:4
-                #call slope
-                _slab_sub_slope!(f,params,rho,x,h,v,w,b,bb,vg,u,wc,cm,ft,fu,fv,fw,bse)
-
-                #do 650 j=1,11
+            if backend == :ode
+                base = _slab_steady_loop_state(r0,bbv0,bv0,zc0,qint0,h,b,bb,rho,t,u,uab,
+                    vg,wc,htp,cm,cmw,cmwv,cmev,cp0,ft,fu,fv,fw,fug,ubs20,beta)
+                next, entrainment = _slab_steady_ode_step(base, params, idpf, x, dx;
+                    rmi=rmi, alfg=alfg, sru0=sru0, bbx=bbx, alg=alg,
+                    solver_kwargs=solver_kwargs)
+                r,bbv,bv,g,gw,sft,sfu,sfy,sfz,zc,qint = next.r,next.bbv,next.bv,next.g,
+                    next.gw,next.sft,next.sfu,next.sfy,next.sfz,next.zc,next.qint
+                h,b,bb,rho,t,u,uab,vg,wc,htp = next.h,next.b,next.bb,next.rho,next.t,
+                    next.u,next.uab,next.vg,next.wc,next.htp
+                cm,cmw,cmwv,cmev,_cp = next.cm,next.cmw,next.cmwv,next.cmev,next.cp
+                ft,fu,fv,fw,fug,ubs2 = next.ft,next.fu,next.fv,next.fw,next.fug,next.ubs2
+                beta = next.beta
+                vg0 = vg
+                w,v,vx = entrainment.w,entrainment.v,entrainment.vx
+                xn = x + dx
+            else
+                for k in 1:4
+                _slab_sub_slope!(f, params, rho, x, h, v, w, b, bb, vg, u, wc, cm,
+                                 ft, fu, fv, fw, bse)
                 for j in 1:11
-                    _sum[j] = _sum[j] + dxrk[k] * f[j]
+                    _sum[j] += dxrk[k]*f[j]
                     if k == 4
                         dy[j] = _sum[j]
                     else
-                        dy[j] = dxxi[k] * f[j]
+                        dy[j] = dxxi[k]*f[j]
                         xn = x + dxxi[k]
                     end
-                #650 continue
                 end
 
-                #call solve
-                bbv,bv,qint,zc,r,g,gw,sft,sfu,sfy,sfz = _slab_sub_solve(params,dy,bbv0,bv0,
-                                                         zc0,r0,h,qint0)
-
-                #call thermo
-                cm,cv,cmw,cmwv,cmev,t,rho,_cp = _slab_sub_thermo(params,idpf,xn,timn,rmi,
-                                                 t0,cmev0,cm0,cmw0,cmwv0,cp0,r,r0,sft,bse)
-
-                #call eval
-                u,uab,b,bb,beta,h,zc,vg,vg0,wc,htp = _slab_sub_eval(params,xn,alfg,sru0,
-                                                      zc,h0,u0,uab0,b0,bb0,r,r0,bv,bv0,
-                                                      bbv,bbv0,rho,rho0,vg0,wc0,cm,htp0,
-                                                      b,htp,uab,beta,vg,wc,h,u,bb,sfu,
-                                                      sfz,sfy,g,gw,bse)
-
-                #call entran
-                w,v,vx,ubs2,fug,ft,fu,fv,fw = _slab_sub_entran(params,idpf,xn,timn,wss,
-                                               xstr,ubs20,u,ug,vg,uab,rho,zc,t,h,htp,bb,
-                                               bbx,wc,_cp,tgon,bse,urf,rcf,afa)
-
-            #655 continue
+                bbv,bv,qint,zc,r,g,gw,sft,sfu,sfy,sfz = _slab_sub_solve(
+                    params, dy, bbv0, bv0, zc0, r0, h, qint0)
+                cm,cv,cmw,cmwv,cmev,t,rho,_cp = _slab_sub_thermo(
+                    params, idpf, xn, timn, rmi, t0, cmev0, cm0, cmw0, cmwv0,
+                    cp0, r, r0, sft, bse)
+                u,uab,b,bb,beta,h,zc,vg,vg0,wc,htp = _slab_sub_eval(
+                    params, xn, alfg, sru0, zc, h0, u0, uab0, b0, bb0, r, r0,
+                    bv, bv0, bbv, bbv0, rho, rho0, vg0, wc0, cm, htp0, b, htp,
+                    uab, beta, vg, wc, h, u, bb, sfu, sfz, sfy, g, gw, bse)
+                w,v,vx,ubs2,fug,ft,fu,fv,fw = _slab_sub_entran(
+                    params, idpf, xn, timn, wss, xstr, ubs20, u, ug, vg, uab,
+                    rho, zc, t, h, htp, bb, bbx, wc, _cp, tgon, bse, urf, rcf, afa)
+                end
             end
 
             x = xn
@@ -204,6 +240,8 @@ function _slab_int_steady_state!(vecs::SLAB_Vecs{F,A},vars::SLAB_Loop_Init{I,F},
             nxtr = nx
             nxi = nx+1
             dt = dx/u
+            steady_state = deepcopy(vecs)
+            transient_started = true
             rho0 = rho
             r = 0.25*qs*tsd/cm
             r0 = r
@@ -240,9 +278,8 @@ function _slab_int_steady_state!(vecs::SLAB_Vecs{F,A},vars::SLAB_Loop_Init{I,F},
             tvars = SLAB_Loop_Init(nxi,msfm,mnfm,mffm,gam,ft,fu,fv,fw,fug,bbv0,bv0,r0,
                                    cp0,alfg,sru0,htp0,ubs20,rmi,bx,bbx,bbvx0,bvx0,xcc0,bxs0)
 
-            #c  go to transient puff dispersion mode
-            #go to 730
-            _slab_int_transient!(vecs,tvars,params,idpf,nxtr,dt)
+            transient_vars = tvars
+            transient_dt = dt
             break
         end
     end
@@ -276,4 +313,7 @@ function _slab_int_steady_state!(vecs::SLAB_Vecs{F,A},vars::SLAB_Loop_Init{I,F},
     #         vecs.tim[i] = vecs.tim[12-i]
     #     end
     # end
+
+    steady_state === nothing && (steady_state = deepcopy(vecs))
+    return (; steady_state, transient_started, transient_vars, transient_dt, nxtr)
 end

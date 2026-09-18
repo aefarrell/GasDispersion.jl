@@ -250,8 +250,124 @@ struct SLAB_CC_Vecs{F <: Number, A <: AbstractVector{F}}
     bbc::A
 end
 
-struct SLAB_Output{I <: Integer, F <: Number, A <: AbstractVector{F}}
+abstract type AbstractSLABSolution end
+
+mutable struct SLAB_Steady_State{F <: Number}
+    r::F
+    bbv::F
+    bv::F
+    g::F
+    gw::F
+    sft::F
+    sfu::F
+    sfy::F
+    sfz::F
+    zc::F
+    qint::F
+    h::F
+    b::F
+    bb::F
+    rho::F
+    t::F
+    u::F
+    uab::F
+    vg::F
+    wc::F
+    htp::F
+    cm::F
+    cmw::F
+    cmwv::F
+    cmev::F
+    cp::F
+    ft::F
+    fu::F
+    fv::F
+    fw::F
+    fug::F
+    ubs2::F
+end
+
+mutable struct SLAB_Transient_State{F <: Number}
+    x::F
+    tim::F
+    r::F
+    bbv::F
+    bv::F
+    bbvx::F
+    bvx::F
+    g::F
+    gw::F
+    gx::F
+    sft::F
+    sfu::F
+    sfx::F
+    sfy::F
+    sfz::F
+    zc::F
+    qint::F
+    h::F
+    b::F
+    bb::F
+    bx::F
+    bbx::F
+    rho::F
+    t::F
+    u::F
+    uab::F
+    vg::F
+    ug::F
+    wc::F
+    cm::F
+    cmw::F
+    cmwv::F
+    cmev::F
+    cp::F
+    ft::F
+    fu::F
+    fv::F
+    fw::F
+    fug::F
+    ubs2::F
+end
+
+struct SLAB_Steady_Solution{I <: Integer, F <: Number, A <: AbstractVector{F}} <: AbstractSLABSolution
+    params::SLAB_Params{I,F,A}
+    state::SLAB_Vecs{F,A}
+    cc::SLAB_CC_Vecs{F,A}
+    initial::SLAB_Steady_State{F}
+end
+
+struct SLAB_Transient_Solution{I <: Integer, F <: Number, A <: AbstractVector{F}} <: AbstractSLABSolution
+    params::SLAB_Params{I,F,A}
+    state::SLAB_Vecs{F,A}
+    cc::SLAB_CC_Vecs{F,A}
+    initial::SLAB_Transient_State{F}
+end
+
+struct SLAB_Output{I <: Integer, F <: Number, A <: AbstractVector{F}, S <: Union{Nothing,SLAB_Steady_Solution{I,F,A}}, T <: Union{Nothing,SLAB_Transient_Solution{I,F,A}}}
     p::SLAB_Params{I,F,A}
     s::SLAB_Vecs{F,A}
     cc::SLAB_CC_Vecs{F,A}
+    steady::S
+    transient::T
+end
+
+SLAB_Output(params, state, cc) = SLAB_Output(params, state, cc, nothing, nothing)
+
+function _slab_initial_steady_state(vecs::SLAB_Vecs{F}, vars::SLAB_Loop_Init{I,F}) where {I,F}
+    return SLAB_Steady_State(vars.r0, vars.bbv0, vars.bv0, zero(F), zero(F), zero(F), zero(F),
+        zero(F), zero(F), vecs.zc[1], vecs.qint[1], vecs.h[1], vecs.b[1], vecs.bb[1],
+        vecs.rho[1], vecs.t[1], vecs.u[1], vecs.uab[1], vecs.vg[1], vecs.wc[1],
+        vars.htp0, vecs.cm[1], vecs.cmw[1], vecs.cmwv[1], vecs.cmev[1], vars.cp0,
+        vars.ft, vars.fu, vars.fv, vars.fw, vars.fug, vars.ubs20)
+end
+
+function _slab_initial_transient_state(vecs::SLAB_Vecs{F}, vars::SLAB_Loop_Init{I,F}, index::Integer) where {I,F}
+    return SLAB_Transient_State(vecs.x[index], vecs.tim[index], vars.r0, vars.bbv0, vars.bv0,
+        vars.bbvx0, vars.bvx0, zero(F), zero(F), zero(F), zero(F), zero(F), zero(F), zero(F), zero(F),
+        vecs.zc[index], vecs.qint[index], vecs.h[index], vecs.b[index], vecs.bb[index],
+        vecs.bx[index], vecs.bbx[index], vecs.rho[index], vecs.t[index], vecs.u[index],
+        vecs.uab[index], vecs.vg[index], vecs.ug[index], vecs.wc[index], vecs.cm[index],
+        vecs.cmw[index], vecs.cmwv[index], vecs.cmev[index], vars.cp0, vars.ft, vars.fu,
+        vars.fv, vars.fw, vars.fug, vars.ubs20)
 end
