@@ -5,6 +5,7 @@ module GasDispersion
 # imports
 using Markdown
 using DataInterpolations: LinearInterpolation, AkimaInterpolation
+using OrdinaryDiffEq
 using SpecialFunctions: erf
 using RecipesBase
 

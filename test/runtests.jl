@@ -35,12 +35,12 @@ if GROUP ∈ ["All", "Base"]
     include("models/britter_mcquaid_plume_tests.jl")
     include("models/britter_mcquaid_puff_tests.jl")
     include("models/slab_tests.jl")
+    include("models/slab_steady_rhs_tests.jl")
 end
 
 if GROUP ∈ ["All", "Ext"] && VERSION ∈ ["1","latest","nightly"]
     # this feels kind of janky to me, but it stops versions <1.9
     # from trying to run the Clapeyron extension
-    import Pkg; Pkg.add("Clapeyron")
     using Clapeyron
     include("exts/clapeyron_ext_tests.jl")
 end
