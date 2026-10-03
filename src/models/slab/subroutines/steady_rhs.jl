@@ -129,6 +129,30 @@ struct SLAB_Steady_StepResult{S,F <: AbstractFloat}
     cv::F
 end
 
+function _slab_steady_reference_update(result::SLAB_Steady_StepResult,
+                                       controls::SLAB_Steady_Controls, rhoa)
+    state = result.state
+    # The legacy loop carries next.vg (not next.vg0) into the next reference.
+    reference = SLAB_Steady_Reference_State(state.bbv,state.bv,state.zc,state.r,
+        state.qint,state.t,state.cmev,state.cm,state.cmw,state.cmwv,state.cp,state.h,
+        state.u,state.uab,state.b,state.bb,state.rho,state.vg,state.wc,state.htp,
+        state.beta,state.ubs2)
+
+    alfg = controls.alfg
+    srug = 0.0
+    if !(state.htp > state.h)
+        if state.rho > rhoa
+            alfg = 0.25
+            srug = 0.5 * alfg * grav * (state.rho - rhoa) * state.bb * state.h^2
+        else
+            alfg = 0.0
+        end
+    end
+    sru0 = state.r * state.u - state.r * (1 - state.cm) * state.uab + srug
+    next_controls = SLAB_Steady_Controls(controls.rmi, alfg, sru0, controls.bbx)
+    return reference, next_controls
+end
+
 struct SLAB_Steady_Transient_Handoff{V,F <: AbstractFloat,I <: Integer}
     vars::V
     dt::F

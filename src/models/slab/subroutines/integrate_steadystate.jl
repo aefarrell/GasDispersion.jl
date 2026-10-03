@@ -23,14 +23,9 @@ function _slab_int_steady_state_impl!(vecs::SLAB_Vecs{F,A},vars::SLAB_Loop_Init{
     fv = vars.fv
     fw = vars.fw
     fug = vars.fug
-    bbv = bbv0 = vars.bbv0
-    bv = bv0 = vars.bv0
-    r0 = vars.r0
-    _cp = cp0 = vars.cp0
     alfg = vars.alfg
     sru0 = vars.sru0
-    htp = htp0 = vars.htp0
-    ubs2 = ubs20 = vars.ubs20
+    htp = vars.htp0
     rmi = vars.rmi
     bx = bx0 = vars.bx
     bbx = bbx0 = vars.bbx
@@ -41,7 +36,6 @@ function _slab_int_steady_state_impl!(vecs::SLAB_Vecs{F,A},vars::SLAB_Loop_Init{
 
     # initialize other loop variables to zero
     xn = timn = xstr = zero(F)
-    r = g = gw = sft = sfu = sfy = sfz = zero(F)
     betax = zero(F)
     steady_vecs = nothing
     transient_vars = nothing
@@ -57,20 +51,20 @@ function _slab_int_steady_state_impl!(vecs::SLAB_Vecs{F,A},vars::SLAB_Loop_Init{
 
     n = max(1, nxi)
     x = vecs.x[n]
-    zc = zc0 = vecs.zc[n]
-    h = h0 = vecs.h[n]
-    bb = bb0 = vecs.bb[n]
-    b = b0 = vecs.b[n]
+    zc = vecs.zc[n]
+    h = vecs.h[n]
+    bb = vecs.bb[n]
+    b = vecs.b[n]
     cv = vecs.cv[n]
-    rho = rho0 = vecs.rho[n]
-    t = t0 = vecs.t[n]
-    u = u0 = vecs.u[n]
-    uab = uab0 = vecs.uab[n]
-    cm = cm0 = vecs.cm[n]
-    cmev = cmev0 = vecs.cmev[n]
-    cmw = cmw0 = vecs.cmw[n]
-    cmwv = cmwv0 = vecs.cmwv[n]
-    wc = wc0 = vecs.wc[n]
+    rho = vecs.rho[n]
+    t = vecs.t[n]
+    u = vecs.u[n]
+    uab = vecs.uab[n]
+    cm = vecs.cm[n]
+    cmev = vecs.cmev[n]
+    cmw = vecs.cmw[n]
+    cmwv = vecs.cmwv[n]
+    wc = vecs.wc[n]
     vg = vg0 = vecs.vg[n]
     ug = vecs.ug[n]
     w = vecs.w[n]
@@ -78,15 +72,19 @@ function _slab_int_steady_state_impl!(vecs::SLAB_Vecs{F,A},vars::SLAB_Loop_Init{
     vx = vecs.vx[n]
     tim = vecs.tim[n]
     beta = vecs.beta[n]
-    qint = qint0 = vecs.qint[n]
+    qint = vecs.qint[n]
+    reference = SLAB_Steady_Reference_State(vars.bbv0,vars.bv0,zc,vars.r0,
+        qint,t,cmev,cm,cmw,cmwv,vars.cp0,h,u,uab,b,bb,rho,vg0,wc,htp,beta,
+        vars.ubs20)
 
     xffm = params.fld.xffm
     nstp = nssm*mnfm
     dx = (gam - 1) * (xffm - vecs.x[msfm])/((gam^nstp) - 1)
     work = SLAB_Steady_Workspace(zeros(F,11), zeros(F,11), zeros(F,11),
                                  zeros(F,3), zeros(F,4))
-    base = _slab_steady_loop_state(r0,bbv0,bv0,zc0,qint0,h,b,bb,rho,t,u,uab,
-        vg0,vg,wc,htp,w,v,vx,cm,cmw,cmwv,cmev,cp0,ft,fu,fv,fw,fug,ubs20,beta)
+    base = _slab_steady_loop_state(reference.r,reference.bbv,reference.bv,
+        reference.zc,reference.qint,h,b,bb,rho,t,u,uab,vg0,vg,wc,htp,w,v,vx,
+        cm,cmw,cmwv,cmev,reference.cp,ft,fu,fv,fw,fug,reference.ubs2,beta)
     controls = SLAB_Steady_Controls(rmi, alfg, sru0, bbx)
     integrator_input = SLAB_Steady_IntegratorInput(params, base, idpf, x, x + dx,
         controls, merge((dt=dx,), solver_kwargs))
@@ -96,66 +94,27 @@ function _slab_int_steady_state_impl!(vecs::SLAB_Vecs{F,A},vars::SLAB_Loop_Init{
     for nx in nxi:mffm
         for ns in 1:nssm
             xn = x + dx
-            base = _slab_steady_loop_state(r0,bbv0,bv0,zc0,qint0,h,b,bb,rho,t,u,uab,
-                vg0,vg,wc,htp,w,v,vx,cm,cmw,cmwv,cmev,cp0,ft,fu,fv,fw,fug,ubs20,beta)
-            step_controls = SLAB_Steady_Controls(rmi, alfg, sru0, bbx)
+            base = _slab_steady_loop_state(reference.r,reference.bbv,reference.bv,
+                reference.zc,reference.qint,h,b,bb,rho,t,u,uab,vg0,vg,wc,htp,
+                w,v,vx,cm,cmw,cmwv,cmev,reference.cp,ft,fu,fv,fw,fug,
+                reference.ubs2,beta)
             step_input = SLAB_Steady_IntegratorInput(params, base, idpf, x, xn,
-                step_controls, solver_kwargs)
-            reference = SLAB_Steady_Reference_State(bbv0, bv0, zc0, r0, qint0,
-                t0, cmev0, cm0, cmw0, cmwv0, cp0, h0, u0, uab0, b0, bb0,
-                rho0, vg0, wc0, htp0, beta, ubs20)
+                controls, solver_kwargs)
             step_state = SLAB_Steady_StepState(reference, ug)
             step = SLAB_Steady_StepInput(step_input, step_state, work)
             result = _slab_steady_step!(integrator, step)
             next = result.state
             segment = _slab_steady_ode_segment(integrator,x,xn)
             segment === nothing || push!(ode_segments,segment)
-            r,bbv,bv,g,gw,sft,sfu,sfy,sfz,zc,qint = next.r,next.bbv,next.bv,next.g,
-                next.gw,next.sft,next.sfu,next.sfy,next.sfz,next.zc,next.qint
+            zc,qint = next.zc,next.qint
             h,b,bb,rho,t,u,uab,vg,wc,htp = next.h,next.b,next.bb,next.rho,next.t,
                 next.u,next.uab,next.vg,next.wc,next.htp
-            cm,cv,cmw,cmwv,cmev,_cp = next.cm,result.cv,next.cmw,next.cmwv,next.cmev,next.cp
-            ft,fu,fv,fw,fug,ubs2 = next.ft,next.fu,next.fv,next.fw,next.fug,next.ubs2
+            cm,cv,cmw,cmwv,cmev = next.cm,result.cv,next.cmw,next.cmwv,next.cmev
+            ft,fu,fv,fw,fug = next.ft,next.fu,next.fv,next.fw,next.fug
             beta,vg0,w,v,vx = next.beta,next.vg0,next.w,next.v,next.vx
 
             x = xn
-            htp0 = htp
-            r0 = r
-            bb0 = bb
-            b0 = b
-            bbv0 = bbv
-            bv0 = bv
-            rho0 = rho
-            h0 = h
-            vg0 = vg
-            wc0 = wc
-            zc0 = zc
-            t0 = t
-            u0 = u
-            uab0 = uab
-            ubs20 = ubs2
-
-            if htp > h
-                # lfg = 0.0 assigned but never used
-                srug = 0.0
-            else
-                if rho > rhoa
-                    alfg = 0.25
-                    srug = 0.5*alfg*grav*(rho-rhoa)*bb*h*h
-                else
-                    alfg = 0.0
-                    srug = 0.0
-                end
-            end
-
-            sru0 = r*u - r*(1 - cm)*uab + srug
-            qint0 = qint
-
-            cm0 = cm
-            cmw0 = cmw
-            cmwv0 = cmwv
-            cmev0 = cmev
-            cp0 = _cp
+            reference, controls = _slab_steady_reference_update(result, controls, rhoa)
 
             dx = gam*dx
 
@@ -174,9 +133,7 @@ function _slab_int_steady_state_impl!(vecs::SLAB_Vecs{F,A},vars::SLAB_Loop_Init{
             nxi = nx+1
             dt = dx/u
             steady_vecs = deepcopy(vecs)
-            rho0 = rho
             r = 0.25*qs*tsd/cm
-            r0 = r
             rmi = 0.0
             bbx = r/(rho*bb*h)
             bbx0 = bbx
@@ -200,15 +157,9 @@ function _slab_int_steady_state_impl!(vecs::SLAB_Vecs{F,A},vars::SLAB_Loop_Init{
             ug0 = ug
             vecs.ug[nx] = ug
 
-            cm0 = cm
-            cmw0 = cmw
-            cmwv0 = cmwv
-            cmev0 = cmev
-            cp0 = _cp
-            t0 = t
-
-            tvars = SLAB_Loop_Init(nxi,msfm,mnfm,mffm,gam,ft,fu,fv,fw,fug,bbv0,bv0,r0,
-                                   cp0,alfg,sru0,htp0,ubs20,rmi,bx,bbx,bbvx0,bvx0,xcc0,bxs0)
+            tvars = SLAB_Loop_Init(nxi,msfm,mnfm,mffm,gam,ft,fu,fv,fw,fug,
+                reference.bbv,reference.bv,r,reference.cp,controls.alfg,sru0,
+                reference.htp,reference.ubs2,rmi,bx,bbx,bbvx0,bvx0,xcc0,bxs0)
 
             transient_vars = tvars
             transient_dt = dt

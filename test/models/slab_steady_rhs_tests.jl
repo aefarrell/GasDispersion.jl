@@ -36,6 +36,21 @@ using OrdinaryDiffEqLowOrderRK: RK4
                          next_result.state.rho, next_result.state.t))
     @test isfinite(next_result.cv)
 
+    reference, next_controls = GasDispersion.slab._slab_steady_reference_update(
+        next_result, controls, params.met.rhoa)
+    expected_alfg = next_result.state.htp > next_result.state.h ? controls.alfg :
+        next_result.state.rho > params.met.rhoa ? 0.25 : 0.0
+    srug = next_result.state.htp > next_result.state.h ||
+        next_result.state.rho <= params.met.rhoa ? 0.0 :
+        0.5 * expected_alfg * params.xtra.grav * (next_result.state.rho - params.met.rhoa) *
+            next_result.state.bb * next_result.state.h^2
+    @test reference.vg == next_result.state.vg
+    @test next_controls.alfg == expected_alfg
+    @test next_controls.sru0 ≈ next_result.state.r * next_result.state.u -
+        next_result.state.r * (1 - next_result.state.cm) * next_result.state.uab + srug
+    @test next_controls.rmi == controls.rmi
+    @test next_controls.bbx == controls.bbx
+
     input = GasDispersion.SLAB_Input(idspl=2,ncalc=1,wms=0.017031,cps=2045.90,
         tbp=239.57,cmed0=0.81,dhe=1170000.0,cpsl=4611.80,rhosl=603.00,
         spb=2976.01,spc=0.00,ts=239.57,qs=107.87,as=0.93,tsd=381.0,
