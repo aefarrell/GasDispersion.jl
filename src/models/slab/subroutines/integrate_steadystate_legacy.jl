@@ -1,7 +1,6 @@
 """Legacy fixed-step RK4 implementation for the steady-state phase."""
 
-function _slab_steady_integrator(::SLABLegacySolver, base, params, idpf, x, xf;
-                                  solver_kwargs=(;), kwargs...)
+function _slab_steady_integrator(::SLABLegacySolver, base, params, idpf, x, xf; kwargs...)
     return SLABLegacyIntegrator()
 end
 
