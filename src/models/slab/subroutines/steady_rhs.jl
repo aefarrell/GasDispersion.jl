@@ -63,6 +63,85 @@ struct SLAB_Steady_ODESegment{F <: AbstractFloat,C}
     context::C
 end
 
+struct SLAB_Steady_Controls{F <: AbstractFloat}
+    rmi::F
+    alfg::F
+    sru0::F
+    bbx::F
+end
+
+struct SLAB_Steady_IntegratorInput{P,S,I <: Integer,F <: AbstractFloat,C,K}
+    params::P
+    base::S
+    idpf::I
+    x0::F
+    x1::F
+    controls::C
+    solver_kwargs::K
+end
+
+struct SLAB_Steady_Reference_State{F <: AbstractFloat}
+    bbv::F
+    bv::F
+    zc::F
+    r::F
+    qint::F
+    t::F
+    cmev::F
+    cm::F
+    cmw::F
+    cmwv::F
+    cp::F
+    h::F
+    u::F
+    uab::F
+    b::F
+    bb::F
+    rho::F
+    vg::F
+    wc::F
+    htp::F
+    beta::F
+    ubs2::F
+end
+
+struct SLAB_Steady_StepState{R,F <: AbstractFloat}
+    reference::R
+    ug::F
+end
+
+struct SLAB_Steady_Workspace{F <: AbstractFloat}
+    f::Vector{F}
+    sum::Vector{F}
+    dy::Vector{F}
+    dxxi::Vector{F}
+    dxrk::Vector{F}
+end
+
+struct SLAB_Steady_StepInput{I,S,W}
+    input::I
+    state::S
+    workspace::W
+end
+
+struct SLAB_Steady_StepResult{S,F <: AbstractFloat}
+    state::S
+    cv::F
+end
+
+struct SLAB_Steady_Transient_Handoff{V,F <: AbstractFloat,I <: Integer}
+    vars::V
+    dt::F
+    index::I
+end
+
+struct SLAB_Steady_Phase_Result{V,T,O,G}
+    steady_state::V
+    transient::T
+    ode_solution::O
+    ode_segments::G
+end
+
 function _slab_steady_phase_state(vecs::SLAB_Vecs{F}, vars::SLAB_Loop_Init{I,F}, index::Integer=1) where {I,F}
     return SLAB_Steady_Phase_State(
         vars.r0, vars.bbv0, vars.bv0, zero(F), zero(F), zero(F), zero(F), zero(F), zero(F),

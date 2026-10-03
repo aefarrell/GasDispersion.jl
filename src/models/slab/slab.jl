@@ -68,12 +68,12 @@ function slab_main(idspl::I,ncalc::I,wms::F,cps::F,tbp::F,cmed0::F,dhe::F,cpsl::
             steady_vecs = phases.steady_state
             steady_ode_solution = phases.ode_solution
             steady_ode_segments = phases.ode_segments
-            if phases.transient_started
-                _slab_int_transient!(vecs,phases.transient_vars,params,2,
-                                     phases.nxtr,phases.transient_dt)
+            if phases.transient !== nothing
+                _slab_int_transient!(vecs,phases.transient.vars,params,2,
+                                     phases.transient.index,phases.transient.dt)
                 transient_vecs = vecs
-                transient_vars = phases.transient_vars
-                transient_index = phases.nxtr
+                transient_vars = phases.transient.vars
+                transient_index = phases.transient.index
             else
                 transient_vecs = nothing
                 transient_vars = nothing
@@ -99,12 +99,12 @@ function slab_main(idspl::I,ncalc::I,wms::F,cps::F,tbp::F,cmed0::F,dhe::F,cpsl::
             steady_vecs = phases.steady_state
             steady_ode_solution = phases.ode_solution
             steady_ode_segments = phases.ode_segments
-            if phases.transient_started
-                _slab_int_transient!(vecs,phases.transient_vars,params,2,
-                                     phases.nxtr,phases.transient_dt)
+            if phases.transient !== nothing
+                _slab_int_transient!(vecs,phases.transient.vars,params,2,
+                                     phases.transient.index,phases.transient.dt)
                 transient_vecs = vecs
-                transient_vars = phases.transient_vars
-                transient_index = phases.nxtr
+                transient_vars = phases.transient.vars
+                transient_index = phases.transient.index
             else
                 transient_vecs = nothing
                 transient_vars = nothing

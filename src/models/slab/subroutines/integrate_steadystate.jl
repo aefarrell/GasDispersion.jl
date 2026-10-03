@@ -83,36 +83,40 @@ function _slab_int_steady_state_impl!(vecs::SLAB_Vecs{F,A},vars::SLAB_Loop_Init{
     xffm = params.fld.xffm
     nstp = nssm*mnfm
     dx = (gam - 1) * (xffm - vecs.x[msfm])/((gam^nstp) - 1)
-    work = (f=zeros(F,11),sum=zeros(F,11),dy=zeros(F,11),
-            dxxi=zeros(F,3),dxrk=zeros(F,4))
-    ode_segments = Any[]
+    work = SLAB_Steady_Workspace(zeros(F,11), zeros(F,11), zeros(F,11),
+                                 zeros(F,3), zeros(F,4))
     base = _slab_steady_loop_state(r0,bbv0,bv0,zc0,qint0,h,b,bb,rho,t,u,uab,
         vg0,vg,wc,htp,w,v,vx,cm,cmw,cmwv,cmev,cp0,ft,fu,fv,fw,fug,ubs20,beta)
-    integrator = _slab_steady_integrator(solver, base, params, idpf, x, x + dx;
-        rmi=rmi, alfg=alfg, sru0=sru0, bbx=bbx,
-        solver_kwargs=merge((dt=dx,), solver_kwargs))
+    controls = SLAB_Steady_Controls(rmi, alfg, sru0, bbx)
+    integrator_input = SLAB_Steady_IntegratorInput(params, base, idpf, x, x + dx,
+        controls, merge((dt=dx,), solver_kwargs))
+    integrator = _slab_steady_integrator(solver, integrator_input)
+    ode_segments = _slab_steady_ode_segments(integrator, F)
 
     for nx in nxi:mffm
         for ns in 1:nssm
             xn = x + dx
             base = _slab_steady_loop_state(r0,bbv0,bv0,zc0,qint0,h,b,bb,rho,t,u,uab,
                 vg0,vg,wc,htp,w,v,vx,cm,cmw,cmwv,cmev,cp0,ft,fu,fv,fw,fug,ubs20,beta)
-            state = (; bbv0,bv0,zc0,r0,qint0,t0,cmev0,cm0,cmw0,cmwv0,cp0,h0,u0,uab0,
-                     b0,bb0,rho0,vg0,wc0,htp0,beta,ug,ubs20,ft,fu,fv,fw,fug,alfg,
-                     sru0,rmi,bbx)
-            next, derived = _slab_steady_step!(integrator,base,params,idpf,x,xn;
-                work=work,
-                state=state,solver_kwargs=solver_kwargs,
-                rmi=rmi,alfg=alfg,sru0=sru0,bbx=bbx)
+            step_controls = SLAB_Steady_Controls(rmi, alfg, sru0, bbx)
+            step_input = SLAB_Steady_IntegratorInput(params, base, idpf, x, xn,
+                step_controls, solver_kwargs)
+            reference = SLAB_Steady_Reference_State(bbv0, bv0, zc0, r0, qint0,
+                t0, cmev0, cm0, cmw0, cmwv0, cp0, h0, u0, uab0, b0, bb0,
+                rho0, vg0, wc0, htp0, beta, ubs20)
+            step_state = SLAB_Steady_StepState(reference, ug)
+            step = SLAB_Steady_StepInput(step_input, step_state, work)
+            result = _slab_steady_step!(integrator, step)
+            next = result.state
             segment = _slab_steady_ode_segment(integrator,x,xn)
             segment === nothing || push!(ode_segments,segment)
             r,bbv,bv,g,gw,sft,sfu,sfy,sfz,zc,qint = next.r,next.bbv,next.bv,next.g,
                 next.gw,next.sft,next.sfu,next.sfy,next.sfz,next.zc,next.qint
             h,b,bb,rho,t,u,uab,vg,wc,htp = next.h,next.b,next.bb,next.rho,next.t,
                 next.u,next.uab,next.vg,next.wc,next.htp
-            cm,cv,cmw,cmwv,cmev,_cp = next.cm,derived.cv,next.cmw,next.cmwv,next.cmev,next.cp
+            cm,cv,cmw,cmwv,cmev,_cp = next.cm,result.cv,next.cmw,next.cmwv,next.cmev,next.cp
             ft,fu,fv,fw,fug,ubs2 = next.ft,next.fu,next.fv,next.fw,next.fug,next.ubs2
-            beta,vg0,w,v,vx = next.beta,next.vg0,derived.w,derived.v,derived.vx
+            beta,vg0,w,v,vx = next.beta,next.vg0,next.w,next.v,next.vx
 
             x = xn
             htp0 = htp
@@ -243,7 +247,8 @@ function _slab_int_steady_state_impl!(vecs::SLAB_Vecs{F,A},vars::SLAB_Loop_Init{
     #     end
     # end
     steady_vecs === nothing && (steady_vecs = deepcopy(vecs))
-    ode_solution = solver isa SLABLegacySolver ? nothing : integrator.integrator.sol
-        return (; steady_state=steady_vecs, transient_started, transient_vars,
-            transient_dt, nxtr, ode_solution, ode_segments)
+    transient = transient_started ?
+        SLAB_Steady_Transient_Handoff(transient_vars, transient_dt, nxtr) : nothing
+    return SLAB_Steady_Phase_Result(steady_vecs, transient,
+        _slab_steady_solution(integrator), ode_segments)
 end

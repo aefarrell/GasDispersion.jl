@@ -12,13 +12,14 @@ using OrdinaryDiffEqLowOrderRK: RK4
         x0=vecs.x[1])
     projected, entrainment = GasDispersion.slab._slab_steady_project(context.y0, context, vecs.x[1])
     rhs = GasDispersion.slab._slab_steady_rhs(context.y0, context, vecs.x[1])
-    intctx = GasDispersion.slab._slab_steady_integrator(RK4(),
-        phase, params, idpf, vecs.x[1], vecs.x[1] + 0.001;
-        rmi=vars.rmi, alfg=vars.alfg, sru0=vars.sru0, bbx=vars.bbx,
-        solver_kwargs=(;dt=0.001, adaptive=false))
-    next_state, next_entrainment = GasDispersion.slab._slab_steady_step!(
-        intctx, phase, params, idpf, vecs.x[1], vecs.x[1] + 0.001;
-        rmi=vars.rmi, alfg=vars.alfg, sru0=vars.sru0, bbx=vars.bbx)
+    controls = GasDispersion.slab.SLAB_Steady_Controls(
+        vars.rmi, vars.alfg, vars.sru0, vars.bbx)
+    input = GasDispersion.slab.SLAB_Steady_IntegratorInput(
+        params, phase, idpf, vecs.x[1], vecs.x[1] + 0.001, controls,
+        (;dt=0.001, adaptive=false))
+    intctx = GasDispersion.slab._slab_steady_integrator(RK4(), input)
+    step = GasDispersion.slab.SLAB_Steady_StepInput(input, nothing, nothing)
+    next_result = GasDispersion.slab._slab_steady_step!(intctx, step)
     legacy_rhs = zeros(Float64, 11)
     GasDispersion.slab._slab_sub_slope!(legacy_rhs, params, vecs.rho[1], vecs.x[1],
         vecs.h[1], vecs.v[1], vecs.w[1], vecs.b[1], vecs.bb[1], vecs.vg[1],
@@ -31,8 +32,9 @@ using OrdinaryDiffEqLowOrderRK: RK4
     @test rhs ≈ legacy_rhs rtol=1e-5
     @test all(isfinite, rhs)
     @test all(isfinite, (entrainment.w, entrainment.v, entrainment.vx))
-    @test all(isfinite, (next_state.r, next_state.h, next_state.rho, next_state.t))
-    @test all(isfinite, (next_entrainment.w, next_entrainment.v, next_entrainment.vx))
+    @test all(isfinite, (next_result.state.r, next_result.state.h,
+                         next_result.state.rho, next_result.state.t))
+    @test isfinite(next_result.cv)
 
     input = GasDispersion.SLAB_Input(idspl=2,ncalc=1,wms=0.017031,cps=2045.90,
         tbp=239.57,cmed0=0.81,dhe=1170000.0,cpsl=4611.80,rhosl=603.00,
