@@ -244,10 +244,43 @@ struct SLAB_CC_Vecs{F <: Number, A <: AbstractVector{F}}
     t::A
     xc::A
     bx::A
+    bbx::A
     betax::A
     tim::A
     tcld::A
     bbc::A
+end
+
+struct SLAB_Interpolations{C,B,BC,Z,S,XC,BX,BX2,BXX,BBXX,TCLD,O}
+    cc::C
+    b::B
+    betac::BC
+    zc::Z
+    sig::S
+    xc::XC
+    bx::BX
+    betax::BX2
+    bx_x::BXX
+    bbx_x::BBXX
+    tcld::TCLD
+    ode_solution::O
+end
+
+function _slab_legacy_interpolations(cc::SLAB_CC_Vecs)
+    xperm = sortperm(cc.x)
+    tperm = sortperm(cc.t)
+    return SLAB_Interpolations(
+        AkimaInterpolation(cc.cc[xperm], cc.x[xperm]),
+        AkimaInterpolation(cc.b[xperm], cc.x[xperm]),
+        AkimaInterpolation(cc.betac[xperm], cc.x[xperm]),
+        AkimaInterpolation(cc.zc[xperm], cc.x[xperm]),
+        AkimaInterpolation(cc.sig[xperm], cc.x[xperm]),
+        AkimaInterpolation(cc.xc[tperm], cc.t[tperm]),
+        AkimaInterpolation(cc.bx[tperm], cc.t[tperm]),
+        AkimaInterpolation(cc.betax[tperm], cc.t[tperm]),
+        AkimaInterpolation(cc.bx[xperm], cc.x[xperm]),
+        AkimaInterpolation(cc.bbx[xperm], cc.x[xperm]),
+        AkimaInterpolation(cc.tcld[xperm], cc.x[xperm]),nothing)
 end
 
 abstract type AbstractSLABSolution end
@@ -330,11 +363,13 @@ mutable struct SLAB_Transient_State{F <: Number}
     ubs2::F
 end
 
-struct SLAB_Steady_Solution{I <: Integer, F <: Number, A <: AbstractVector{F}} <: AbstractSLABSolution
+struct SLAB_Steady_Solution{I <: Integer, F <: Number, A <: AbstractVector{F}, O, G} <: AbstractSLABSolution
     params::SLAB_Params{I,F,A}
     state::SLAB_Vecs{F,A}
     cc::SLAB_CC_Vecs{F,A}
     initial::SLAB_Steady_State{F}
+    ode_solution::O
+    ode_segments::G
 end
 
 struct SLAB_Transient_Solution{I <: Integer, F <: Number, A <: AbstractVector{F}} <: AbstractSLABSolution
@@ -344,15 +379,64 @@ struct SLAB_Transient_Solution{I <: Integer, F <: Number, A <: AbstractVector{F}
     initial::SLAB_Transient_State{F}
 end
 
-struct SLAB_Output{I <: Integer, F <: Number, A <: AbstractVector{F}, S <: Union{Nothing,SLAB_Steady_Solution{I,F,A}}, T <: Union{Nothing,SLAB_Transient_Solution{I,F,A}}}
+struct SLAB_ODE_FieldInterpolation{S,G,P,F,BX,BBX,T,Fallback}
+    solution::S
+    segments::G
+    params::P
+    field::Symbol
+    x0::F
+    bx_x::BX
+    bbx_x::BBX
+    tcld::T
+    fallback::Fallback
+end
+
+function (itp::SLAB_ODE_FieldInterpolation)(x)
+    index = findlast(segment -> segment.x0 <= x <= segment.x1, itp.segments)
+    index === nothing && return itp.fallback(x)
+    y = itp.solution(x)
+    state, _ = _slab_steady_project(y, itp.segments[index].context, x)
+    if itp.field === :b
+        return state.b
+    elseif itp.field === :zc
+        return state.zc
+    end
+    p = itp.params
+    cv = (p.met.wmae*state.cm)/(p.rgp.wms+(p.met.wmae-p.rgp.wms)*state.cm)
+    point = _slab_editcc_point(p,x,itp.x0,state.zc,state.h,state.b,state.beta,
+        state.uab,state.cm,cv,itp.bx_x(x),itp.bbx_x(x),itp.tcld(x))
+    return getproperty(point,itp.field)
+end
+
+function _slab_output_interpolations(cc::SLAB_CC_Vecs, steady_solution, params)
+    legacy = _slab_legacy_interpolations(cc)
+    if steady_solution === nothing || steady_solution.ode_solution === nothing ||
+       isempty(steady_solution.ode_segments)
+        return legacy
+    end
+    makefield(field, fallback) = SLAB_ODE_FieldInterpolation(
+        steady_solution.ode_solution, steady_solution.ode_segments, params, field,
+        cc.x[1], legacy.bx_x, legacy.bbx_x, legacy.tcld, fallback)
+    return SLAB_Interpolations(
+        makefield(:cc,legacy.cc), makefield(:b,legacy.b),
+        makefield(:betac,legacy.betac), makefield(:zc,legacy.zc),
+        makefield(:sig,legacy.sig), legacy.xc, legacy.bx, legacy.betax,
+        legacy.bx_x, legacy.bbx_x, legacy.tcld, steady_solution.ode_solution)
+end
+
+struct SLAB_Output{I <: Integer, F <: Number, A <: AbstractVector{F}, P,
+                   S <: Union{Nothing,SLAB_Steady_Solution{I,F,A}},
+                   T <: Union{Nothing,SLAB_Transient_Solution{I,F,A}}}
     p::SLAB_Params{I,F,A}
     s::SLAB_Vecs{F,A}
     cc::SLAB_CC_Vecs{F,A}
+    interpolations::P
     steady::S
     transient::T
 end
 
-SLAB_Output(params, state, cc) = SLAB_Output(params, state, cc, nothing, nothing)
+SLAB_Output(params, state, cc) = SLAB_Output(params, state, cc,
+                                              _slab_legacy_interpolations(cc), nothing, nothing)
 
 function _slab_initial_steady_state(vecs::SLAB_Vecs{F}, vars::SLAB_Loop_Init{I,F}) where {I,F}
     return SLAB_Steady_State(vars.r0, vars.bbv0, vars.bv0, zero(F), zero(F), zero(F), zero(F),

@@ -84,7 +84,7 @@ scenario.
 
 """
 function puff(scenario::Scenario, ::SLAB, eqs::EquationSet=DefaultSet; 
-              t_av=10, x_max=2000)
+              t_av=10, x_max=2000, solver=SLABLegacySolver(), solver_kwargs=(;))
     c_max = 1.0
     stab = _slab_stab( _stability(scenario) )
     antoine = _slab_antoine(scenario)
@@ -117,21 +117,13 @@ function puff(scenario::Scenario, ::SLAB, eqs::EquationSet=DefaultSet;
                      ala = _slab_ala(scenario.atmosphere))
 
     # run SLAB and collect output
-    out = slab_main(inp)
+    out = slab_main(inp, solver; steady_solver_kwargs=solver_kwargs)
 
-    # SLAB can return results out of order
-    # since v8.0.1 this causes DataInterpolations to error
-    xperm = sortperm(out.cc.x)
-    tperm = sortperm(out.cc.t)
     return SLABSolution(scenario,:SLAB_HorizontalJet,inp,out,c_max,
-                        AkimaInterpolation(out.cc.cc[xperm], out.cc.x[xperm]),
-                        AkimaInterpolation(out.cc.b[xperm], out.cc.x[xperm]),
-                        AkimaInterpolation(out.cc.betac[xperm], out.cc.x[xperm]),
-                        AkimaInterpolation(out.cc.zc[xperm], out.cc.x[xperm]),
-                        AkimaInterpolation(out.cc.sig[xperm], out.cc.x[xperm]),
-                        AkimaInterpolation(out.cc.xc[tperm], out.cc.t[tperm]),
-                        AkimaInterpolation(out.cc.bx[tperm], out.cc.t[tperm]),
-                        AkimaInterpolation(out.cc.betax[tperm], out.cc.t[tperm]))
+                        out.interpolations.cc, out.interpolations.b,
+                        out.interpolations.betac, out.interpolations.zc,
+                        out.interpolations.sig, out.interpolations.xc,
+                        out.interpolations.bx, out.interpolations.betax)
 end
 
 
@@ -150,7 +142,7 @@ scenario.
 
 """
 function puff(scenario::Scenario{<:AbstractSubstance,<:VerticalJet,<:Atmosphere}, ::SLAB, eqs::EquationSet=DefaultSet;
-              t_av=10, x_max=2000)
+              t_av=10, x_max=2000, solver=SLABLegacySolver(), solver_kwargs=(;))
     c_max = 1.0
     stab = _slab_stab( _stability(scenario) )
     antoine = _slab_antoine(scenario)
@@ -182,21 +174,13 @@ function puff(scenario::Scenario{<:AbstractSubstance,<:VerticalJet,<:Atmosphere}
                      stab = stab,
                      ala = _slab_ala(scenario.atmosphere))
     # run SLAB and collect output
-    out = slab_main(inp)
+    out = slab_main(inp, solver; steady_solver_kwargs=solver_kwargs)
 
-    # SLAB can return results out of order
-    # since v8.0.1 this causes DataInterpolations to error
-    xperm = sortperm(out.cc.x)
-    tperm = sortperm(out.cc.t)
     return SLABSolution(scenario,:SLAB_VerticalJet,inp,out,c_max,
-                        AkimaInterpolation(out.cc.cc[xperm], out.cc.x[xperm]),
-                        AkimaInterpolation(out.cc.b[xperm], out.cc.x[xperm]),
-                        AkimaInterpolation(out.cc.betac[xperm], out.cc.x[xperm]),
-                        AkimaInterpolation(out.cc.zc[xperm], out.cc.x[xperm]),
-                        AkimaInterpolation(out.cc.sig[xperm], out.cc.x[xperm]),
-                        AkimaInterpolation(out.cc.xc[tperm], out.cc.t[tperm]),
-                        AkimaInterpolation(out.cc.bx[tperm], out.cc.t[tperm]),
-                        AkimaInterpolation(out.cc.betax[tperm], out.cc.t[tperm]))
+                        out.interpolations.cc, out.interpolations.b,
+                        out.interpolations.betac, out.interpolations.zc,
+                        out.interpolations.sig, out.interpolations.xc,
+                        out.interpolations.bx, out.interpolations.betax)
 
 end
 

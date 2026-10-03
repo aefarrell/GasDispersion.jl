@@ -11,6 +11,8 @@ include("subroutines/entran.jl")
 include("subroutines/store.jl")
 include("subroutines/editcc.jl")
 include("subroutines/steady_rhs.jl")
+include("subroutines/integrate_steadystate_legacy.jl")
+include("subroutines/integrate_steadystate_ode.jl")
 
 # integration routines
 include("subroutines/integrate_steadystate.jl")

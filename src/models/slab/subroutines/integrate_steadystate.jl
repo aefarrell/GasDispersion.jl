@@ -1,6 +1,6 @@
-function _slab_int_steady_state!(vecs::SLAB_Vecs{F,A},vars::SLAB_Loop_Init{I,F},
-                                  params::SLAB_Params{I,F,A},idpf::I,nxtr::I;
-                                  backend::Symbol=:legacy, alg=RK4(), solver_kwargs=(;)) where {
+function _slab_int_steady_state_impl!(vecs::SLAB_Vecs{F,A},vars::SLAB_Loop_Init{I,F},
+                                      params::SLAB_Params{I,F,A},idpf::I,nxtr::I;
+                                      solver=SLABLegacySolver(),solver_kwargs=(;)) where {
                                   I <: Integer, F <: AbstractFloat, A <: AbstractVector{F}}
                              
     # unpack parameters
@@ -43,10 +43,10 @@ function _slab_int_steady_state!(vecs::SLAB_Vecs{F,A},vars::SLAB_Loop_Init{I,F},
     xn = timn = xstr = zero(F)
     r = g = gw = sft = sfu = sfy = sfz = zero(F)
     betax = zero(F)
-    steady_state = nothing
-    transient_started = false
+    steady_vecs = nothing
     transient_vars = nothing
     transient_dt = zero(F)
+    transient_started = false
 
     msfm = vars.msfm
     mnfm = vars.mnfm
@@ -83,63 +83,36 @@ function _slab_int_steady_state!(vecs::SLAB_Vecs{F,A},vars::SLAB_Loop_Init{I,F},
     xffm = params.fld.xffm
     nstp = nssm*mnfm
     dx = (gam - 1) * (xffm - vecs.x[msfm])/((gam^nstp) - 1)
-
-    dxxi = zeros(F, 3)
-    dxrk = zeros(F, 4)
-    _sum = zeros(F, 11)
-    dy = zeros(F, 11)
-    f = zeros(F, 11)
+    work = (f=zeros(F,11),sum=zeros(F,11),dy=zeros(F,11),
+            dxxi=zeros(F,3),dxrk=zeros(F,4))
+    ode_segments = Any[]
+    base = _slab_steady_loop_state(r0,bbv0,bv0,zc0,qint0,h,b,bb,rho,t,u,uab,
+        vg0,vg,wc,htp,w,v,vx,cm,cmw,cmwv,cmev,cp0,ft,fu,fv,fw,fug,ubs20,beta)
+    integrator = _slab_steady_integrator(solver, base, params, idpf, x, x + dx;
+        rmi=rmi, alfg=alfg, sru0=sru0, bbx=bbx,
+        solver_kwargs=merge((dt=dx,), solver_kwargs))
 
     for nx in nxi:mffm
         for ns in 1:nssm
-            fill!(_sum, zero(F))
-            dxxi .= (dx/2, dx/2, dx)
-            dxrk .= (dx/6, dx/3, dx/3, dx/6)
-
-            if backend == :ode
-                base = _slab_steady_loop_state(r0,bbv0,bv0,zc0,qint0,h,b,bb,rho,t,u,uab,
-                    vg,wc,htp,cm,cmw,cmwv,cmev,cp0,ft,fu,fv,fw,fug,ubs20,beta)
-                next, entrainment = _slab_steady_ode_step(base, params, idpf, x, dx;
-                    rmi=rmi, alfg=alfg, sru0=sru0, bbx=bbx, alg=alg,
-                    solver_kwargs=solver_kwargs)
-                r,bbv,bv,g,gw,sft,sfu,sfy,sfz,zc,qint = next.r,next.bbv,next.bv,next.g,
-                    next.gw,next.sft,next.sfu,next.sfy,next.sfz,next.zc,next.qint
-                h,b,bb,rho,t,u,uab,vg,wc,htp = next.h,next.b,next.bb,next.rho,next.t,
-                    next.u,next.uab,next.vg,next.wc,next.htp
-                cm,cmw,cmwv,cmev,_cp = next.cm,next.cmw,next.cmwv,next.cmev,next.cp
-                ft,fu,fv,fw,fug,ubs2 = next.ft,next.fu,next.fv,next.fw,next.fug,next.ubs2
-                beta = next.beta
-                vg0 = vg
-                w,v,vx = entrainment.w,entrainment.v,entrainment.vx
-                xn = x + dx
-            else
-                for k in 1:4
-                _slab_sub_slope!(f, params, rho, x, h, v, w, b, bb, vg, u, wc, cm,
-                                 ft, fu, fv, fw, bse)
-                for j in 1:11
-                    _sum[j] += dxrk[k]*f[j]
-                    if k == 4
-                        dy[j] = _sum[j]
-                    else
-                        dy[j] = dxxi[k]*f[j]
-                        xn = x + dxxi[k]
-                    end
-                end
-
-                bbv,bv,qint,zc,r,g,gw,sft,sfu,sfy,sfz = _slab_sub_solve(
-                    params, dy, bbv0, bv0, zc0, r0, h, qint0)
-                cm,cv,cmw,cmwv,cmev,t,rho,_cp = _slab_sub_thermo(
-                    params, idpf, xn, timn, rmi, t0, cmev0, cm0, cmw0, cmwv0,
-                    cp0, r, r0, sft, bse)
-                u,uab,b,bb,beta,h,zc,vg,vg0,wc,htp = _slab_sub_eval(
-                    params, xn, alfg, sru0, zc, h0, u0, uab0, b0, bb0, r, r0,
-                    bv, bv0, bbv, bbv0, rho, rho0, vg0, wc0, cm, htp0, b, htp,
-                    uab, beta, vg, wc, h, u, bb, sfu, sfz, sfy, g, gw, bse)
-                w,v,vx,ubs2,fug,ft,fu,fv,fw = _slab_sub_entran(
-                    params, idpf, xn, timn, wss, xstr, ubs20, u, ug, vg, uab,
-                    rho, zc, t, h, htp, bb, bbx, wc, _cp, tgon, bse, urf, rcf, afa)
-                end
-            end
+            xn = x + dx
+            base = _slab_steady_loop_state(r0,bbv0,bv0,zc0,qint0,h,b,bb,rho,t,u,uab,
+                vg0,vg,wc,htp,w,v,vx,cm,cmw,cmwv,cmev,cp0,ft,fu,fv,fw,fug,ubs20,beta)
+            state = (; bbv0,bv0,zc0,r0,qint0,t0,cmev0,cm0,cmw0,cmwv0,cp0,h0,u0,uab0,
+                     b0,bb0,rho0,vg0,wc0,htp0,beta,ug,ubs20,ft,fu,fv,fw,fug,alfg,
+                     sru0,rmi,bbx)
+            next, derived = _slab_steady_step!(integrator,base,params,idpf,x,xn;
+                work=work,
+                state=state,solver_kwargs=solver_kwargs,
+                rmi=rmi,alfg=alfg,sru0=sru0,bbx=bbx)
+            segment = _slab_steady_ode_segment(integrator,x,xn)
+            segment === nothing || push!(ode_segments,segment)
+            r,bbv,bv,g,gw,sft,sfu,sfy,sfz,zc,qint = next.r,next.bbv,next.bv,next.g,
+                next.gw,next.sft,next.sfu,next.sfy,next.sfz,next.zc,next.qint
+            h,b,bb,rho,t,u,uab,vg,wc,htp = next.h,next.b,next.bb,next.rho,next.t,
+                next.u,next.uab,next.vg,next.wc,next.htp
+            cm,cv,cmw,cmwv,cmev,_cp = next.cm,derived.cv,next.cmw,next.cmwv,next.cmev,next.cp
+            ft,fu,fv,fw,fug,ubs2 = next.ft,next.fu,next.fv,next.fw,next.fug,next.ubs2
+            beta,vg0,w,v,vx = next.beta,next.vg0,derived.w,derived.v,derived.vx
 
             x = xn
             htp0 = htp
@@ -196,8 +169,7 @@ function _slab_int_steady_state!(vecs::SLAB_Vecs{F,A},vars::SLAB_Loop_Init{I,F},
             nxtr = nx
             nxi = nx+1
             dt = dx/u
-            steady_state = deepcopy(vecs)
-            transient_started = true
+            steady_vecs = deepcopy(vecs)
             rho0 = rho
             r = 0.25*qs*tsd/cm
             r0 = r
@@ -236,6 +208,7 @@ function _slab_int_steady_state!(vecs::SLAB_Vecs{F,A},vars::SLAB_Loop_Init{I,F},
 
             transient_vars = tvars
             transient_dt = dt
+            transient_started = true
             break
         end
     end
@@ -269,7 +242,8 @@ function _slab_int_steady_state!(vecs::SLAB_Vecs{F,A},vars::SLAB_Loop_Init{I,F},
     #         vecs.tim[i] = vecs.tim[12-i]
     #     end
     # end
-
-    steady_state === nothing && (steady_state = deepcopy(vecs))
-    return (; steady_state, transient_started, transient_vars, transient_dt, nxtr)
+    steady_vecs === nothing && (steady_vecs = deepcopy(vecs))
+    ode_solution = solver isa SLABLegacySolver ? nothing : integrator[1].sol
+        return (; steady_state=steady_vecs, transient_started, transient_vars,
+            transient_dt, nxtr, ode_solution, ode_segments)
 end
