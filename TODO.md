@@ -15,3 +15,7 @@ Apply the steady-phase architecture to the transient SLAB model:
 - Use a persistent OrdinaryDiffEq integrator with manual stepping and expose solver algorithm/options through the existing SLAB solver interface.
 - Retain the transient `ODESolution` and use its interpolation for ODE-backed transient output; retain Akima interpolation for legacy output.
 - Validate the steady-to-transient initialization and compare all transient reference cases before enabling the ODE backend by default.
+
+## Fix compat issues
+
+Julia 1.3 no longer compiles the package. There is a compatibility issue with SciMLBase and OrdinaryDiffEqLowOrderRK. The real solution is to no longer support Julia 1.3 in future versions of GasDispersion, and find the minimal version of Julia which supports this new dependancy

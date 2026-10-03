@@ -34,6 +34,11 @@ if GROUP ∈ ["All", "Base"]
     include("models/simple_jet_tests.jl")
     include("models/britter_mcquaid_plume_tests.jl")
     include("models/britter_mcquaid_puff_tests.jl")
+
+end
+
+if GROUP ∈ ["All", "Base", "SLAB"]
+    # splitting out testing of the SLAB submodule
     include("models/slab_tests.jl")
     include("models/slab_steady_rhs_tests.jl")
 end

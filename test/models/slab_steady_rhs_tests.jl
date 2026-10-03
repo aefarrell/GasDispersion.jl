@@ -12,12 +12,12 @@ using OrdinaryDiffEqLowOrderRK: RK4
         x0=vecs.x[1])
     projected, entrainment = GasDispersion.slab._slab_steady_project(context.y0, context, vecs.x[1])
     rhs = GasDispersion.slab._slab_steady_rhs(context.y0, context, vecs.x[1])
-    integrator, ode_context = GasDispersion.slab._slab_steady_ode_integrator(
-        phase, params, idpf, vecs.x[1], vecs.x[1] + 0.001, RK4();
+    intctx = GasDispersion.slab._slab_steady_integrator(RK4(),
+        phase, params, idpf, vecs.x[1], vecs.x[1] + 0.001;
         rmi=vars.rmi, alfg=vars.alfg, sru0=vars.sru0, bbx=vars.bbx,
         solver_kwargs=(;dt=0.001, adaptive=false))
-    next_state, next_entrainment = GasDispersion.slab._slab_steady_ode_step!(
-        integrator, ode_context, phase, vecs.x[1], vecs.x[1] + 0.001;
+    next_state, next_entrainment = GasDispersion.slab._slab_steady_step!(
+        intctx, phase, params, idpf, vecs.x[1], vecs.x[1] + 0.001;
         rmi=vars.rmi, alfg=vars.alfg, sru0=vars.sru0, bbx=vars.bbx)
     legacy_rhs = zeros(Float64, 11)
     GasDispersion.slab._slab_sub_slope!(legacy_rhs, params, vecs.rho[1], vecs.x[1],

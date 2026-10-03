@@ -3,18 +3,13 @@ __precompile__()
 module slab
 
 using OrdinaryDiffEq: ODEProblem, solve, init, step!, reinit!, set_proposed_dt!
-using OrdinaryDiffEqLowOrderRK: RK4
+using OrdinaryDiffEqCore: OrdinaryDiffEqAlgorithm
 using StaticArrays
 using DataInterpolations: AkimaInterpolation
 
 export SLAB_Input, SLAB_Output
 export SLABLegacySolver
 export slab_main
-
-struct SLABLegacySolver end
-struct SLABLegacyIntegrator end
-
-const _SLAB_LEGACY_SOLVER = SLABLegacySolver()
 
 # defining structs, how the data is passed into and out of SLAB
 include("structs.jl")
@@ -28,15 +23,12 @@ include("globals.jl")
 include("functions.jl")
 include("subroutines.jl")
 
-
-
-
 """
     slab_main(inp::SLAB_Input)
 
 to do doc string
 """
-slab_main(inp::SLAB_Input; solver=_SLAB_LEGACY_SOLVER, kwargs...) = slab_main(inp, solver; kwargs...)
+slab_main(inp::SLAB_Input; solver=SLABLegacySolver(), kwargs...) = slab_main(inp, solver; kwargs...)
 
 function slab_main(inp::SLAB_Input, solver; steady_solver_kwargs=(;), kwargs...)
     return slab_main(inp.idspl,inp.ncalc,inp.wms,inp.cps,inp.tbp,inp.cmed0,
@@ -51,7 +43,7 @@ function slab_main(idspl::I,ncalc::I,wms::F,cps::F,tbp::F,cmed0::F,dhe::F,cpsl::
                    spb::F,spc::F,ts::F,qs::F,as::F,tsd::F,qtis::F,hs::F,tav::F,xffm::F,
                    zp::AbstractVector{F},z0::F,za::F,ua::F,ta::F,rh::F,stab::F,
                    ala::F;msfm::I=11,mnfm::I=50,mffm::I=61,
-                   solver=_SLAB_LEGACY_SOLVER, steady_solver_kwargs=(;)) where {
+                   solver=SLABLegacySolver(), steady_solver_kwargs=(;)) where {
                    I <: Integer, F <: AbstractFloat}
 
     #c  number of zp values
@@ -71,8 +63,8 @@ function slab_main(idspl::I,ncalc::I,wms::F,cps::F,tbp::F,cmed0::F,dhe::F,cpsl::
                                                     dhe,cpsl,rhosl,spb,spc,ts,qs,as,tsd,qtis,hs,tav,
                                                     xffm,zp,z0,za,ua,ta,rh,stab,ala)
         if idpf < 2
-            phases = _slab_int_steady_state!(vecs,vars,params,idpf,nxtr,solver;
-                                    solver_kwargs=steady_solver_kwargs)
+            phases = _slab_int_steady_state_impl!(vecs, vars, params, idpf, nxtr;
+                                                  solver=solver, solver_kwargs=steady_solver_kwargs)
             steady_vecs = phases.steady_state
             steady_ode_solution = phases.ode_solution
             steady_ode_segments = phases.ode_segments
@@ -102,8 +94,8 @@ function slab_main(idspl::I,ncalc::I,wms::F,cps::F,tbp::F,cmed0::F,dhe::F,cpsl::
                                                     dhe,cpsl,rhosl,spb,spc,ts,qs,as,tsd,qtis,hs,tav,
                                                     xffm,zp,z0,za,ua,ta,rh,stab,ala)
         if idpf < 2
-            phases = _slab_int_steady_state!(vecs,vars,params,idpf,nxtr,solver;
-                                    solver_kwargs=steady_solver_kwargs)
+            phases = _slab_int_steady_state_impl!(vecs, vars, params, idpf, nxtr;
+                                                  solver=solver, solver_kwargs=steady_solver_kwargs)
             steady_vecs = phases.steady_state
             steady_ode_solution = phases.ode_solution
             steady_ode_segments = phases.ode_segments

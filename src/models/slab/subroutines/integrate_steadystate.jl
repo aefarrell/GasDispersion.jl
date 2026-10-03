@@ -243,7 +243,7 @@ function _slab_int_steady_state_impl!(vecs::SLAB_Vecs{F,A},vars::SLAB_Loop_Init{
     #     end
     # end
     steady_vecs === nothing && (steady_vecs = deepcopy(vecs))
-    ode_solution = solver isa SLABLegacySolver ? nothing : integrator[1].sol
+    ode_solution = solver isa SLABLegacySolver ? nothing : integrator.integrator.sol
         return (; steady_state=steady_vecs, transient_started, transient_vars,
             transient_dt, nxtr, ode_solution, ode_segments)
 end

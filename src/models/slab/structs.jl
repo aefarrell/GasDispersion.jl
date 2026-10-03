@@ -1,3 +1,19 @@
+# solver interface
+# legacy is the original RK4 integrator
+struct SLABLegacySolver end
+
+# an integrator is an initialized ODEProblem and solver
+# this is used for dispatch mostly
+abstract type SLABIntegrator end
+struct SLABLegacyIntegrator <:SLABIntegrator end
+struct OrdinaryDiffEqIntegratorContext <:SLABIntegrator
+    integrator
+    context
+end
+
+
+
+# Legacy input file compatibility
 struct SLAB_Input{I <: Integer, F <: Number, A <: AbstractVector{F}}
     idspl::I
     ncalc::I

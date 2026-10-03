@@ -5,8 +5,6 @@ module GasDispersion
 # imports
 using Markdown
 using DataInterpolations: LinearInterpolation, AkimaInterpolation
-using OrdinaryDiffEq
-using OrdinaryDiffEqLowOrderRK: RK4
 using SpecialFunctions: erf
 using RecipesBase
 
