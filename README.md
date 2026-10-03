@@ -1,6 +1,7 @@
 # GasDispersion.jl
 [![LICENSE](https://img.shields.io/badge/license-MIT-lightgrey.svg)](https://github.com/aefarrell/GasDispersion.jl/blob/main/LICENSE)
-[![Documentation](https://img.shields.io/badge/docs-dev-blue)](https://aefarrell.github.io/GasDispersion.jl/dev/)
+[![Stable Documentation](https://img.shields.io/badge/docs-stable-blue)](https://aefarrell.github.io/GasDispersion.jl/stable/)
+[![Dev Documentation](https://img.shields.io/badge/docs-dev-blue)](https://aefarrell.github.io/GasDispersion.jl/dev/)
 [![Build Status](https://github.com/aefarrell/GasDispersion.jl/workflows/CI/badge.svg)](https://github.com/aefarrell/GasDispersion.jl/actions)
 [![Coverage](https://codecov.io/gh/aefarrell/GasDispersion.jl/branch/main/graph/badge.svg?token=PB3LOR80K2)](https://codecov.io/gh/aefarrell/GasDispersion.jl)
 
