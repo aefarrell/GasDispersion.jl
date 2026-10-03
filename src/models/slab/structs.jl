@@ -1,14 +1,33 @@
-# solver interface
-# legacy is the original RK4 integrator
+"""
+    SLABLegacySolver()
+
+Select SLAB's original fixed-step RK4 steady-state implementation. The shared
+steady-state loop dispatches integration, segment storage, and interpolation
+behavior on the initialized integrator type.
+"""
 struct SLABLegacySolver end
 
-# an integrator is an initialized ODEProblem and solver
-# this is used for dispatch mostly
+"""
+Abstract supertype for an initialized steady-state integration backend.
+
+Backend methods implement stepping and decide whether solver-specific solution
+data, such as continuous ODE segments, is retained.
+"""
 abstract type SLABIntegrator end
+
+"""Initialized legacy RK4 backend; it has no separate dense solution."""
 struct SLABLegacyIntegrator <:SLABIntegrator end
-struct OrdinaryDiffEqIntegratorContext <:SLABIntegrator
-    integrator
-    context
+
+"""
+    OrdinaryDiffEqIntegratorContext(integrator, context)
+
+Keep a persistent OrdinaryDiffEq integrator together with the mutable RHS
+context used for successive steady-state substeps. The concrete fields let
+Julia specialize backend dispatch without abstractly typed lookups.
+"""
+struct OrdinaryDiffEqIntegratorContext{I,C} <: SLABIntegrator
+    integrator::I
+    context::C
 end
 
 
@@ -282,23 +301,6 @@ struct SLAB_Interpolations{C,B,BC,Z,S,XC,BX,BX2,BXX,BBXX,TCLD,O}
     ode_solution::O
 end
 
-function _slab_legacy_interpolations(cc::SLAB_CC_Vecs)
-    xperm = sortperm(cc.x)
-    tperm = sortperm(cc.t)
-    return SLAB_Interpolations(
-        AkimaInterpolation(cc.cc[xperm], cc.x[xperm]),
-        AkimaInterpolation(cc.b[xperm], cc.x[xperm]),
-        AkimaInterpolation(cc.betac[xperm], cc.x[xperm]),
-        AkimaInterpolation(cc.zc[xperm], cc.x[xperm]),
-        AkimaInterpolation(cc.sig[xperm], cc.x[xperm]),
-        AkimaInterpolation(cc.xc[tperm], cc.t[tperm]),
-        AkimaInterpolation(cc.bx[tperm], cc.t[tperm]),
-        AkimaInterpolation(cc.betax[tperm], cc.t[tperm]),
-        AkimaInterpolation(cc.bx[xperm], cc.x[xperm]),
-        AkimaInterpolation(cc.bbx[xperm], cc.x[xperm]),
-        AkimaInterpolation(cc.tcld[xperm], cc.x[xperm]),nothing)
-end
-
 abstract type AbstractSLABSolution end
 
 mutable struct SLAB_Steady_State{F <: Number}
@@ -379,6 +381,14 @@ mutable struct SLAB_Transient_State{F <: Number}
     ubs2::F
 end
 
+"""
+Stored steady-phase output, including the tabulated cloud state and optional
+backend-specific dense-solution data.
+
+The ODE solution and segment contexts are `nothing` for legacy RK4 runs. They
+are retained for OrdinaryDiffEq runs so output interpolation can reconstruct
+cloud properties between stored spatial samples.
+"""
 struct SLAB_Steady_Solution{I <: Integer, F <: Number, A <: AbstractVector{F}, O, G} <: AbstractSLABSolution
     params::SLAB_Params{I,F,A}
     state::SLAB_Vecs{F,A}
@@ -395,6 +405,14 @@ struct SLAB_Transient_Solution{I <: Integer, F <: Number, A <: AbstractVector{F}
     initial::SLAB_Transient_State{F}
 end
 
+"""
+Interpolation of one cloud field from the OrdinaryDiffEq steady solution.
+
+The ODE trajectory stores only the integrated variables. To evaluate a cloud
+field, this wrapper finds the segment-local RHS context, projects the ODE state
+to the full SLAB state, and applies the cloud-property calculations. It uses
+the tabulated interpolation as a fallback outside saved ODE segments.
+"""
 struct SLAB_ODE_FieldInterpolation{S,G,P,F,BX,BBX,T,Fallback}
     solution::S
     segments::G
@@ -407,39 +425,6 @@ struct SLAB_ODE_FieldInterpolation{S,G,P,F,BX,BBX,T,Fallback}
     fallback::Fallback
 end
 
-function (itp::SLAB_ODE_FieldInterpolation)(x)
-    index = findlast(segment -> segment.x0 <= x <= segment.x1, itp.segments)
-    index === nothing && return itp.fallback(x)
-    y = itp.solution(x)
-    state, _ = _slab_steady_project(y, itp.segments[index].context, x)
-    if itp.field === :b
-        return state.b
-    elseif itp.field === :zc
-        return state.zc
-    end
-    p = itp.params
-    cv = (p.met.wmae*state.cm)/(p.rgp.wms+(p.met.wmae-p.rgp.wms)*state.cm)
-    point = _slab_editcc_point(p,x,itp.x0,state.zc,state.h,state.b,state.beta,
-        state.uab,state.cm,cv,itp.bx_x(x),itp.bbx_x(x),itp.tcld(x))
-    return getproperty(point,itp.field)
-end
-
-function _slab_output_interpolations(cc::SLAB_CC_Vecs, steady_solution, params)
-    legacy = _slab_legacy_interpolations(cc)
-    if steady_solution === nothing || steady_solution.ode_solution === nothing ||
-       isempty(steady_solution.ode_segments)
-        return legacy
-    end
-    makefield(field, fallback) = SLAB_ODE_FieldInterpolation(
-        steady_solution.ode_solution, steady_solution.ode_segments, params, field,
-        cc.x[1], legacy.bx_x, legacy.bbx_x, legacy.tcld, fallback)
-    return SLAB_Interpolations(
-        makefield(:cc,legacy.cc), makefield(:b,legacy.b),
-        makefield(:betac,legacy.betac), makefield(:zc,legacy.zc),
-        makefield(:sig,legacy.sig), legacy.xc, legacy.bx, legacy.betax,
-        legacy.bx_x, legacy.bbx_x, legacy.tcld, steady_solution.ode_solution)
-end
-
 struct SLAB_Output{I <: Integer, F <: Number, A <: AbstractVector{F}, P,
                    S <: Union{Nothing,SLAB_Steady_Solution{I,F,A}},
                    T <: Union{Nothing,SLAB_Transient_Solution{I,F,A}}}
@@ -450,9 +435,6 @@ struct SLAB_Output{I <: Integer, F <: Number, A <: AbstractVector{F}, P,
     steady::S
     transient::T
 end
-
-SLAB_Output(params, state, cc) = SLAB_Output(params, state, cc,
-                                              _slab_legacy_interpolations(cc), nothing, nothing)
 
 function _slab_initial_steady_state(vecs::SLAB_Vecs{F}, vars::SLAB_Loop_Init{I,F}) where {I,F}
     return SLAB_Steady_State(vars.r0, vars.bbv0, vars.bv0, zero(F), zero(F), zero(F), zero(F),

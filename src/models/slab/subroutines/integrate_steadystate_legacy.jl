@@ -1,15 +1,70 @@
-"""Legacy fixed-step RK4 implementation for the steady-state phase."""
+"""
+Legacy fixed-step RK4 backend for the steady-state phase.
 
+The shared steady loop calls these methods through dispatch. This backend has no
+continuous trajectory to retain, so its solution hooks return `nothing`; its
+output interpolation is built from the stored SLAB vectors using Akima
+interpolation.
+"""
+
+"""
+Initialize the legacy backend.
+
+The original RK4 algorithm has no persistent integrator state, so initialization
+only returns the dispatch token used by the subsequent step calls.
+"""
 function _slab_steady_integrator(::SLABLegacySolver, input::SLAB_Steady_IntegratorInput)
     return SLABLegacyIntegrator()
 end
 
-_slab_steady_ode_segment(::SLABLegacyIntegrator, x0, x1) = nothing
+_slab_steady_append_ode_segment!(segments, ::SLABLegacyIntegrator, x0, x1) = nothing
 
-_slab_steady_ode_segments(::SLABLegacyIntegrator, ::Type{F}) where {F} =
-    SLAB_Steady_ODESegment{F,Nothing}[]
+_slab_steady_ode_segments(::SLABLegacyIntegrator, ::Type{F}) where {F} = nothing
 _slab_steady_solution(::SLABLegacyIntegrator) = nothing
 
+"""
+Build the legacy output interpolations from tabulated cloud data.
+
+Spatial fields are sorted and interpolated against `x`; cloud-center and
+crosswind fields are sorted and interpolated against time.
+"""
+function _slab_legacy_interpolations(cc::SLAB_CC_Vecs)
+    xperm = sortperm(cc.x)
+    tperm = sortperm(cc.t)
+    return SLAB_Interpolations(
+        AkimaInterpolation(cc.cc[xperm], cc.x[xperm]),
+        AkimaInterpolation(cc.b[xperm], cc.x[xperm]),
+        AkimaInterpolation(cc.betac[xperm], cc.x[xperm]),
+        AkimaInterpolation(cc.zc[xperm], cc.x[xperm]),
+        AkimaInterpolation(cc.sig[xperm], cc.x[xperm]),
+        AkimaInterpolation(cc.xc[tperm], cc.t[tperm]),
+        AkimaInterpolation(cc.bx[tperm], cc.t[tperm]),
+        AkimaInterpolation(cc.betax[tperm], cc.t[tperm]),
+        AkimaInterpolation(cc.bx[xperm], cc.x[xperm]),
+        AkimaInterpolation(cc.bbx[xperm], cc.x[xperm]),
+        AkimaInterpolation(cc.tcld[xperm], cc.x[xperm]),nothing)
+end
+
+_slab_output_interpolations(cc::SLAB_CC_Vecs, ::Nothing, params) =
+    _slab_legacy_interpolations(cc)
+
+"""Construct the backwards-compatible output wrapper using legacy interpolations."""
+SLAB_Output(params, state, cc) = SLAB_Output(params, state, cc,
+    _slab_legacy_interpolations(cc), nothing, nothing)
+
+function _slab_output_interpolations(cc::SLAB_CC_Vecs,
+        ::SLAB_Steady_Solution{I,F,A,Nothing,Nothing}, params) where {I,F,A}
+    return _slab_legacy_interpolations(cc)
+end
+
+"""
+Advance one legacy steady-state substep with classical four-stage RK4.
+
+The substep evaluates the legacy slope, solve, thermodynamic, evaluation, and
+entrainment routines at each RK stage. Its scratch arrays are reused through
+`step.workspace`; the final full phase state and derived cloud volume are
+returned together.
+"""
 function _slab_steady_step!(::SLABLegacyIntegrator, step::SLAB_Steady_StepInput)
     input = step.input
     base, params, idpf = input.base, input.params, input.idpf

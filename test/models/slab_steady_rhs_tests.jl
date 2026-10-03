@@ -10,6 +10,15 @@ using OrdinaryDiffEqLowOrderRK: RK4
     phase = GasDispersion.slab._slab_steady_phase_state(vecs, vars)
     context = GasDispersion.slab._slab_steady_context(params, phase, idpf, vars;
         x0=vecs.x[1])
+    # Segment snapshots must preserve mutable context values without duplicating
+    # the shared parameter object or its input arrays.
+    context_snapshot = GasDispersion.slab._slab_steady_context_snapshot(context)
+    context.x0 += 1
+    @test context_snapshot !== context
+    @test context_snapshot.x0 == vecs.x[1]
+    @test context_snapshot.params === context.params
+    @test context_snapshot.params.fld.zp === context.params.fld.zp
+    context.x0 = vecs.x[1]
     projected, entrainment = GasDispersion.slab._slab_steady_project(context.y0, context, vecs.x[1])
     rhs = GasDispersion.slab._slab_steady_rhs(context.y0, context, vecs.x[1])
     controls = GasDispersion.slab.SLAB_Steady_Controls(
@@ -61,6 +70,7 @@ using OrdinaryDiffEqLowOrderRK: RK4
         steady_solver_kwargs=(;adaptive=false))
 
     @test legacy_output.steady.ode_solution === nothing
+    @test legacy_output.steady.ode_segments === nothing
     @test ode_output.steady.ode_solution !== nothing
     @test ode_output.steady.ode_solution.t[1] ≈ vecs.x[1]
     @test ode_output.steady.ode_solution.t[end] > ode_output.steady.ode_solution.t[1]
