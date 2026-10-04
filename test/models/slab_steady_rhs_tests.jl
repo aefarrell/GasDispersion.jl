@@ -20,7 +20,7 @@ using DataInterpolations: AkimaInterpolation
     @test context_snapshot.params === context.params
     @test context_snapshot.params.fld.zp === context.params.fld.zp
     context.x0 = vecs.x[1]
-    projected, entrainment = GasDispersion.slab._slab_steady_project(context.y0, context, vecs.x[1])
+    projected = GasDispersion.slab._slab_steady_project(context.y0, context, vecs.x[1])
     rhs = GasDispersion.slab._slab_steady_rhs(context.y0, context, vecs.x[1])
     controls = GasDispersion.slab.SLAB_Steady_Controls(
         vars.rmi, vars.alfg, vars.sru0, vars.bbx)
@@ -47,7 +47,7 @@ using DataInterpolations: AkimaInterpolation
     @test projected.rho ≈ phase.rho
     @test rhs ≈ legacy_rhs rtol=1e-5
     @test all(isfinite, rhs)
-    @test all(isfinite, (entrainment.w, entrainment.v, entrainment.vx))
+    @test all(isfinite, (projected.w, projected.v, projected.vx))
     @test all(isfinite, (next_result.r, next_result.h,
                          next_result.rho, next_result.t))
     @test isfinite(next_result.cv)

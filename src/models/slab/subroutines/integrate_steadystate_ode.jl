@@ -12,6 +12,11 @@ function _slab_steady_integrator(solver::OrdinaryDiffEqAlgorithm,
     return OrdinaryDiffEqIntegratorContext(solver, context)
 end
 
+function _save_function(u, t, integrator)
+    return _slab_steady_project(u, integrator.p, t)
+end
+
+
 """
 Integrate across the full spatial domain with adaptive timesteps.
 
@@ -23,28 +28,29 @@ function _slab_steady_integrate!(intctx::OrdinaryDiffEqIntegratorContext,
         nxtr, cv, ug, tim, bbx, bx, betax)
     context = intctx.context
     F = eltype(vecs.x)
+
+    # The saving callback calculates the current state and saves it
     saved_values = SavedValues(F, SLAB_Steady_Phase_State{F})
-    save_func = (u,t,integrator) -> begin
-        state, derived = _slab_steady_project(u, integrator.p, t)
-        state
-    end
-    save_callback = SavingCallback(save_func, saved_values;
+    save_callback = SavingCallback(_save_function, saved_values;
         save_everystep=true, save_start=true, save_end=true)
 
+    # A discrete call back refreshs the local context after each step
+    # and checks whether the termination criteria has been met
     last_t = Ref(input.x0)
     last_dt = Ref(zero(F))
     terminal_state = Ref{Union{Nothing,SLAB_Steady_Phase_State{F}}}(nothing)
     reference = Ref(_slab_steady_reference_state(input.base))
     controls = Ref(input.controls)
-    update! = function (integrator)
+    
+    function update_state!(integrator)
         t = integrator.t
         if t > last_t[]
             last_dt[] = t - last_t[]
         end
 
         # Refresh derived SLAB state and the controls for the next RHS
-        # evaluation, then stop once the steady-phase heat threshold is met.
-        state, derived = _slab_steady_project(integrator.u, context, t)
+        # evaluation, then stop once the transient threshold is met.
+        state = _slab_steady_project(integrator.u, context, t)
         reference[], controls[] = _slab_steady_reference_update( state, controls[], params.met.rhoa)
         context.base = _slab_steady_loop_state(state)
         context.y0 = integrator.u
@@ -60,13 +66,18 @@ function _slab_steady_integrate!(intctx::OrdinaryDiffEqIntegratorContext,
         end
         return nothing
     end
-    update_callback = DiscreteCallback((u,t,integrator) -> true, update!;
+
+    update_callback = DiscreteCallback((u,t,integrator) -> true, update_state!;
         save_positions=(false,false))
+
+    # Integrate the ODE problem 
     problem = ODEProblem(_slab_steady_rhs, context.y0,
-        (input.x0, input.x1), context)
+                          (input.x0, input.x1), context)
+
     solution = solve(problem, intctx.solver;
-        merge(input.solver_kwargs,
-            (;callback=CallbackSet(save_callback, update_callback), dense=true))...)
+                     merge(input.solver_kwargs,
+                          (;callback=CallbackSet(save_callback, update_callback),
+                            dense=true))...)
 
     # Accepted-step saves define the ODE output grid. Populate each SLAB field
     # from those saved states instead of projecting onto the legacy grid.

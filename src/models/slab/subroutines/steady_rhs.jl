@@ -288,8 +288,7 @@ function _slab_steady_project(u, p::SLAB_Steady_RHS_Context, x)
         base.ubs2, uvel, zero(eltype(u)), vg, uab, rho, zc, t, h, htp, bb,
         p.bbx, wc, cp, p.tgon, p.bse, p.urf, p.rcf, p.afa)
     return SLAB_Steady_Phase_State(r,bbv,bv,g,gw,sft,sfu,sfy,sfz,zc,qint,h,b,bb,rho,t,
-        uvel,uab,beta,vg0,vg,wc,htp,w,v,vx,cm,cmw,cmwv,cmev,cp,cv,ft,fu,fv,fw,fug,ubs2),
-        (cv=cv, vg0=vg0, w=w, v=v, vx=vx)
+        uvel,uab,beta,vg0,vg,wc,htp,w,v,vx,cm,cmw,cmwv,cmev,cp,cv,ft,fu,fv,fw,fug,ubs2)
 end
 
 """
@@ -301,7 +300,7 @@ entrainment values.
 """
 function _slab_steady_rhs(u, p::SLAB_Steady_RHS_Context, x)
     base = p.base
-    state, entrainment = _slab_steady_project(u, p, x)
+    state = _slab_steady_project(u, p, x)
     f = zeros(eltype(u), 11)
     if x == p.x0
         _slab_sub_slope!(f, p.params, base.rho, x, base.h, base.v, base.w,
@@ -309,8 +308,8 @@ function _slab_steady_rhs(u, p::SLAB_Steady_RHS_Context, x)
             base.fu, base.fv, base.fw, p.bse)
         return SVector{11}(f)
     end
-    _slab_sub_slope!(f, p.params, state.rho, x, state.h, entrainment.v,
-        entrainment.w, state.b, state.bb, state.vg, state.u, state.wc, state.cm,
+    _slab_sub_slope!(f, p.params, state.rho, x, state.h, state.v,
+        state.w, state.b, state.bb, state.vg, state.u, state.wc, state.cm,
         state.ft, state.fu, state.fv, state.fw, p.bse)
     return SVector{11}(f)
 end
