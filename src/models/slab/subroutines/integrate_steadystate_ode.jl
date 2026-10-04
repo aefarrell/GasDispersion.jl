@@ -23,10 +23,10 @@ function _slab_steady_integrate!(intctx::OrdinaryDiffEqIntegratorContext,
         nxtr, cv, ug, tim, bbx, bx, betax)
     context = intctx.context
     F = eltype(vecs.x)
-    saved_values = SavedValues(F, Tuple{SLAB_Steady_Phase_State{F},F})
+    saved_values = SavedValues(F, SLAB_Steady_Phase_State{F})
     save_func = (u,t,integrator) -> begin
         state, derived = _slab_steady_project(u, integrator.p, t)
-        (state, derived.cv)
+        state
     end
     save_callback = SavingCallback(save_func, saved_values;
         save_everystep=true, save_start=true, save_end=true)
@@ -45,8 +45,7 @@ function _slab_steady_integrate!(intctx::OrdinaryDiffEqIntegratorContext,
         # Refresh derived SLAB state and the controls for the next RHS
         # evaluation, then stop once the steady-phase heat threshold is met.
         state, derived = _slab_steady_project(integrator.u, context, t)
-        reference[], controls[] = _slab_steady_reference_update(
-            SLAB_Steady_StepResult(state, derived.cv), controls[], params.met.rhoa)
+        reference[], controls[] = _slab_steady_reference_update( state, controls[], params.met.rhoa)
         context.base = _slab_steady_loop_state(state)
         context.y0 = integrator.u
         context.x0 = t
@@ -77,7 +76,7 @@ function _slab_steady_integrate!(intctx::OrdinaryDiffEqIntegratorContext,
     nxtr = length(saved_values.t) + (stopped ? 0 : 1)
 
     final_state = stopped ? terminal_state[] : context.base
-    final_cv = last(saved_values.saveval)[2]
+    final_cv = final_state.cv
     return (base=final_state, x=stop_t, dx=last_dt[], cv=final_cv,
         nxtr=nxtr, reference=reference[], controls=controls[],
         stopped=stopped, ode_solution=solution, saved_values=saved_values)
@@ -86,8 +85,7 @@ end
 """Copy accepted ODE saves into the variable-length SLAB vector container."""
 function _slab_steady_store_saved!(vecs::SLAB_Vecs, saved_values, params,
         ug, tim, bbx, bx, betax)
-    states = first.(saved_values.saveval)
-    cvs = last.(saved_values.saveval)
+    states =saved_values.saveval
     n = length(saved_values.t)
     for field in fieldnames(typeof(vecs))
         resize!(getfield(vecs, field), n)
@@ -100,7 +98,7 @@ function _slab_steady_store_saved!(vecs::SLAB_Vecs, saved_values, params,
     vecs.b .= getproperty.(states, :b)
     vecs.bbx .= bbx
     vecs.bx .= bx
-    vecs.cv .= cvs
+    vecs.cv .= getproperty.(states, :cv)
     vecs.rho .= getproperty.(states, :rho)
     vecs.t .= getproperty.(states, :t)
     vecs.u .= getproperty.(states, :u)
@@ -134,8 +132,7 @@ function _slab_output_interpolations(cc::SLAB_CC_Vecs,
     solution = steady_solution.ode_solution
     saved = steady_solution.saved_values
     x = saved.t
-    states = first.(saved.saveval)
-    cv = last.(saved.saveval)
+    states = saved.saveval
 
     # Recreate the legacy concentration post-processing at the callback's
     # accepted states. Width and cloud-duration fields remain shared SLAB
@@ -146,7 +143,7 @@ function _slab_output_interpolations(cc::SLAB_CC_Vecs,
     points = map(eachindex(x)) do i
         state = states[i]
         _slab_editcc_point(params,x[i],x[1],state.zc,state.h,state.b,state.beta,
-            state.uab,state.cm,cv[i],bx[i],bbx[i],tcld[i])
+            state.uab,state.cm,state.cv,bx[i],bbx[i],tcld[i])
     end
 
     # Append any transient samples after the callback saves, preserving one

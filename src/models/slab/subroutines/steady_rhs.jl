@@ -40,6 +40,7 @@ struct SLAB_Steady_Phase_State{F <: AbstractFloat}
     cmwv::F
     cmev::F
     cp::F
+    cv::F
     ft::F
     fu::F
     fv::F
@@ -150,15 +151,8 @@ struct SLAB_Steady_StepInput{I,S,W}
     workspace::W
 end
 
-"""Result of one backend step: full projected phase state and derived cloud volume."""
-struct SLAB_Steady_StepResult{S,F <: AbstractFloat}
-    state::S
-    cv::F
-end
-
-function _slab_steady_reference_update(result::SLAB_Steady_StepResult,
+function _slab_steady_reference_update(state::SLAB_Steady_Phase_State,
                                        controls::SLAB_Steady_Controls, rhoa)
-    state = result.state
     reference = _slab_steady_reference_state(state)
 
     alfg = controls.alfg
@@ -209,7 +203,7 @@ function _slab_steady_phase_state(vecs::SLAB_Vecs{F}, vars::SLAB_Loop_Init{I,F},
         vecs.vg[index], vecs.vg[index],
         vecs.wc[index], vars.htp0, vecs.w[index], vecs.v[index], vecs.vx[index],
         vecs.cm[index], vecs.cmw[index], vecs.cmwv[index],
-        vecs.cmev[index], vars.cp0, vars.ft, vars.fu, vars.fv, vars.fw, vars.fug, vars.ubs20)
+        vecs.cmev[index], vars.cp0, vecs.cv[index], vars.ft, vars.fu, vars.fv, vars.fw, vars.fug, vars.ubs20)
 end
 
 """
@@ -265,7 +259,7 @@ function _slab_steady_loop_state(state::SLAB_Steady_Phase_State{F}) where {F}
         zero(F),zero(F),zero(F),zero(F),zero(F),zero(F),state.zc,state.qint,
         state.h,state.b,state.bb,state.rho,state.t,state.u,state.uab,state.beta,
         state.vg0,state.vg,state.wc,state.htp,state.w,state.v,state.vx,state.cm,
-        state.cmw,state.cmwv,state.cmev,state.cp,state.ft,state.fu,state.fv,
+        state.cmw,state.cmwv,state.cmev,state.cp,state.cv,state.ft,state.fu,state.fv,
         state.fw,state.fug,state.ubs2)
 end
 
@@ -294,7 +288,7 @@ function _slab_steady_project(u, p::SLAB_Steady_RHS_Context, x)
         base.ubs2, uvel, zero(eltype(u)), vg, uab, rho, zc, t, h, htp, bb,
         p.bbx, wc, cp, p.tgon, p.bse, p.urf, p.rcf, p.afa)
     return SLAB_Steady_Phase_State(r,bbv,bv,g,gw,sft,sfu,sfy,sfz,zc,qint,h,b,bb,rho,t,
-        uvel,uab,beta,vg0,vg,wc,htp,w,v,vx,cm,cmw,cmwv,cmev,cp,ft,fu,fv,fw,fug,ubs2),
+        uvel,uab,beta,vg0,vg,wc,htp,w,v,vx,cm,cmw,cmwv,cmev,cp,cv,ft,fu,fv,fw,fug,ubs2),
         (cv=cv, vg0=vg0, w=w, v=v, vx=vx)
 end
 

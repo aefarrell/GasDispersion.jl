@@ -52,7 +52,7 @@ function _slab_steady_integrate!(integrator::SLABLegacyIntegrator, vecs,
             step_state = SLAB_Steady_StepState(reference, ug)
             step = SLAB_Steady_StepInput(step_input, step_state, work)
             result = _slab_steady_step!(integrator, step)
-            base = _slab_steady_loop_state(result.state)
+            base = _slab_steady_loop_state(result)
             cv = result.cv
             x = xn
             reference, controls = _slab_steady_reference_update(result, controls, rhoa)
@@ -180,6 +180,6 @@ function _slab_steady_step!(::SLABLegacyIntegrator, step::SLAB_Steady_StepInput)
     # Return the final full phase state separately from cloud volume, which is
     # derived during projection but stored alongside the state by the caller.
     next = SLAB_Steady_Phase_State(r,bbv,bv,g,gw,sft,sfu,sfy,sfz,zc,qint,h,b,bb,rho,t,
-        u,uab,beta,vg0,vg,wc,htp,w,v,vx,cm,cmw,cmwv,cmev,_cp,ft,fu,fv,fw,fug,ubs2)
-    return SLAB_Steady_StepResult(next, cv)
+        u,uab,beta,vg0,vg,wc,htp,w,v,vx,cm,cmw,cmwv,cmev,_cp,cv,ft,fu,fv,fw,fug,ubs2)
+    return next
 end

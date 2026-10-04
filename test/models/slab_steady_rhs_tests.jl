@@ -48,22 +48,22 @@ using DataInterpolations: AkimaInterpolation
     @test rhs ≈ legacy_rhs rtol=1e-5
     @test all(isfinite, rhs)
     @test all(isfinite, (entrainment.w, entrainment.v, entrainment.vx))
-    @test all(isfinite, (next_result.state.r, next_result.state.h,
-                         next_result.state.rho, next_result.state.t))
+    @test all(isfinite, (next_result.r, next_result.h,
+                         next_result.rho, next_result.t))
     @test isfinite(next_result.cv)
 
     reference, next_controls = GasDispersion.slab._slab_steady_reference_update(
         next_result, controls, params.met.rhoa)
-    expected_alfg = next_result.state.htp > next_result.state.h ? controls.alfg :
-        next_result.state.rho > params.met.rhoa ? 0.25 : 0.0
-    srug = next_result.state.htp > next_result.state.h ||
-        next_result.state.rho <= params.met.rhoa ? 0.0 :
-        0.5 * expected_alfg * params.xtra.grav * (next_result.state.rho - params.met.rhoa) *
-            next_result.state.bb * next_result.state.h^2
-    @test reference.vg == next_result.state.vg
+    expected_alfg = next_result.htp > next_result.h ? controls.alfg :
+        next_result.rho > params.met.rhoa ? 0.25 : 0.0
+    srug = next_result.htp > next_result.h ||
+        next_result.rho <= params.met.rhoa ? 0.0 :
+        0.5 * expected_alfg * params.xtra.grav * (next_result.rho - params.met.rhoa) *
+            next_result.bb * next_result.h^2
+    @test reference.vg == next_result.vg
     @test next_controls.alfg == expected_alfg
-    @test next_controls.sru0 ≈ next_result.state.r * next_result.state.u -
-        next_result.state.r * (1 - next_result.state.cm) * next_result.state.uab + srug
+    @test next_controls.sru0 ≈ next_result.r * next_result.u -
+        next_result.r * (1 - next_result.cm) * next_result.uab + srug
     @test next_controls.rmi == controls.rmi
     @test next_controls.bbx == controls.bbx
 
@@ -103,7 +103,8 @@ using DataInterpolations: AkimaInterpolation
     saved_values = ode_output.steady.saved_values
     sample = cld(length(saved_values.t), 2)
     sample_x = saved_values.t[sample]
-    sample_state, sample_cv = saved_values.saveval[sample]
+    sample_state = saved_values.saveval[sample]
+    sample_cv = sample_state.cv
     sample_bx = legacy_interpolations.bx_x(sample_x)
     sample_bbx = legacy_interpolations.bbx_x(sample_x)
     sample_tcld = legacy_interpolations.tcld(sample_x)
