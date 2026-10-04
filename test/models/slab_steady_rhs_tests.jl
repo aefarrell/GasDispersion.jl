@@ -1,4 +1,4 @@
-using OrdinaryDiffEqLowOrderRK: RK4
+using OrdinaryDiffEq: Tsit5
 
 @testset "SLAB steady RHS" begin
     idpf,nxtr,vecs,vars,params,dt = GasDispersion.slab._slab_init_hjet(
@@ -26,8 +26,14 @@ using OrdinaryDiffEqLowOrderRK: RK4
     input = GasDispersion.slab.SLAB_Steady_IntegratorInput(
         params, phase, idpf, vecs.x[1], vecs.x[1] + 0.001, controls,
         (;dt=0.001, adaptive=false))
-    intctx = GasDispersion.slab._slab_steady_integrator(RK4(), input)
-    step = GasDispersion.slab.SLAB_Steady_StepInput(input, nothing, nothing)
+    intctx = GasDispersion.slab._slab_steady_integrator(
+        GasDispersion.slab.SLABLegacySolver(), input)
+    workspace = GasDispersion.slab.SLAB_Steady_Workspace(
+        zeros(11), zeros(11), zeros(11), zeros(3), zeros(4))
+    step = GasDispersion.slab.SLAB_Steady_StepInput(input,
+        GasDispersion.slab.SLAB_Steady_StepState(
+            GasDispersion.slab._slab_steady_reference_state(phase), vecs.ug[1]),
+        workspace)
     next_result = GasDispersion.slab._slab_steady_step!(intctx, step)
     legacy_rhs = zeros(Float64, 11)
     GasDispersion.slab._slab_sub_slope!(legacy_rhs, params, vecs.rho[1], vecs.x[1],
@@ -66,14 +72,20 @@ using OrdinaryDiffEqLowOrderRK: RK4
         qtis=0.00,hs=1.00,tav=10.00,xffm=2800.00,zp=[0.0,1.0,0.0,0.0],
         z0=0.003,za=2.0,ua=4.5,ta=306.2,rh=21.3,stab=0.0,ala=0.0221)
     legacy_output = GasDispersion.slab.slab_main(input)
-    ode_output = GasDispersion.slab.slab_main(input,RK4();
-        steady_solver_kwargs=(;adaptive=false))
+    ode_output = GasDispersion.slab.slab_main(input,Tsit5())
 
     @test legacy_output.steady.ode_solution === nothing
     @test legacy_output.steady.ode_segments === nothing
     @test ode_output.steady.ode_solution !== nothing
     @test ode_output.steady.ode_solution.t[1] ≈ vecs.x[1]
     @test ode_output.steady.ode_solution.t[end] > ode_output.steady.ode_solution.t[1]
+    @test length(ode_output.steady.ode_segments) > 1
+    @test length(ode_output.steady.ode_segments) + 1 ==
+        length(ode_output.steady.ode_solution.t)
+    legacy_grid = legacy_output.steady.state.x
+    accepted_times = ode_output.steady.ode_solution.t[2:end-1]
+    @test any(t -> minimum(abs.(legacy_grid .- t)) >
+        1e-8*max(abs(t), 1.0), accepted_times)
     @test ode_output.interpolations.ode_solution === ode_output.steady.ode_solution
     @test ode_output.interpolations.cc isa GasDispersion.slab.SLAB_ODE_FieldInterpolation
     @test all(isfinite, (ode_output.interpolations.cc(1.05),
@@ -81,4 +93,26 @@ using OrdinaryDiffEqLowOrderRK: RK4
                          ode_output.interpolations.betac(1.05),
                          ode_output.interpolations.zc(1.05),
                          ode_output.interpolations.sig(1.05)))
+
+    handoff = findfirst(qint -> qint >= 0.5*legacy_output.p.spl.qtcs,
+        legacy_output.steady.state.qint)
+    @test handoff !== nothing
+    comparison_indices = filter(i ->
+        legacy_output.steady.state.x[i] <= ode_output.steady.ode_solution.t[end],
+        1:handoff)
+    for field in (:rho, :t, :u, :cm, :qint)
+        legacy_values = getproperty(legacy_output.steady.state, field)[comparison_indices]
+        ode_values = map(comparison_indices) do i
+            x = legacy_output.steady.state.x[i]
+            segment_index = findlast(segment ->
+                segment.x0 <= x <= segment.x1, ode_output.steady.ode_segments)
+            state, _ = GasDispersion.slab._slab_steady_project(
+                ode_output.steady.ode_solution(x),
+                ode_output.steady.ode_segments[segment_index].context, x)
+            getproperty(state, field)
+        end
+        relative_error = maximum(abs.(legacy_values .- ode_values)) /
+            maximum(abs.(legacy_values))
+        @test relative_error <= 0.2
+    end
 end

@@ -1,10 +1,9 @@
 """
 Legacy fixed-step RK4 backend for the steady-state phase.
 
-The shared steady loop calls these methods through dispatch. This backend has no
-continuous trajectory to retain, so its solution hooks return `nothing`; its
-output interpolation is built from the stored SLAB vectors using Akima
-interpolation.
+The legacy backend retains its fixed spatial grid and nested substep loop. It
+has no continuous trajectory to retain, so its output interpolation is built
+from the stored SLAB vectors using Akima interpolation.
 """
 
 """
@@ -17,10 +16,62 @@ function _slab_steady_integrator(::SLABLegacySolver, input::SLAB_Steady_Integrat
     return SLABLegacyIntegrator()
 end
 
-_slab_steady_append_ode_segment!(segments, ::SLABLegacyIntegrator, x0, x1) = nothing
+"""
+Run the original nested fixed-grid steady-state iteration.
 
-_slab_steady_ode_segments(::SLABLegacyIntegrator, ::Type{F}) where {F} = nothing
-_slab_steady_solution(::SLABLegacyIntegrator) = nothing
+The three inner RK4 steps are legacy behavior: each one uses the preceding
+step's refreshed reference values and controls before the next output point is
+stored.
+"""
+function _slab_steady_integrate!(integrator::SLABLegacyIntegrator, vecs,
+        vars, params, input::SLAB_Steady_IntegratorInput;
+        nxtr, cv, ug, tim, bbx, bx, betax)
+    base = input.base
+    reference = _slab_steady_reference_state(base)
+    controls = input.controls
+    x = input.x0
+    dx = (vars.gam - 1) *
+        (params.fld.xffm - vecs.x[vars.msfm]) /
+        (vars.gam^(params.xtra.nssm*vars.mnfm) - 1)
+    nssm = params.xtra.nssm
+    cmdaa = params.met.cmdaa
+    qs = params.spl.qs
+    rhoa = params.met.rhoa
+    work = SLAB_Steady_Workspace(zeros(eltype(vecs.x),11),
+        zeros(eltype(vecs.x),11), zeros(eltype(vecs.x),11),
+        zeros(eltype(vecs.x),3), zeros(eltype(vecs.x),4))
+    stopped = false
+
+    for nx in vars.nxi:vars.mffm
+        for _ in 1:nssm
+            xn = x + dx
+            step_input = SLAB_Steady_IntegratorInput(params, base, input.idpf,
+                x, xn, controls, input.solver_kwargs)
+            step_state = SLAB_Steady_StepState(reference, ug)
+            step = SLAB_Steady_StepInput(step_input, step_state, work)
+            result = _slab_steady_step!(integrator, step)
+            base = _slab_steady_loop_state(result.state)
+            cv = result.cv
+            x = xn
+            reference, controls = _slab_steady_reference_update(result, controls, rhoa)
+            dx *= vars.gam
+        end
+
+        _slab_sub_store!(vecs,nx,x,base.bb,base.b,base.vg,base.cm,base.t,base.rho,
+            base.u,base.h,cv,base.beta,base.w,base.v,cmdaa,base.cmw,base.cmwv,
+            base.cmev,base.uab,base.wc,base.zc,base.qint,tim,bbx,bx,betax,ug,base.vx)
+        vecs.tccp[nx] = (base.qint+base.qint)/qs
+
+        if base.qint >= 0.5*params.spl.qtcs
+            nxtr = nx
+            stopped = true
+            break
+        end
+    end
+
+    return (base=base, x=x, dx=dx, cv=cv, nxtr=nxtr, reference=reference,
+        controls=controls, stopped=stopped, ode_solution=nothing, ode_segments=nothing)
+end
 
 """
 Build the legacy output interpolations from tabulated cloud data.

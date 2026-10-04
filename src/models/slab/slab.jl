@@ -2,8 +2,8 @@ __precompile__()
 
 module slab
 
-using OrdinaryDiffEq: ODEProblem, solve, init, step!, reinit!, set_proposed_dt!
-using OrdinaryDiffEqCore: OrdinaryDiffEqAlgorithm
+using OrdinaryDiffEq: ODEProblem, solve, DiscreteCallback
+using OrdinaryDiffEqCore: OrdinaryDiffEqAlgorithm, terminate!
 using StaticArrays
 using DataInterpolations: AkimaInterpolation
 

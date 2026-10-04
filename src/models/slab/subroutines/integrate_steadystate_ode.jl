@@ -1,17 +1,7 @@
-"""
-OrdinaryDiffEq backend for the steady-state phase.
-
-One persistent ODE integrator is reused across the shared loop's substeps.
-Each substep reinitializes its independent variables and updates the mutable
-RHS context; saved segment contexts preserve the coefficients needed for later
-field interpolation.
-"""
+"""OrdinaryDiffEq backend for the steady-state phase."""
 
 """
-Initialize an OrdinaryDiffEq integrator for the first steady substep.
-
-The initial context and ODE problem are reused for all later substeps; the
-integrator is configured here with the caller-provided solver options.
+Initialize the full-domain solve context.
 """
 function _slab_steady_integrator(solver::OrdinaryDiffEqAlgorithm,
                                  input::SLAB_Steady_IntegratorInput)
@@ -19,65 +9,107 @@ function _slab_steady_integrator(solver::OrdinaryDiffEqAlgorithm,
     context = _slab_steady_context(input.params, input.base, input.idpf, nothing;
         rmi=controls.rmi, alfg=controls.alfg, sru0=controls.sru0, bbx=controls.bbx,
         x0=input.x0)
-    problem = ODEProblem(_slab_steady_rhs, context.y0, (input.x0, input.x1), context)
-    integrator = init(problem, solver; input.solver_kwargs...)
-    return OrdinaryDiffEqIntegratorContext(integrator,context)
+    return OrdinaryDiffEqIntegratorContext(solver, context)
 end
 
 """
-Advance the persistent ODE integrator over one requested spatial interval.
+Integrate across the full spatial domain with adaptive timesteps.
 
-Update the RHS context from the current step input, reinitialize the solver at
-the interval's starting point, integrate through its endpoint, then project the
-final reduced ODE state into the full SLAB phase state.
+The callback rebases the reduced ODE state after each accepted step so the
+thermodynamic state and controls used by the RHS stay current. Output samples
+are interpolated on a logarithmic spatial grid, which does not constrain the
+solver's accepted timesteps.
 """
-function _slab_steady_step!(intctx::OrdinaryDiffEqIntegratorContext,
-                            step::SLAB_Steady_StepInput)
-    input = step.input
-    base = input.base
-    controls = input.controls
-    x, xf = input.x0, input.x1
-    integrator, context = intctx.integrator, intctx.context
-    context.base = base
-    context.x0 = x
-    context.rmi = controls.rmi
-    context.alfg = controls.alfg
-    context.sru0 = controls.sru0
-    context.bbx = controls.bbx
-    context.y0 = SVector{11,typeof(base.r)}(
-        base.r, base.bbv, base.bv, base.g, base.sft, base.sfu,
-        base.gw, base.zc, base.qint, base.sfy, base.sfz)
-    reinit!(integrator, context.y0; t0=x, tf=xf, erase_sol=false)
-    requested_dt = get(input.solver_kwargs, :dt, xf - x)
-    set_proposed_dt!(integrator, min(requested_dt, xf - x))
-    while integrator.t < xf
-        step!(integrator)
+function _slab_steady_integrate!(intctx::OrdinaryDiffEqIntegratorContext,
+        vecs, vars, params, input::SLAB_Steady_IntegratorInput;
+        nxtr, cv, ug, tim, bbx, bx, betax)
+    context = intctx.context
+    F = eltype(vecs.x)
+    targets = Vector{F}(undef, vars.mffm - vars.nxi + 1)
+    xf = input.x1
+    targets .= exp.(range(log(input.x0), log(xf); length=length(targets)+1))[2:end]
+
+    segments = SLAB_Steady_ODESegment{F,typeof(context)}[]
+    last_t = Ref(input.x0)
+    last_dt = Ref(zero(F))
+    terminal_state = Ref{Union{Nothing,SLAB_Steady_Phase_State{F}}}(nothing)
+    terminal_cv = Ref(zero(F))
+    reference = Ref(_slab_steady_reference_state(input.base))
+    controls = Ref(input.controls)
+    affect! = function (integrator)
+        t = integrator.t
+        if t > last_t[]
+            push!(segments, SLAB_Steady_ODESegment(last_t[], t,
+                _slab_steady_context_snapshot(context)))
+            last_dt[] = t - last_t[]
+        end
+        state, derived = _slab_steady_project(integrator.u, context, t)
+        reference[], controls[] = _slab_steady_reference_update(
+            SLAB_Steady_StepResult(state, derived.cv), controls[], params.met.rhoa)
+        context.base = _slab_steady_loop_state(state)
+        context.y0 = integrator.u
+        context.x0 = t
+        context.rmi = controls[].rmi
+        context.alfg = controls[].alfg
+        context.sru0 = controls[].sru0
+        context.bbx = controls[].bbx
+        last_t[] = t
+        if state.qint >= 0.5*params.spl.qtcs
+            terminal_state[] = context.base
+            terminal_cv[] = derived.cv
+            terminate!(integrator)
+        end
+        return nothing
     end
-    state, derived = _slab_steady_project(integrator.u, context, xf)
-    return SLAB_Steady_StepResult(state, derived.cv)
+    callback = DiscreteCallback((u,t,integrator) -> true, affect!;
+        save_positions=(false,false))
+    problem = ODEProblem(_slab_steady_rhs, context.y0, (input.x0, xf), context)
+    solution = solve(problem, intctx.solver;
+        merge(input.solver_kwargs, (;callback=callback, dense=true))...)
+
+    stop_t = solution.t[end]
+    if last_t[] < stop_t
+        push!(segments, SLAB_Steady_ODESegment(last_t[], stop_t,
+            _slab_steady_context_snapshot(context)))
+    end
+
+    _state_at(x) = begin
+        index = findlast(segment -> segment.x0 <= x <= segment.x1, segments)
+        index === nothing && error("No ODE context was saved for steady-state position $x")
+        state, derived = _slab_steady_project(solution(x), segments[index].context, x)
+        return state, derived.cv
+    end
+    stored_nxtr = nxtr
+    for (offset, sample_x) in enumerate(targets)
+        nx = vars.nxi + offset - 1
+        if terminal_state[] !== nothing && sample_x >= stop_t && stored_nxtr == nxtr
+            state = terminal_state[]
+            _slab_sub_store!(vecs,nx,stop_t,state.bb,state.b,state.vg,state.cm,state.t,
+                state.rho,state.u,state.h,terminal_cv[],state.beta,state.w,state.v,
+                params.met.cmdaa,state.cmw,state.cmwv,state.cmev,state.uab,state.wc,
+                state.zc,state.qint,tim,bbx,bx,betax,ug,state.vx)
+            vecs.tccp[nx] = (state.qint+state.qint)/params.spl.qs
+            stored_nxtr = nx
+            break
+        elseif sample_x <= stop_t
+            state, sample_cv = _state_at(sample_x)
+            _slab_sub_store!(vecs,nx,sample_x,state.bb,state.b,state.vg,state.cm,
+                state.t,state.rho,state.u,state.h,sample_cv,state.beta,state.w,state.v,
+                params.met.cmdaa,state.cmw,state.cmwv,state.cmev,state.uab,state.wc,
+                state.zc,state.qint,tim,bbx,bx,betax,ug,state.vx)
+            vecs.tccp[nx] = (state.qint+state.qint)/params.spl.qs
+        else
+            break
+        end
+    end
+
+    final_state = terminal_state[] === nothing ? context.base : terminal_state[]
+    final_cv = terminal_state[] === nothing ? cv : terminal_cv[]
+    return (base=final_state, x=stop_t, dx=last_dt[], cv=final_cv,
+        nxtr=stored_nxtr, reference=reference[], controls=controls[],
+        stopped=terminal_state[] !== nothing, ode_solution=solution,
+        ode_segments=segments)
 end
-
-"""
-Save the RHS context associated with one completed ODE interval.
-
-The integrator mutates its live context on the next step, so each segment needs
-a snapshot. The snapshot copies the small context object but shares immutable
-parameters and their arrays instead of deep-copying them for every interval.
-"""
-function _slab_steady_append_ode_segment!(segments,
-        intctx::OrdinaryDiffEqIntegratorContext, x0, x1)
-    push!(segments, SLAB_Steady_ODESegment(
-        x0, x1, _slab_steady_context_snapshot(intctx.context)))
-    return nothing
-end
-
-"""Allocate the segment collection with the context type used by this integrator."""
-function _slab_steady_ode_segments(intctx::OrdinaryDiffEqIntegratorContext,
-                                   ::Type{F}) where {F}
-    return SLAB_Steady_ODESegment{F,typeof(intctx.context)}[]
-end
-
-_slab_steady_solution(intctx::OrdinaryDiffEqIntegratorContext) = intctx.integrator.sol
 
 """
 Evaluate an ODE-backed cloud-field interpolation at distance `x`.

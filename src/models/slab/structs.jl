@@ -2,8 +2,8 @@
     SLABLegacySolver()
 
 Select SLAB's original fixed-step RK4 steady-state implementation. The shared
-steady-state loop dispatches integration, segment storage, and interpolation
-behavior on the initialized integrator type.
+steady-state driver dispatches to the legacy backend, which retains the
+original spatial grid and nested substep loop.
 """
 struct SLABLegacySolver end
 
@@ -19,14 +19,13 @@ abstract type SLABIntegrator end
 struct SLABLegacyIntegrator <:SLABIntegrator end
 
 """
-    OrdinaryDiffEqIntegratorContext(integrator, context)
+    OrdinaryDiffEqIntegratorContext(solver, context)
 
-Keep a persistent OrdinaryDiffEq integrator together with the mutable RHS
-context used for successive steady-state substeps. The concrete fields let
-Julia specialize backend dispatch without abstractly typed lookups.
+Keep the selected OrdinaryDiffEq algorithm together with the mutable RHS
+context for one full-domain steady-state solve.
 """
-struct OrdinaryDiffEqIntegratorContext{I,C} <: SLABIntegrator
-    integrator::I
+struct OrdinaryDiffEqIntegratorContext{A,C} <: SLABIntegrator
+    solver::A
     context::C
 end
 
