@@ -12,7 +12,7 @@ Initialize the legacy backend.
 The original RK4 algorithm has no persistent integrator state, so initialization
 only returns the dispatch token used by the subsequent step calls.
 """
-function _slab_steady_integrator(::SLABLegacySolver, input::SLAB_Steady_IntegratorInput)
+function _slab_steady_integrator(::SLABLegacySolver, I)
     return SLABLegacyIntegrator()
 end
 
@@ -25,11 +25,12 @@ stored.
 """
 function _slab_steady_integrate!(integrator::SLABLegacyIntegrator, vecs,
         vars, params, input::SLAB_Steady_IntegratorInput;
-        nxtr, cv, ug, tim, bbx, bx, betax)
+        ug, tim, bbx, bx, betax)
     base = input.base
     reference = _slab_steady_reference_state(base)
     controls = input.controls
     x = input.x0
+    nxtr = vars.nxi
     dx = (vars.gam - 1) *
         (params.fld.xffm - vecs.x[vars.msfm]) /
         (vars.gam^(params.xtra.nssm*vars.mnfm) - 1)
@@ -53,7 +54,6 @@ function _slab_steady_integrate!(integrator::SLABLegacyIntegrator, vecs,
             step = SLAB_Steady_StepInput(step_input, step_state, work)
             result = _slab_steady_step!(integrator, step)
             base = _slab_steady_loop_state(result)
-            cv = result.cv
             x = xn
             reference, controls = _slab_steady_reference_update(result, controls, rhoa)
             dx *= vars.gam
@@ -62,7 +62,7 @@ function _slab_steady_integrate!(integrator::SLABLegacyIntegrator, vecs,
         # Store one output row after its group of inner RK4 steps, and stop the
         # steady phase at the same heat-release threshold as the original code.
         _slab_sub_store!(vecs,nx,x,base.bb,base.b,base.vg,base.cm,base.t,base.rho,
-            base.u,base.h,cv,base.beta,base.w,base.v,cmdaa,base.cmw,base.cmwv,
+            base.u,base.h,base.cv,base.beta,base.w,base.v,cmdaa,base.cmw,base.cmwv,
             base.cmev,base.uab,base.wc,base.zc,base.qint,tim,bbx,bx,betax,ug,base.vx)
         vecs.tccp[nx] = (base.qint+base.qint)/qs
 
@@ -73,7 +73,7 @@ function _slab_steady_integrate!(integrator::SLABLegacyIntegrator, vecs,
         end
     end
 
-    return (base=base, x=x, dx=dx, cv=cv, nxtr=nxtr, reference=reference,
+    return (base=base, x=x, dx=dx, nxtr=nxtr, reference=reference,
         controls=controls, stopped=stopped, ode_solution=nothing, saved_values=nothing)
 end
 

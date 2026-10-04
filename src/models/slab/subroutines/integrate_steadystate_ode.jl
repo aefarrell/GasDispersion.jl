@@ -25,7 +25,7 @@ rebases the RHS context and terminates at the steady-to-transient threshold.
 """
 function _slab_steady_integrate!(intctx::OrdinaryDiffEqIntegratorContext,
         vecs, vars, params, input::SLAB_Steady_IntegratorInput;
-        nxtr, cv, ug, tim, bbx, bx, betax)
+        ug, tim, bbx, bx, betax)
     context = intctx.context
     F = eltype(vecs.x)
 
@@ -87,8 +87,7 @@ function _slab_steady_integrate!(intctx::OrdinaryDiffEqIntegratorContext,
     nxtr = length(saved_values.t) + (stopped ? 0 : 1)
 
     final_state = stopped ? terminal_state[] : context.base
-    final_cv = final_state.cv
-    return (base=final_state, x=stop_t, dx=last_dt[], cv=final_cv,
+    return (base=final_state, x=stop_t, dx=last_dt[],
         nxtr=nxtr, reference=reference[], controls=controls[],
         stopped=stopped, ode_solution=solution, saved_values=saved_values)
 end

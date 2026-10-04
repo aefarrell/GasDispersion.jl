@@ -50,11 +50,11 @@ function _slab_int_steady_state_impl!(vecs::SLAB_Vecs{F,A},vars::SLAB_Loop_Init{
         controls, solver_kwargs)
     integrator = _slab_steady_integrator(solver, integrator_input)
     run = _slab_steady_integrate!(integrator, vecs, vars, params, integrator_input;
-        nxtr=nxtr, cv=cv, ug=ug, tim=tim, bbx=bbx, bx=bx, betax=betax)
+                                  ug=ug, tim=tim, bbx=bbx, bx=bx, betax=betax)
 
     # Both backends return the same compact summary; use it to perform the
     # common steady-to-transient handoff and update shared output geometry.
-    base, x, dx, cv = run.base, run.x, run.dx, run.cv
+    base, x, dx, cv = run.base, run.x, run.dx, run.base.cv
     nxtr, reference, controls = run.nxtr, run.reference, run.controls
     rmi, alfg, sru0, bbx = controls.rmi, controls.alfg, controls.sru0, controls.bbx
 
