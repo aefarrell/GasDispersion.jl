@@ -1,5 +1,6 @@
 function _slab_int_transient!(vecs::SLAB_Vecs{F,A},vars::SLAB_Loop_Init{I,F},
-                              params::SLAB_Params{I,F,A},idpf::I,nxtr::I,dt::F) where {
+                              params::SLAB_Params{I,F,A},idpf::I,nxtr::I,dt::F;
+                              xmax=nothing) where {
                               I <: Integer, F <: AbstractFloat, A <: AbstractVector{F}}
 # fucking SLAB_Output
     # unpack parameters
@@ -85,8 +86,10 @@ function _slab_int_transient!(vecs::SLAB_Vecs{F,A},vars::SLAB_Loop_Init{I,F},
     dy = zeros(F,15)
     f = zeros(F,15)
 
-    #730 do 775 nx=nxi,mffm
-    for nx in nxi:mffm
+    # Legacy runs retain their fixed output count. After an adaptive steady
+    # solve, continue transiently until the physical downwind limit instead.
+    nx = nxi
+    while xmax === nothing ? nx <= mffm : x < xmax
 
         #do 765 ns=1,nssm
         for ns in 1:nssm
@@ -203,11 +206,16 @@ function _slab_int_transient!(vecs::SLAB_Vecs{F,A},vars::SLAB_Loop_Init{I,F},
         #765 continue
         end
 
+        if nx > length(vecs.x)
+            for field in fieldnames(typeof(vecs))
+                resize!(getfield(vecs, field), nx)
+            end
+        end
         _slab_sub_store!(vecs,nx,x,bb,b,vg,cm,t,rho,u,h,cv,beta,w,v,cmdaa,cmw,cmwv,
                          cmev,uab,wc,zc,qint,tim,bbx,bx,betax,ug,vx)
         vecs.tccp[nx] = tim
 
-    #775 continue
+        nx += 1
     end
 
 end

@@ -384,17 +384,31 @@ end
 Stored steady-phase output, including the tabulated cloud state and optional
 backend-specific dense-solution data.
 
-The ODE solution and segment contexts are `nothing` for legacy RK4 runs. They
-are retained for OrdinaryDiffEq runs so output interpolation can reconstruct
-cloud properties between stored spatial samples.
+The ODE solution is `nothing` for legacy RK4 runs and retained for
+OrdinaryDiffEq runs.
 """
-struct SLAB_Steady_Solution{I <: Integer, F <: Number, A <: AbstractVector{F}, O, G} <: AbstractSLABSolution
+struct SLAB_Steady_Solution{I <: Integer, F <: Number, A <: AbstractVector{F}, O} <: AbstractSLABSolution
     params::SLAB_Params{I,F,A}
     state::SLAB_Vecs{F,A}
     cc::SLAB_CC_Vecs{F,A}
     initial::SLAB_Steady_State{F}
     ode_solution::O
-    ode_segments::G
+end
+
+"""
+Steady solution produced by OrdinaryDiffEq.
+
+It has the same parameter, sampled-state, concentration-field, and initial-state
+interface as `SLAB_Steady_Solution`, while retaining the callback's accepted
+states and times as its native variable-length storage.
+"""
+struct SLAB_ODE_Steady_Solution{I <: Integer, F <: Number, A <: AbstractVector{F}, O,V} <: AbstractSLABSolution
+    params::SLAB_Params{I,F,A}
+    state::SLAB_Vecs{F,A}
+    cc::SLAB_CC_Vecs{F,A}
+    initial::SLAB_Steady_State{F}
+    ode_solution::O
+    saved_values::V
 end
 
 struct SLAB_Transient_Solution{I <: Integer, F <: Number, A <: AbstractVector{F}} <: AbstractSLABSolution
@@ -404,28 +418,8 @@ struct SLAB_Transient_Solution{I <: Integer, F <: Number, A <: AbstractVector{F}
     initial::SLAB_Transient_State{F}
 end
 
-"""
-Interpolation of one cloud field from the OrdinaryDiffEq steady solution.
-
-The ODE trajectory stores only the integrated variables. To evaluate a cloud
-field, this wrapper finds the segment-local RHS context, projects the ODE state
-to the full SLAB state, and applies the cloud-property calculations. It uses
-the tabulated interpolation as a fallback outside saved ODE segments.
-"""
-struct SLAB_ODE_FieldInterpolation{S,G,P,F,BX,BBX,T,Fallback}
-    solution::S
-    segments::G
-    params::P
-    field::Symbol
-    x0::F
-    bx_x::BX
-    bbx_x::BBX
-    tcld::T
-    fallback::Fallback
-end
-
 struct SLAB_Output{I <: Integer, F <: Number, A <: AbstractVector{F}, P,
-                   S <: Union{Nothing,SLAB_Steady_Solution{I,F,A}},
+                   S <: Union{Nothing,AbstractSLABSolution},
                    T <: Union{Nothing,SLAB_Transient_Solution{I,F,A}}}
     p::SLAB_Params{I,F,A}
     s::SLAB_Vecs{F,A}

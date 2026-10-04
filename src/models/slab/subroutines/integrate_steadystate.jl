@@ -11,6 +11,8 @@ function _slab_int_steady_state_impl!(vecs::SLAB_Vecs{F,A},vars::SLAB_Loop_Init{
                                       params::SLAB_Params{I,F,A},idpf::I,nxtr::I;
                                       solver=SLABLegacySolver(),solver_kwargs=(;)) where {
                                   I <: Integer, F <: AbstractFloat, A <: AbstractVector{F}}
+    # Set up the shared initial phase state and backend-neutral controls from
+    # the initializer's first available spatial output point.
     qs = params.spl.qs
     tsd = params.spl.tsd
     qtcs = params.spl.qtcs
@@ -50,15 +52,31 @@ function _slab_int_steady_state_impl!(vecs::SLAB_Vecs{F,A},vars::SLAB_Loop_Init{
     run = _slab_steady_integrate!(integrator, vecs, vars, params, integrator_input;
         nxtr=nxtr, cv=cv, ug=ug, tim=tim, bbx=bbx, bx=bx, betax=betax)
 
+    # Both backends return the same compact summary; use it to perform the
+    # common steady-to-transient handoff and update shared output geometry.
     base, x, dx, cv = run.base, run.x, run.dx, run.cv
     nxtr, reference, controls = run.nxtr, run.reference, run.controls
     rmi, alfg, sru0, bbx = controls.rmi, controls.alfg, controls.sru0, controls.bbx
 
     if run.stopped
+        # Preserve the completed steady fields before preparing the live
+        # vectors and loop variables for transient continuation.
         steady_vecs = deepcopy(vecs)
+        # The transient continuation expands these arrays as it appends each
+        # output step, so the adaptive steady segment needs no legacy capacity.
         idpf = 2
         nxi = nxtr+1
-        dt = dx/base.u
+        if run.saved_values === nothing
+            dt = dx/base.u
+        else
+            # Choose an initial transient step whose geometric growth spans
+            # the remaining domain over the usual number of outer iterations.
+            nsteps = max(mffm-vars.nxi+1, 1)
+            nssm = params.xtra.nssm
+            growth = gam^nssm
+            growth_sum = nssm*(growth^nsteps - 1)/(growth - 1)
+            dt = (params.fld.xffm-x)/(base.u*growth_sum)
+        end
         r = 0.25*qs*tsd/base.cm
         rmi = 0.0
         bbx = r/(base.rho*base.bb*base.h)
@@ -103,6 +121,8 @@ function _slab_int_steady_state_impl!(vecs::SLAB_Vecs{F,A},vars::SLAB_Loop_Init{
     end
 
     if itr > 0
+        # Backfill release-time and crosswind-width values using the original
+        # steady-to-transient geometry convention.
         txt = xptr - xcc0 - xcc0
         txb = txt + xptr
         bxr = (bxtr-bxs0)/(xptr-xcc0)
@@ -117,6 +137,6 @@ function _slab_int_steady_state_impl!(vecs::SLAB_Vecs{F,A},vars::SLAB_Loop_Init{
 
     transient = transient_started ?
         SLAB_Steady_Transient_Handoff(transient_vars, transient_dt, nxtr) : nothing
-    return SLAB_Steady_Phase_Result(steady_vecs, transient,
-        run.ode_solution, run.ode_segments)
+    return SLAB_Steady_Phase_Result(steady_vecs, transient, run.ode_solution,
+        run.saved_values)
 end

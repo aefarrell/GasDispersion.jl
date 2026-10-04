@@ -1,4 +1,5 @@
-using OrdinaryDiffEq: Tsit5
+using OrdinaryDiffEqTsit5: Tsit5
+using DataInterpolations: AkimaInterpolation
 
 @testset "SLAB steady RHS" begin
     idpf,nxtr,vecs,vars,params,dt = GasDispersion.slab._slab_init_hjet(
@@ -74,20 +75,47 @@ using OrdinaryDiffEq: Tsit5
     legacy_output = GasDispersion.slab.slab_main(input)
     ode_output = GasDispersion.slab.slab_main(input,Tsit5())
 
+    # The legacy backend has no dense solution; the ODE backend retains one
+    # whose accepted steps are independent of the stored output grid.
     @test legacy_output.steady.ode_solution === nothing
-    @test legacy_output.steady.ode_segments === nothing
     @test ode_output.steady.ode_solution !== nothing
+    @test ode_output.steady isa GasDispersion.slab.SLAB_ODE_Steady_Solution
+    @test ode_output.steady.state.x == ode_output.steady.saved_values.t
+    @test length(ode_output.steady.state.x) ==
+        length(ode_output.steady.saved_values.saveval)
+    @test length(ode_output.steady.state.x) !=
+        length(legacy_output.steady.state.x)
+    @test length(ode_output.s.x) == length(ode_output.cc.x)
+    @test ode_output.s.x[end] >= ode_output.p.fld.xffm
     @test ode_output.steady.ode_solution.t[1] ≈ vecs.x[1]
     @test ode_output.steady.ode_solution.t[end] > ode_output.steady.ode_solution.t[1]
-    @test length(ode_output.steady.ode_segments) > 1
-    @test length(ode_output.steady.ode_segments) + 1 ==
-        length(ode_output.steady.ode_solution.t)
     legacy_grid = legacy_output.steady.state.x
     accepted_times = ode_output.steady.ode_solution.t[2:end-1]
     @test any(t -> minimum(abs.(legacy_grid .- t)) >
         1e-8*max(abs(t), 1.0), accepted_times)
     @test ode_output.interpolations.ode_solution === ode_output.steady.ode_solution
-    @test ode_output.interpolations.cc isa GasDispersion.slab.SLAB_ODE_FieldInterpolation
+    @test ode_output.interpolations.cc isa AkimaInterpolation
+    @test ode_output.interpolations.b isa AkimaInterpolation
+    @test ode_output.interpolations.betac isa AkimaInterpolation
+    @test ode_output.interpolations.sig isa AkimaInterpolation
+    legacy_interpolations = GasDispersion.slab._slab_legacy_interpolations(ode_output.cc)
+    @test ode_output.interpolations.zc(2500.0) ≈ legacy_interpolations.zc(2500.0)
+    saved_values = ode_output.steady.saved_values
+    sample = cld(length(saved_values.t), 2)
+    sample_x = saved_values.t[sample]
+    sample_state, sample_cv = saved_values.saveval[sample]
+    sample_bx = legacy_interpolations.bx_x(sample_x)
+    sample_bbx = legacy_interpolations.bbx_x(sample_x)
+    sample_tcld = legacy_interpolations.tcld(sample_x)
+    sample_point = GasDispersion.slab._slab_editcc_point(ode_output.p,sample_x,
+        saved_values.t[1],sample_state.zc,sample_state.h,sample_state.b,
+        sample_state.beta,sample_state.uab,sample_state.cm,sample_cv,
+        sample_bx,sample_bbx,sample_tcld)
+    @test ode_output.interpolations.cc(sample_x) ≈ sample_point.cc
+    @test ode_output.interpolations.b(sample_x) ≈ sample_state.b
+    @test ode_output.interpolations.betac(sample_x) ≈ sample_point.betac
+    @test ode_output.interpolations.zc(sample_x) ≈ sample_state.zc
+    @test ode_output.interpolations.sig(sample_x) ≈ sample_point.sig
     @test all(isfinite, (ode_output.interpolations.cc(1.05),
                          ode_output.interpolations.b(1.05),
                          ode_output.interpolations.betac(1.05),
@@ -97,20 +125,19 @@ using OrdinaryDiffEq: Tsit5
     handoff = findfirst(qint -> qint >= 0.5*legacy_output.p.spl.qtcs,
         legacy_output.steady.state.qint)
     @test handoff !== nothing
-    comparison_indices = filter(i ->
-        legacy_output.steady.state.x[i] <= ode_output.steady.ode_solution.t[end],
-        1:handoff)
+    # Compare both solutions at shared positions, allowing ordinary solver
+    # error without requiring the adaptive ODE trajectory to match legacy RK4.
+    legacy_x = legacy_output.steady.state.x[2:handoff]
+    comparison_indices = filter(i -> legacy_x[1] <=
+        ode_output.steady.state.x[i] <= min(legacy_x[end],
+            ode_output.steady.ode_solution.t[end]),
+        2:length(ode_output.steady.state.x))
     for field in (:rho, :t, :u, :cm, :qint)
-        legacy_values = getproperty(legacy_output.steady.state, field)[comparison_indices]
-        ode_values = map(comparison_indices) do i
-            x = legacy_output.steady.state.x[i]
-            segment_index = findlast(segment ->
-                segment.x0 <= x <= segment.x1, ode_output.steady.ode_segments)
-            state, _ = GasDispersion.slab._slab_steady_project(
-                ode_output.steady.ode_solution(x),
-                ode_output.steady.ode_segments[segment_index].context, x)
-            getproperty(state, field)
-        end
+        legacy_values = getproperty(legacy_output.steady.state, field)[2:handoff]
+        legacy_interpolation = AkimaInterpolation(legacy_values, legacy_x)
+        ode_x = ode_output.steady.state.x[comparison_indices]
+        ode_values = getproperty(ode_output.steady.state, field)[comparison_indices]
+        legacy_values = legacy_interpolation.(ode_x)
         relative_error = maximum(abs.(legacy_values .- ode_values)) /
             maximum(abs.(legacy_values))
         @test relative_error <= 0.2

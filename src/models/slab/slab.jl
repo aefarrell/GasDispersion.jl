@@ -2,8 +2,9 @@ __precompile__()
 
 module slab
 
-using OrdinaryDiffEq: ODEProblem, solve, DiscreteCallback
+using OrdinaryDiffEq: ODEProblem, solve, DiscreteCallback, CallbackSet
 using OrdinaryDiffEqCore: OrdinaryDiffEqAlgorithm, terminate!
+using DiffEqCallbacks: SavedValues, SavingCallback
 using StaticArrays
 using DataInterpolations: AkimaInterpolation
 
@@ -46,6 +47,8 @@ function slab_main(idspl::I,ncalc::I,wms::F,cps::F,tbp::F,cmed0::F,dhe::F,cpsl::
                    solver=SLABLegacySolver(), steady_solver_kwargs=(;)) where {
                    I <: Integer, F <: AbstractFloat}
 
+    steady_saved_values = nothing
+
     #c  number of zp values
     # nzpm = 1
     # for i in 2:4
@@ -56,7 +59,8 @@ function slab_main(idspl::I,ncalc::I,wms::F,cps::F,tbp::F,cmed0::F,dhe::F,cpsl::
     #     end
     # end
 
-   # select appropriate release type
+   # Select the release-specific initializer; both paths then use the same
+   # steady backend interface and continue transiently only when handed off.
     if idspl == 3
         # vertical jet
         idpf,nxtr,vecs,vars,params,dt = _slab_init_vjet(3,ncalc,msfm,mnfm,mffm,wms,cps,tbp,cmed0,
@@ -67,10 +71,11 @@ function slab_main(idspl::I,ncalc::I,wms::F,cps::F,tbp::F,cmed0::F,dhe::F,cpsl::
                                                   solver=solver, solver_kwargs=steady_solver_kwargs)
             steady_vecs = phases.steady_state
             steady_ode_solution = phases.ode_solution
-            steady_ode_segments = phases.ode_segments
+            steady_saved_values = phases.saved_values
             if phases.transient !== nothing
                 _slab_int_transient!(vecs,phases.transient.vars,params,2,
-                                     phases.transient.index,phases.transient.dt)
+                                     phases.transient.index,phases.transient.dt;
+                                     xmax=steady_saved_values === nothing ? nothing : params.fld.xffm)
                 transient_vecs = vecs
                 transient_vars = phases.transient.vars
                 transient_index = phases.transient.index
@@ -83,7 +88,7 @@ function slab_main(idspl::I,ncalc::I,wms::F,cps::F,tbp::F,cmed0::F,dhe::F,cpsl::
             _slab_int_transient!(vecs,vars,params,idpf,nxtr,dt)
             steady_vecs = nothing
             steady_ode_solution = nothing
-            steady_ode_segments = nothing
+            steady_saved_values = nothing
             transient_vecs = vecs
             transient_vars = vars
             transient_index = nxtr
@@ -98,10 +103,11 @@ function slab_main(idspl::I,ncalc::I,wms::F,cps::F,tbp::F,cmed0::F,dhe::F,cpsl::
                                                   solver=solver, solver_kwargs=steady_solver_kwargs)
             steady_vecs = phases.steady_state
             steady_ode_solution = phases.ode_solution
-            steady_ode_segments = phases.ode_segments
+            steady_saved_values = phases.saved_values
             if phases.transient !== nothing
                 _slab_int_transient!(vecs,phases.transient.vars,params,2,
-                                     phases.transient.index,phases.transient.dt)
+                                     phases.transient.index,phases.transient.dt;
+                                     xmax=steady_saved_values === nothing ? nothing : params.fld.xffm)
                 transient_vecs = vecs
                 transient_vars = phases.transient.vars
                 transient_index = phases.transient.index
@@ -114,19 +120,32 @@ function slab_main(idspl::I,ncalc::I,wms::F,cps::F,tbp::F,cmed0::F,dhe::F,cpsl::
             _slab_int_transient!(vecs,vars,params,idpf,nxtr,dt)
             steady_vecs = nothing
             steady_ode_solution = nothing
-            steady_ode_segments = nothing
+            steady_saved_values = nothing
             transient_vecs = vecs
             transient_vars = vars
             transient_index = nxtr
         end
     end
 
+    # Build tabulated cloud fields for the completed vectors, then retain the
+    # steady ODE solution only when a steady phase actually ran.
+    # ODE output vectors follow the accepted solver steps; legacy output
+    # vectors retain their configured length unless transient continuation ran.
+    mffm = length(vecs.x)
     cc_vecs = editcc(vecs,params,mffm)
 
-    steady_solution = steady_vecs === nothing ? nothing :
-        SLAB_Steady_Solution(params,steady_vecs,editcc(steady_vecs,params,mffm),
-                             _slab_initial_steady_state(steady_vecs,vars),
-                             steady_ode_solution,steady_ode_segments)
+    steady_solution = if steady_vecs === nothing
+        nothing
+    elseif steady_saved_values === nothing
+        SLAB_Steady_Solution(params,steady_vecs,
+            editcc(steady_vecs,params,length(steady_vecs.x)),
+            _slab_initial_steady_state(steady_vecs,vars),steady_ode_solution)
+    else
+        SLAB_ODE_Steady_Solution(params,steady_vecs,
+            editcc(steady_vecs,params,length(steady_vecs.x)),
+            _slab_initial_steady_state(steady_vecs,vars),steady_ode_solution,
+            steady_saved_values)
+    end
     transient_solution = transient_vecs === nothing ? nothing :
         SLAB_Transient_Solution(params,transient_vecs,cc_vecs,
             _slab_initial_transient_state(transient_vecs,transient_vars,

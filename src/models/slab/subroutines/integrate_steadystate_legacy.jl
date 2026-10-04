@@ -42,6 +42,8 @@ function _slab_steady_integrate!(integrator::SLABLegacyIntegrator, vecs,
         zeros(eltype(vecs.x),3), zeros(eltype(vecs.x),4))
     stopped = false
 
+    # Preserve the legacy geometric grid: each stored point follows nssm RK4
+    # substeps, with the phase reference and controls refreshed after every one.
     for nx in vars.nxi:vars.mffm
         for _ in 1:nssm
             xn = x + dx
@@ -57,6 +59,8 @@ function _slab_steady_integrate!(integrator::SLABLegacyIntegrator, vecs,
             dx *= vars.gam
         end
 
+        # Store one output row after its group of inner RK4 steps, and stop the
+        # steady phase at the same heat-release threshold as the original code.
         _slab_sub_store!(vecs,nx,x,base.bb,base.b,base.vg,base.cm,base.t,base.rho,
             base.u,base.h,cv,base.beta,base.w,base.v,cmdaa,base.cmw,base.cmwv,
             base.cmev,base.uab,base.wc,base.zc,base.qint,tim,bbx,bx,betax,ug,base.vx)
@@ -70,7 +74,7 @@ function _slab_steady_integrate!(integrator::SLABLegacyIntegrator, vecs,
     end
 
     return (base=base, x=x, dx=dx, cv=cv, nxtr=nxtr, reference=reference,
-        controls=controls, stopped=stopped, ode_solution=nothing, ode_segments=nothing)
+        controls=controls, stopped=stopped, ode_solution=nothing, saved_values=nothing)
 end
 
 """
@@ -96,17 +100,12 @@ function _slab_legacy_interpolations(cc::SLAB_CC_Vecs)
         AkimaInterpolation(cc.tcld[xperm], cc.x[xperm]),nothing)
 end
 
-_slab_output_interpolations(cc::SLAB_CC_Vecs, ::Nothing, params) =
+_slab_output_interpolations(cc::SLAB_CC_Vecs, steady_solution, params) =
     _slab_legacy_interpolations(cc)
 
 """Construct the backwards-compatible output wrapper using legacy interpolations."""
 SLAB_Output(params, state, cc) = SLAB_Output(params, state, cc,
     _slab_legacy_interpolations(cc), nothing, nothing)
-
-function _slab_output_interpolations(cc::SLAB_CC_Vecs,
-        ::SLAB_Steady_Solution{I,F,A,Nothing,Nothing}, params) where {I,F,A}
-    return _slab_legacy_interpolations(cc)
-end
 
 """
 Advance one legacy steady-state substep with classical four-stage RK4.
@@ -143,6 +142,10 @@ function _slab_steady_step!(::SLABLegacyIntegrator, step::SLAB_Steady_StepInput)
     ubs2, fug = zero(eltype(f)), zero(eltype(f))
     ft, fu, fv, fw = base.ft, base.fu, base.fv, base.fw
     xn = x
+
+    # Classical RK4: accumulate the weighted slope at each stage, then pass
+    # the resulting increment through SLAB's solve/thermo/eval/entrainment
+    # pipeline to prepare state for the next stage.
     for k in 1:4
         _slab_sub_slope!(f, params, rho, x, h, v, w, b,
                  bb, vg, u, wc, cm, ft, fu, fv, fw,
@@ -173,6 +176,9 @@ function _slab_steady_step!(::SLABLegacyIntegrator, step::SLAB_Steady_StepInput)
             wc, _cp, params.othr.tgon, params.othr.bse, params.othr.urf,
             params.othr.rcf, params.othr.afa)
     end
+
+    # Return the final full phase state separately from cloud volume, which is
+    # derived during projection but stored alongside the state by the caller.
     next = SLAB_Steady_Phase_State(r,bbv,bv,g,gw,sft,sfu,sfy,sfz,zc,qint,h,b,bb,rho,t,
         u,uab,beta,vg0,vg,wc,htp,w,v,vx,cm,cmw,cmwv,cmev,_cp,ft,fu,fv,fw,fug,ubs2)
     return SLAB_Steady_StepResult(next, cv)

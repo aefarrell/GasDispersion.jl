@@ -72,18 +72,6 @@ mutable struct SLAB_Steady_RHS_Context{I <: Integer, F <: AbstractFloat, A <: Ab
     afa::F
 end
 
-"""
-Interval and RHS-context snapshot for one completed ODE substep.
-
-The saved context supplies the step's base state and controls when the dense
-ODE solution is later projected back into the full SLAB state.
-"""
-struct SLAB_Steady_ODESegment{F <: AbstractFloat,C}
-    x0::F
-    x1::F
-    context::C
-end
-
 """Control values shared by the steady RHS and updated between substeps."""
 struct SLAB_Steady_Controls{F <: AbstractFloat}
     rmi::F
@@ -197,15 +185,14 @@ end
 """
 Outputs of the steady phase before any transient continuation is run.
 
-The shared loop returns the steady vectors, optional transient handoff, and
-the solver's solution representation. ODE backends additionally provide the
-per-interval contexts used to interpolate the dense solution.
+The shared loop returns the sampled steady vectors, optional transient handoff,
+the solver's solution representation, and any native callback storage.
 """
-struct SLAB_Steady_Phase_Result{V,T,O,G}
+struct SLAB_Steady_Phase_Result{V,T,O,S}
     steady_state::V
     transient::T
     ode_solution::O
-    ode_segments::G
+    saved_values::S
 end
 
 """

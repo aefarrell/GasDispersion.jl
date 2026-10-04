@@ -21,6 +21,39 @@ struct SLABSolution{I <: Integer, F <: Number, V <: AbstractVector{F}, S} <: Puf
     betax::S
 end
 
+"""
+Puff-facing SLAB solution backed by OrdinaryDiffEq accepted-step storage.
+
+It deliberately exposes the same concentration call interface as
+`SLABSolution`; the associated `out.steady.saved_values` retains the
+solver-sized state samples.
+"""
+struct SLABODESolution{I <: Integer, F <: Number, V <: AbstractVector{F}, O, S} <: Puff
+    scenario::Scenario
+    model::Symbol
+    in::SLAB_Input{I,F,V}
+    out::O
+    c₀::F
+    cc::S
+    b::S
+    betac::S
+    zc::S
+    sig::S
+    xc::S
+    bx::S
+    betax::S
+end
+
+function _slab_puff_solution(scenario, model, input, output, cmax)
+    args = (scenario,model,input,output,cmax,output.interpolations.cc,
+        output.interpolations.b,output.interpolations.betac,
+        output.interpolations.zc,output.interpolations.sig,
+        output.interpolations.xc,output.interpolations.bx,
+        output.interpolations.betax)
+    return output.steady isa slab.SLAB_ODE_Steady_Solution ?
+        SLABODESolution(args...) : SLABSolution(args...)
+end
+
 # SLAB stability mapping
 _slab_stab(::ClassA) = 1.0
 _slab_stab(::ClassB) = 2.0
@@ -119,11 +152,7 @@ function puff(scenario::Scenario, ::SLAB, eqs::EquationSet=DefaultSet;
     # run SLAB and collect output
     out = slab_main(inp, solver; steady_solver_kwargs=solver_kwargs)
 
-    return SLABSolution(scenario,:SLAB_HorizontalJet,inp,out,c_max,
-                        out.interpolations.cc, out.interpolations.b,
-                        out.interpolations.betac, out.interpolations.zc,
-                        out.interpolations.sig, out.interpolations.xc,
-                        out.interpolations.bx, out.interpolations.betax)
+    return _slab_puff_solution(scenario,:SLAB_HorizontalJet,inp,out,c_max)
 end
 
 
@@ -176,15 +205,11 @@ function puff(scenario::Scenario{<:AbstractSubstance,<:VerticalJet,<:Atmosphere}
     # run SLAB and collect output
     out = slab_main(inp, solver; steady_solver_kwargs=solver_kwargs)
 
-    return SLABSolution(scenario,:SLAB_VerticalJet,inp,out,c_max,
-                        out.interpolations.cc, out.interpolations.b,
-                        out.interpolations.betac, out.interpolations.zc,
-                        out.interpolations.sig, out.interpolations.xc,
-                        out.interpolations.bx, out.interpolations.betax)
+    return _slab_puff_solution(scenario,:SLAB_VerticalJet,inp,out,c_max)
 
 end
 
-function (s::SLABSolution)(x,y,z,t)
+function _slab_concentration(s, x, y, z, t)
     h = s.in.hs
     x_max = s.in.xffm
     c_max = s.c₀
@@ -208,4 +233,8 @@ function (s::SLABSolution)(x,y,z,t)
         c = cc*erf(xb,xa)*erf(yb,ya)*(exp(-za^2) + exp(-zb^2))
         return min(c,c_max)
     end
+
 end
+
+(s::SLABSolution)(x,y,z,t) = _slab_concentration(s,x,y,z,t)
+(s::SLABODESolution)(x,y,z,t) = _slab_concentration(s,x,y,z,t)

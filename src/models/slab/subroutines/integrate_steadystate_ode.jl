@@ -15,34 +15,35 @@ end
 """
 Integrate across the full spatial domain with adaptive timesteps.
 
-The callback rebases the reduced ODE state after each accepted step so the
-thermodynamic state and controls used by the RHS stay current. Output samples
-are interpolated on a logarithmic spatial grid, which does not constrain the
-solver's accepted timesteps.
+The saving callback records each accepted state directly. A second callback
+rebases the RHS context and terminates at the steady-to-transient threshold.
 """
 function _slab_steady_integrate!(intctx::OrdinaryDiffEqIntegratorContext,
         vecs, vars, params, input::SLAB_Steady_IntegratorInput;
         nxtr, cv, ug, tim, bbx, bx, betax)
     context = intctx.context
     F = eltype(vecs.x)
-    targets = Vector{F}(undef, vars.mffm - vars.nxi + 1)
-    xf = input.x1
-    targets .= exp.(range(log(input.x0), log(xf); length=length(targets)+1))[2:end]
+    saved_values = SavedValues(F, Tuple{SLAB_Steady_Phase_State{F},F})
+    save_func = (u,t,integrator) -> begin
+        state, derived = _slab_steady_project(u, integrator.p, t)
+        (state, derived.cv)
+    end
+    save_callback = SavingCallback(save_func, saved_values;
+        save_everystep=true, save_start=true, save_end=true)
 
-    segments = SLAB_Steady_ODESegment{F,typeof(context)}[]
     last_t = Ref(input.x0)
     last_dt = Ref(zero(F))
     terminal_state = Ref{Union{Nothing,SLAB_Steady_Phase_State{F}}}(nothing)
-    terminal_cv = Ref(zero(F))
     reference = Ref(_slab_steady_reference_state(input.base))
     controls = Ref(input.controls)
-    affect! = function (integrator)
+    update! = function (integrator)
         t = integrator.t
         if t > last_t[]
-            push!(segments, SLAB_Steady_ODESegment(last_t[], t,
-                _slab_steady_context_snapshot(context)))
             last_dt[] = t - last_t[]
         end
+
+        # Refresh derived SLAB state and the controls for the next RHS
+        # evaluation, then stop once the steady-phase heat threshold is met.
         state, derived = _slab_steady_project(integrator.u, context, t)
         reference[], controls[] = _slab_steady_reference_update(
             SLAB_Steady_StepResult(state, derived.cv), controls[], params.met.rhoa)
@@ -56,105 +57,110 @@ function _slab_steady_integrate!(intctx::OrdinaryDiffEqIntegratorContext,
         last_t[] = t
         if state.qint >= 0.5*params.spl.qtcs
             terminal_state[] = context.base
-            terminal_cv[] = derived.cv
             terminate!(integrator)
         end
         return nothing
     end
-    callback = DiscreteCallback((u,t,integrator) -> true, affect!;
+    update_callback = DiscreteCallback((u,t,integrator) -> true, update!;
         save_positions=(false,false))
-    problem = ODEProblem(_slab_steady_rhs, context.y0, (input.x0, xf), context)
+    problem = ODEProblem(_slab_steady_rhs, context.y0,
+        (input.x0, input.x1), context)
     solution = solve(problem, intctx.solver;
-        merge(input.solver_kwargs, (;callback=callback, dense=true))...)
+        merge(input.solver_kwargs,
+            (;callback=CallbackSet(save_callback, update_callback), dense=true))...)
 
-    stop_t = solution.t[end]
-    if last_t[] < stop_t
-        push!(segments, SLAB_Steady_ODESegment(last_t[], stop_t,
-            _slab_steady_context_snapshot(context)))
-    end
+    # Accepted-step saves define the ODE output grid. Populate each SLAB field
+    # from those saved states instead of projecting onto the legacy grid.
+    _slab_steady_store_saved!(vecs, saved_values, params, ug, tim, bbx, bx, betax)
+    stop_t = saved_values.t[end]
+    stopped = terminal_state[] !== nothing
+    nxtr = length(saved_values.t) + (stopped ? 0 : 1)
 
-    _state_at(x) = begin
-        index = findlast(segment -> segment.x0 <= x <= segment.x1, segments)
-        index === nothing && error("No ODE context was saved for steady-state position $x")
-        state, derived = _slab_steady_project(solution(x), segments[index].context, x)
-        return state, derived.cv
-    end
-    stored_nxtr = nxtr
-    for (offset, sample_x) in enumerate(targets)
-        nx = vars.nxi + offset - 1
-        if terminal_state[] !== nothing && sample_x >= stop_t && stored_nxtr == nxtr
-            state = terminal_state[]
-            _slab_sub_store!(vecs,nx,stop_t,state.bb,state.b,state.vg,state.cm,state.t,
-                state.rho,state.u,state.h,terminal_cv[],state.beta,state.w,state.v,
-                params.met.cmdaa,state.cmw,state.cmwv,state.cmev,state.uab,state.wc,
-                state.zc,state.qint,tim,bbx,bx,betax,ug,state.vx)
-            vecs.tccp[nx] = (state.qint+state.qint)/params.spl.qs
-            stored_nxtr = nx
-            break
-        elseif sample_x <= stop_t
-            state, sample_cv = _state_at(sample_x)
-            _slab_sub_store!(vecs,nx,sample_x,state.bb,state.b,state.vg,state.cm,
-                state.t,state.rho,state.u,state.h,sample_cv,state.beta,state.w,state.v,
-                params.met.cmdaa,state.cmw,state.cmwv,state.cmev,state.uab,state.wc,
-                state.zc,state.qint,tim,bbx,bx,betax,ug,state.vx)
-            vecs.tccp[nx] = (state.qint+state.qint)/params.spl.qs
-        else
-            break
-        end
-    end
-
-    final_state = terminal_state[] === nothing ? context.base : terminal_state[]
-    final_cv = terminal_state[] === nothing ? cv : terminal_cv[]
+    final_state = stopped ? terminal_state[] : context.base
+    final_cv = last(saved_values.saveval)[2]
     return (base=final_state, x=stop_t, dx=last_dt[], cv=final_cv,
-        nxtr=stored_nxtr, reference=reference[], controls=controls[],
-        stopped=terminal_state[] !== nothing, ode_solution=solution,
-        ode_segments=segments)
+        nxtr=nxtr, reference=reference[], controls=controls[],
+        stopped=stopped, ode_solution=solution, saved_values=saved_values)
 end
 
-"""
-Evaluate an ODE-backed cloud-field interpolation at distance `x`.
-
-Use the saved segment context to reconstruct the full thermodynamic state from
-the dense ODE solution, then derive the requested cloud field. Outside the
-integrated segments, delegate to the tabulated interpolation fallback.
-"""
-function (itp::SLAB_ODE_FieldInterpolation)(x)
-    index = findlast(segment -> segment.x0 <= x <= segment.x1, itp.segments)
-    index === nothing && return itp.fallback(x)
-    y = itp.solution(x)
-    state, _ = _slab_steady_project(y, itp.segments[index].context, x)
-    if itp.field === :b
-        return state.b
-    elseif itp.field === :zc
-        return state.zc
+"""Copy accepted ODE saves into the variable-length SLAB vector container."""
+function _slab_steady_store_saved!(vecs::SLAB_Vecs, saved_values, params,
+        ug, tim, bbx, bx, betax)
+    states = first.(saved_values.saveval)
+    cvs = last.(saved_values.saveval)
+    n = length(saved_values.t)
+    for field in fieldnames(typeof(vecs))
+        resize!(getfield(vecs, field), n)
     end
-    p = itp.params
-    cv = (p.met.wmae*state.cm)/(p.rgp.wms+(p.met.wmae-p.rgp.wms)*state.cm)
-    point = _slab_editcc_point(p,x,itp.x0,state.zc,state.h,state.b,state.beta,
-        state.uab,state.cm,cv,itp.bx_x(x),itp.bbx_x(x),itp.tcld(x))
-    return getproperty(point,itp.field)
+    vecs.x .= saved_values.t
+    vecs.xccp .= saved_values.t
+    vecs.zc .= getproperty.(states, :zc)
+    vecs.h .= getproperty.(states, :h)
+    vecs.bb .= getproperty.(states, :bb)
+    vecs.b .= getproperty.(states, :b)
+    vecs.bbx .= bbx
+    vecs.bx .= bx
+    vecs.cv .= cvs
+    vecs.rho .= getproperty.(states, :rho)
+    vecs.t .= getproperty.(states, :t)
+    vecs.u .= getproperty.(states, :u)
+    vecs.uab .= getproperty.(states, :uab)
+    vecs.cm .= getproperty.(states, :cm)
+    vecs.cmev .= getproperty.(states, :cmev)
+    vecs.cmda .= (1 .- vecs.cm) .* params.met.cmdaa
+    vecs.cmw .= getproperty.(states, :cmw)
+    vecs.cmwv .= getproperty.(states, :cmwv)
+    vecs.wc .= getproperty.(states, :wc)
+    vecs.vg .= getproperty.(states, :vg)
+    vecs.ug .= ug
+    vecs.w .= getproperty.(states, :w)
+    vecs.v .= getproperty.(states, :v)
+    vecs.vx .= getproperty.(states, :vx)
+    vecs.tim .= tim
+    vecs.beta .= getproperty.(states, :beta)
+    vecs.qint .= getproperty.(states, :qint)
+    vecs.betax .= betax
+    vecs.tccp .= (2 .* vecs.qint) ./ params.spl.qs
+    return vecs
 end
 
 """
-Construct output interpolations for an OrdinaryDiffEq steady solution.
-
-The stored SLAB vectors provide the compatibility fallback and fields not
-reconstructed from the ODE. For integrated intervals, dense-solution wrappers
-provide the cloud fields evaluated from the segment-specific RHS contexts.
+Use the ODE solution's dense interpolation for the integrated cloud-center
+height; all other fields use the same Akima interpolations as the legacy path.
 """
 function _slab_output_interpolations(cc::SLAB_CC_Vecs,
-        steady_solution::SLAB_Steady_Solution{I,F,A,O,G}, params) where {
-        I,F,A,O,G<:AbstractVector{<:SLAB_Steady_ODESegment}}
+        steady_solution::SLAB_ODE_Steady_Solution{I,F,A,O,V}, params) where {I,F,A,O,V}
     legacy = _slab_legacy_interpolations(cc)
-    if isempty(steady_solution.ode_segments)
-        return legacy
+    solution = steady_solution.ode_solution
+    saved = steady_solution.saved_values
+    x = saved.t
+    states = first.(saved.saveval)
+    cv = last.(saved.saveval)
+
+    # Recreate the legacy concentration post-processing at the callback's
+    # accepted states. Width and cloud-duration fields remain shared SLAB
+    # outputs; the thermodynamic inputs come directly from the saved ODE states.
+    bbx = legacy.bbx_x.(x)
+    bx = legacy.bx_x.(x)
+    tcld = legacy.tcld.(x)
+    points = map(eachindex(x)) do i
+        state = states[i]
+        _slab_editcc_point(params,x[i],x[1],state.zc,state.h,state.b,state.beta,
+            state.uab,state.cm,cv[i],bx[i],bbx[i],tcld[i])
     end
-    makefield(field, fallback) = SLAB_ODE_FieldInterpolation(
-        steady_solution.ode_solution, steady_solution.ode_segments, params, field,
-        cc.x[1], legacy.bx_x, legacy.bbx_x, legacy.tcld, fallback)
+
+    # Append any transient samples after the callback saves, preserving one
+    # simple Akima interpolation per field over the complete output domain.
+    tail = findall(xq -> xq > last(x), cc.x)
+    x = vcat(x, cc.x[tail])
+    centerline = vcat(getproperty.(points, :cc), cc.cc[tail])
+    width = vcat(getproperty.(states, :b), cc.b[tail])
+    meandered_beta = vcat(getproperty.(points, :betac), cc.betac[tail])
+    height = vcat(getproperty.(states, :zc), cc.zc[tail])
+    dispersion = vcat(getproperty.(points, :sig), cc.sig[tail])
     return SLAB_Interpolations(
-        makefield(:cc,legacy.cc), makefield(:b,legacy.b),
-        makefield(:betac,legacy.betac), makefield(:zc,legacy.zc),
-        makefield(:sig,legacy.sig), legacy.xc, legacy.bx, legacy.betax,
-        legacy.bx_x, legacy.bbx_x, legacy.tcld, steady_solution.ode_solution)
+        AkimaInterpolation(centerline,x), AkimaInterpolation(width,x),
+        AkimaInterpolation(meandered_beta,x), AkimaInterpolation(height,x),
+        AkimaInterpolation(dispersion,x), legacy.xc, legacy.bx,
+        legacy.betax, legacy.bx_x, legacy.bbx_x, legacy.tcld, solution)
 end
