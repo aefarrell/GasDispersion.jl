@@ -64,6 +64,8 @@ end
                                     rh    =  21.30,
                                     stab  =  0.00,
                                     ala   =  0.0221)
+
+
     res = GasDispersion.slab.slab_main(inp)
     out = readdlm("test_data/slab_inpr2_out.txt", Float64; header=false);
   

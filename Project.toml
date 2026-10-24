@@ -6,10 +6,11 @@ authors = ["Allan Farrell <allanf@protonmail.com> and contributors"]
 [deps]
 DataInterpolations = "82cc6244-b520-54b8-b5a6-8a565e85f1d0"
 DiffEqCallbacks = "459566f4-90b8-5000-8ac3-15dfb0a30def"
+InteractiveUtils = "b77e0a4c-d291-57a0-90e8-8db25a27a240"
 Markdown = "d6f4376e-aef5-505a-96c1-9c027394607a"
-OrdinaryDiffEq = "1dea7af3-3e70-54e6-95c3-0bf5283fa5ed"
 OrdinaryDiffEqCore = "bbf590c4-e513-4bbe-9b18-05decba2e5d8"
 RecipesBase = "3cdcf5f2-1ef4-517c-9805-6587b60abb01"
+Serialization = "9e88b42a-f829-5b0c-bbe9-9e923198166b"
 SpecialFunctions = "276daf66-3868-5448-9aa4-cd146d93841b"
 StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
 
@@ -21,10 +22,12 @@ GasDispersionClapeyronExt = "Clapeyron"
 
 [compat]
 Clapeyron = "0.6"
-DataInterpolations = "3.6, 4, 6, 7, 8"
+DataInterpolations = "3.6, 4, 5, 6, 7, 8"
 DiffEqCallbacks = "2, 3, 4"
+InteractiveUtils = "1.11.0"
 OrdinaryDiffEqCore = "4.6.0"
 RecipesBase = "1"
+Serialization = "1.11.0"
 SpecialFunctions = "2"
 julia = "1.3"
 

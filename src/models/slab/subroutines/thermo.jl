@@ -1,5 +1,18 @@
+include("new_thermo.jl")
+
+# this is for tracing the internal state for unit testing
+# take this out when done refactoring thermo
+include("../../../../test/testutils/trace.jl")
+
+# Legacy thermodynamic subroutine from SLAB model, converted to Julia
 function _slab_sub_thermo(p::SLAB_Params,idpf,xn,timn,rmi,t0,cmev0,cm0,cmw0,cmwv0,cp0,
                           r,r0,sft,bse)
+
+    # this is for tracing the internal state for unit testing
+    # take this out when done refactoring thermo
+    trace_log = ACTIVE_TRACE[]
+    checkpoint!(trace_log, :call, (;p,idpf,xn,timn,rmi,t0,cmev0,cm0,cmw0,cmwv0,cp0,r,r0,sft,bse))
+
     # unpacking parameters
     qs = p.spl.qs
     tsd = p.spl.tsd
@@ -48,6 +61,9 @@ function _slab_sub_thermo(p::SLAB_Params,idpf,xn,timn,rmi,t0,cmev0,cm0,cmw0,cmwv
     cmwd = cmw-cmwv
     cmed = cm-cmev
 
+    # remove when done testing
+    checkpoint!(trace_log, :concentrations, (; cm, cv, cmw, cmda, cmwvt, cmevt, cmwv, cmev, cmwd, cmed))
+
     dhe0 = dhe + tbp*(cpsl-cps)
     dhw0 = dhw + 298.2*(cpwl-cpwv)
 
@@ -61,6 +77,9 @@ function _slab_sub_thermo(p::SLAB_Params,idpf,xn,timn,rmi,t0,cmev0,cm0,cmw0,cmwv
 
     etrn = (1 - cm)*cpaa*ta + cm*cps*ts + (r0/r)*(cp0*t0-(1 - cm0)*cpaa*ta-cm0*cps*ts + sfte)
     t = etrn/_cp
+
+    # remove when done testing
+    checkpoint!(trace_log, :transported_energy, (; dhe0, dhw0, _cp, sfte, etrn, t))
 
     alfm = wmae*(cmda/wma + cmwv/wmw + cmev/wms)
     fft = exp(spa-spb/(t+spc))
@@ -81,6 +100,9 @@ function _slab_sub_thermo(p::SLAB_Params,idpf,xn,timn,rmi,t0,cmev0,cm0,cmw0,cmwv
             iw = 1
         end
     end
+
+    #remove when done testing
+    checkpoint!(trace_log, :initial_phase_check, (; fft, ggt, pw, pe, ie, iw))
 
     if (ie+iw) == 2
         #go to 70

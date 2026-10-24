@@ -2,26 +2,24 @@ __precompile__()
 
 module slab
 
-using OrdinaryDiffEq: ODEProblem, solve, DiscreteCallback, CallbackSet
-using OrdinaryDiffEqCore: OrdinaryDiffEqAlgorithm, terminate!
+using OrdinaryDiffEqCore: ODEProblem, solve, OrdinaryDiffEqAlgorithm, 
+                          DiscreteCallback, CallbackSet, terminate!
 using DiffEqCallbacks: SavedValues, SavingCallback
-using StaticArrays
 using DataInterpolations: AkimaInterpolation
+using StaticArrays
 
 export SLAB_Input, SLAB_Output
 export SLABLegacySolver
 export slab_main
 
-# defining structs, how the data is passed into and out of SLAB
-include("structs.jl")
-
-# declare global variables and constants
+# global constants, basic functions, and data structures
 include("globals.jl")
-
+include("functions.jl")
+include("structs.jl")
 
 # code is organized differently than in SLAB, the functions and subroutines
 # are defined first, the main program is the function _slab_main
-include("functions.jl")
+
 include("subroutines.jl")
 
 """

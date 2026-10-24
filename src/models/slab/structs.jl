@@ -1,3 +1,6 @@
+include("structs/plume_state.jl")
+include("structs/release_parameters.jl")
+
 """
     SLABLegacySolver()
 
@@ -136,16 +139,6 @@ struct SLAB_Additional_Params{I <: Integer, F <: Number}
     grav::F
     rr::F
     xk::F
-end
-
-struct SLAB_Wind_Profile{F <: Number}
-    z0::F
-    ala0::F
-    zl::F
-    hmx::F
-    zt::F
-    cu1::F
-    cu2::F
 end
 
 struct SLAB_Other_Params{F <: Number}

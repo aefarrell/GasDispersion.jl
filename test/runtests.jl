@@ -43,6 +43,11 @@ if GROUP ∈ ["All", "Base", "SLAB"]
     include("models/slab_steady_rhs_tests.jl")
 end
 
+if GROUP ∈ ["SLAB_THERMO"]
+    # for testing the rebuild of the thermo subroutine
+    include("models/slab_thermo_tests.jl")
+end
+
 if GROUP ∈ ["All", "Ext"] && VERSION ∈ ["1","latest","nightly"]
     # this feels kind of janky to me, but it stops versions <1.9
     # from trying to run the Clapeyron extension
