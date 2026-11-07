@@ -1,10 +1,12 @@
 struct SLAB_Release_Source{T}
-    bse::T   # B_{se} effective source half-width
+    bse::T  # B_{se} effective source half-width
     qs::T   # q_s source mass emission rate
     wms::T  # M_s molar mass of released species
     cps::T  # C_{ps} specific heat capacity of released species
     cpsl::T # C_{psl} specific heat capacity of released species in liquid phase
     ts::T   # T_s source temperature
+    tbp::T  # T_{bp} boiling point of released species
+    dhe::T  # ΔH_{ev} enthalpy of vaporization of released species
     antoine::SLAB_Antoine{T} # Antoine equation parameters for the source species
 end
 

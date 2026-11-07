@@ -173,14 +173,9 @@ Note: the User's Guide uses $M_a$ for the molar mass of ambient air in equation 
 	return (Mₐₑ*m)/(Mₛ + (Mₐₑ - Mₛ)*m)
 end
 
-# ╔═╡ ee454b66-c076-4024-ba6d-dee2adccf9ec
-md"""
-# Enthalpies and Specific Heats
-"""
-
 # ╔═╡ a3361184-40ab-4374-9d1d-94a5635ae620
 md"""
-## Total Cloud Specific Heat
+# Total Cloud Specific Heat
 """
 
 # ╔═╡ 2794e095-3884-479b-b4e6-d2d7252aaee4
@@ -265,11 +260,18 @@ This is used to generate the initial guess of the plume temperature and phase be
     return base + (R₀/R)*excess
 end
 
+# ╔═╡ f664087a-4eca-48c1-849d-f43d6dac6cfa
+md"""
+# Phase Equilibrium
+
+SLAB checks the phase of the released substance and water in the plume, and uses this to decide whether a more detailed solve of the phase partition is required. If either the released substance or ambient air is partially or completely condensed. SLAB uses Newton's method to calculate the equilibrium temperature from the energy balance, while accounting for phase changes. Otherwise the temperature of the plume is that calculated from the transported energy
+"""
+
 # ╔═╡ a8ade6fc-3ec6-4da4-a67b-8cd6a4bcf05a
 md"""
-# Initial Phase Check
+## Initial Phase Check
 
-SLAB checks the phase of the released substance and water in the plume, and uses this to decide whether a more detailed solve of the phase partition is required. It does this by calculating two properties:
+SLAB performs an initial check for whether the water and released substance are both in the vapour phase by calculating two properties:
 
 1. The partial pressure for a pure substance at the initial temperature, i.e. the ratio of the saturation pressure to the actual pressure. This initial temperature is the temperature calculated from the transported energy, from the previous accepted integration step.
 2. The partial pressure from the current integration step, assuming $\delta m_{pc} =0$
@@ -348,6 +350,142 @@ end
     return y₁ > y₂
 end
 
+# ╔═╡ cc30f37c-cb46-482c-a958-e5bdb169197c
+md"""
+## Phase Equilibrium Temperature Initial Guess
+
+If the released substance is not fully in the vapour phase, SLAB calculates an initial guess of the temperature change due to phase change (which is used for the subsequent Newton's method solve)
+
+Suppose, after the change in temperature from transported energy, the plume is left out of equilibrium and some quantity of source vapour condenses, from consevation of energy the temperature decreases
+
+```math
+\Delta T = {{\Delta H_{v,s}} \over C_{p}} \left( m_{ev,t} - m_{ev} \right)
+```
+
+Where $m_{ev,t}$ is the vapour mass fraction pre-condensation and $m_{ev}$ is the vapour mass fraction after the plume equilibrates.
+
+Since the plume is a two phase mixture, the partial pressure of the substance *s* is given by
+
+```math
+f = \frac{P_{sat}}{P} = y_s = {n_{ev} \over {n_{ev} + n_{da} + n_{wv}}}
+```
+
+Where the *n*s are the moles per unit mass of the vapour phase components. Re-arranging, and solving for $m_{ev}$
+
+```math
+n_{ev} = \frac{f}{1-f} \left( n_{da} + n_{wv} \right)
+```
+
+```math
+m_{ev} = M_s n_{ev} = M_s \left( n_{da} + n_{wv} \right) \frac{f}{1-f}
+```
+
+```math
+m_{ev} = M_s \left( \frac{m_{da}}{M_a} + \frac{m_{wv}}{M_w} \right) \frac{f}{1-f}
+```
+
+```math
+m_{ev} = \alpha_s \frac{f}{1-f}
+```
+
+If we take a first order Taylor series expansion of $f$, $f(T+\Delta T) \approx f(T) + f^{\prime}(T) \Delta T$
+
+```math
+m_{ev} \approx \alpha_s \frac{f(T) + f^{\prime}(T) \Delta T}{1 - f(T) - f^{\prime}(T) \Delta T}
+```
+
+Then, substituting back into the equation for $\Delta T$
+
+```math
+\Delta T = {{\Delta H_{v,s}} \over C_{p}} \left( m_{ev,t} - \alpha_s \frac{f + f^{\prime} \Delta T}{1 - f - f^{\prime} \Delta T} \right)
+```
+
+Where $f$ and $f_{\prime}$ are calculated at $T$. This can be re-arranged to form a quadratic equation in $\Delta T$
+
+```math
+\left(\Delta T \right)^2 - \left( \frac{1-f}{f^{\prime}} + \frac{\Delta H_{v,s}}{C_{p}} \left(m_{ev,t} + \alpha_s \right) \right) \Delta T + \frac{\Delta H_{v,s}}{C_{p}} \left( \frac{1-f}{f^{\prime}} m_{ev,t} - \frac{f}{f^{\prime}} \alpha_s \right) = 0
+```
+
+SLAB uses a slightly different quadratic 
+```math
+\left(\Delta T \right)^2 - \left( \frac{1-f}{f^{\prime}} + \frac{\Delta H_{v,s}}{C_{p}} \left(m_{ev,t} + \alpha_s \right) \right) \Delta T + \frac{\Delta H_{v,s}}{C_{p}} \left( \frac{1-f}{f^{\prime}} m_{ev,t} - \frac{1}{f^{\prime}} \alpha_s \right) = 0
+```
+
+I'm not sure if that is a typo or a further approximation. Regardless lines 2303-2309 of the original SLAB fortran code are calculating the roots of this quadratic equation.
+
+The initial guess of $\Delta T$ is clamped to be less than $\Delta T = {{\Delta H_{v,s}} \over C_{p}} \left( m_{ev,t} - m \right)$ (i.e. if the entire plume changed phase)
+
+### Notes and Caveats
+
+Instead of using the specific latent heat, SLAB uses the enthalpy adjusted by
+
+```math
+\Delta H = \Delta H_{v,s} + C_{p,sl} T_{bp} - C_{p,s} T_{bp}
+```
+
+If the partial pressure is above 1, SLAB uses a linear extension (instead of the normal exponential curve). This is probably for numerical stability reasons (it might otherwise give extreme initial guesses for $\Delta T$).
+
+Taking a first order Taylor expansion of $f$ around the boiling point:
+
+```math
+f(T) \approx f(T_{bp}) + f^{\prime}(T_{bp}) (T - T_{bp})
+```
+
+But since $f(T_{bp}) = 1$ (by definition), and assuming $f$ is approximated by the Antoine equation ($f = \exp \left( A - \frac{B}{T - C} \right)$)
+
+```math
+f(T) \approx 1 + A {{T - T_{bc}} \over {T_{bp} + C}}
+```
+"""
+
+# ╔═╡ eaa159cb-d574-476b-8efe-357c01474e41
+@inline function vapour_phase_initial_guess(total_mass_fraction,
+											vapour_mass_fraction,
+											water_mass_fraction,
+											dry_air_mass_fraction,
+											temperature,
+											plume_heat_capacity,
+											p::SLAB_Release_Parameters)
+	# inputs, in the notation used in the SLAB User's Guide
+	m = total_mass_fraction
+	m_ev = vapour_mass_fraction
+	m_wv = water_mass_fraction
+	m_da = dry_air_mass_fraction
+	T = temperature
+	Cₚ = plume_heat_capacity
+
+	# relevant parameters
+	Tbp = p.source.tbp
+	Cₚₛ = p.source.cps
+	Cₚₛₗ= p.source.cpsl
+	ΔHᵥ = p.source.dhe
+	Mₛ  = p.source.wms
+	M_w = p.ambient_air.wmw
+	Mₐ  = p.ambient_air.wma
+
+	# vapour pressure and its derivative
+	f  = _slab_psat(temperature, p.source.antoine)
+	f′ = _slab_∂psat_∂T(temperature, p.source.antoine)
+	if f > 1
+		A, C = p.source.antoine.A, p.source.antoine.C
+		f = 1 + A*(T - Tbp)/(Tbp + C)
+		f′ = A/(Tbp + C)
+	end
+
+	# enthalpy and dilution parameter (αₛ)
+	ΔH = ΔHᵥ + Tbp*(Cₚₛₗ - Cₚₛ)
+	αₛ = Mₛ * ( m_da/Mₐ + m_wv/M_w)
+	
+	# quadratic equation ΔT² - bΔT + c = 0
+	# ΔT = (1/2) (b - √(b² - 4c))
+	b = (1-f)/f′ + (ΔH/Cₚ)*(m_ev + αₛ)
+	c = (ΔH/Cₚ)*( ((1-f)/f′)*m_ev - αₛ/f′ )
+	discriminant = b^2 - 4c
+	ΔT = max( discriminant > 0 ? 0.5*(b - √(discriminant)) : 0,
+			   (ΔH/Cₚ)*(m_ev - m) )
+	return ΔT
+end
+
 # ╔═╡ 02f18a27-7032-4d09-8820-3641f31c70ce
 md"""
 # Final Subroutines
@@ -394,7 +532,7 @@ PLUTO_PROJECT_TOML_CONTENTS = """
 PLUTO_MANIFEST_TOML_CONTENTS = """
 # This file is machine-generated - editing it directly is not advised
 
-julia_version = "1.13.2"
+julia_version = "1.13.3"
 manifest_format = "2.1"
 project_hash = "71853c6197a6a7f222db0f1978c7cb232b87c5ee"
 
@@ -418,15 +556,17 @@ project_hash = "71853c6197a6a7f222db0f1978c7cb232b87c5ee"
 # ╠═994492cf-6d83-46f7-b712-d6547d453414
 # ╟─96bd7796-4465-45cb-b7b2-102e30c9a6a4
 # ╠═9c751efa-7ea4-4d1e-8ead-6ce17f029f1e
-# ╟─ee454b66-c076-4024-ba6d-dee2adccf9ec
 # ╟─a3361184-40ab-4374-9d1d-94a5635ae620
 # ╠═2794e095-3884-479b-b4e6-d2d7252aaee4
 # ╟─ce7cdd1b-a5c9-41b2-9170-34e17b784e41
 # ╠═1f715ead-8bbe-4735-9b21-0e9e0a0666a8
+# ╟─f664087a-4eca-48c1-849d-f43d6dac6cfa
 # ╟─a8ade6fc-3ec6-4da4-a67b-8cd6a4bcf05a
 # ╠═bc0b92ec-4112-4cff-badf-2ffd1909244a
 # ╠═4f00285b-9609-4a26-8af5-11abf30998ed
 # ╠═d23524d9-5e6b-4157-9898-3760853b2b8f
+# ╟─cc30f37c-cb46-482c-a958-e5bdb169197c
+# ╠═eaa159cb-d574-476b-8efe-357c01474e41
 # ╟─02f18a27-7032-4d09-8820-3641f31c70ce
 # ╠═1f0c08f7-2651-4832-8e8a-6af6fcb70554
 # ╟─00000000-0000-0000-0000-000000000001

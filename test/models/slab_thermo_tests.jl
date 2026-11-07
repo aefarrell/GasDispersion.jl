@@ -4,7 +4,7 @@ import GasDispersion.slab: _slab_psat
 import GasDispersion.slab: plume_thermodynamics
 import GasDispersion.slab: total_mass_fraction, vapour_mass_fraction, water_mass_fraction, water_vapour_mass_fraction, dry_air_mass_fraction, volume_fraction
 import GasDispersion.slab: total_specific_heat, transported_energy
-import GasDispersion.slab: vapour_partial_pressure, vapour_check_water, vapour_check_substance
+import GasDispersion.slab: vapour_partial_pressure, vapour_check_water, vapour_check_substance, vapour_phase_initial_guess
 
 include("../testutils/trace.jl")
 
@@ -51,10 +51,12 @@ const cpwl = 4178.
         cps = rls_params.rgp.cps
         cpsl = rls_params.rgp.cpsl
         ts = rls_params.rgp.ts
+        tbp = rls_params.rgp.tbp
+        dhe = rls_params.rgp.dhe
 
         release_antoine = SLAB_Antoine(rls_params.rgp.spa, rls_params.rgp.spb, rls_params.rgp.spc)
         water_antoine = SLAB_Antoine(spaw, spbw, 0.0)
-        source = SLAB_Release_Source(bse, qs, wms, cps, cpsl, ts, release_antoine)
+        source = SLAB_Release_Source(bse, qs, wms, cps, cpsl, ts, tbp, dhe, release_antoine)
         ambient_air = SLAB_Release_Ambient_Air(wmae, wma, wmw, cmwa, cpaa, cpa, cpwv, cpwl, ta, water_antoine)
         p = SLAB_Release_Parameters(source, ambient_air)
         curr = SLAB_Plume_Integrated(r,bbv,bv,g,gw,zc,qint,sft,sfu,sfy,sfz)
@@ -108,6 +110,13 @@ const cpwl = 4178.
         @test vapour_check_substance(cm, cmev, cmwv, cmda, T, last, p) == (initial_phase_check.ie == 1)
         @test vapour_check_water(cmw, cmw, cmev, cmda, T, last, p) == (initial_phase_check.iw == 1)
 
+        # testing vapour phase change initialization
+        if :vapour_temperature_initial in keys(call)
+            vapour_temperature_initial = call[:vapour_temperature_initial]
+            dlti = vapour_temperature_initial.dlti_
+            dltm = vapour_temperature_initial.dltm
+            @test max(dltm,dlti) ≈ vapour_phase_initial_guess(cm,cmev,cmwv,cmda,T,cp,p)
+        end
     end
 
 end

@@ -121,13 +121,15 @@ function _slab_sub_thermo(p::SLAB_Params,idpf,xn,timn,rmi,t0,cmev0,cm0,cmw0,cmwv
             ab2 = 0.5*((1 - fft)/ffpr + (dhe0/_cp)*(alfs+cmevt))
             ac = dhe0*(alfs - (1 - fft)*cmevt)/(_cp*ffpr)
             discriminant = ab2*ab2 + ac
-            dlti = discriminant > 0 ? ab2 - sqrt(discriminant) : 0
+            dlti_ = discriminant > 0 ? ab2 - sqrt(discriminant) : 0
             dltm = dhe0*(cmevt-cm)/_cp
-            dlti = max(dltm,dlti)
+            dlti = max(dltm,dlti_)
             t = t + dlti
             fft = exp(spa - spb/(t+spc))
             ggt = exp(spaw - spbw/t)
 
+            #remove when done testing
+            checkpoint!(trace_log, :vapour_temperature_initial, (; dhe0, dlti_, dltm))
         end
 
         #5
