@@ -7,3 +7,4 @@
 /examples/.ipynb_checkpoints/
 /docs/build/
 /notebooks/
+/test/test_data/checkpoint*

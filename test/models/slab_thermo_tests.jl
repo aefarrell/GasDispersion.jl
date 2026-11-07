@@ -22,7 +22,7 @@ const cpwl = 4178.
 
 @testset "SLAB thermodynamics model tests" begin
     # using the INPR2 test data to examine the thermo model
-    results = readtrace("test_data/slab_inpr2_thermo_data.jls")
+    results = readtrace("test_data/checkpoint_thermo.jls")
 
     calls = []
     checkpoints = Dict()
